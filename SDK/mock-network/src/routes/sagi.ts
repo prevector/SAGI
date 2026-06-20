@@ -1,6 +1,6 @@
 import { Router } from "express";
 import {
-  createDuel, getFeed, getLeaderboard, getNodes,
+  createDuel, getBetResult, getFeed, getLeaderboard, getNodes,
   getOrCreateUser, getStats, getWallet, recordBet,
 } from "../mock/sagiMock.js";
 
@@ -28,6 +28,13 @@ router.post("/signal", (req, res) => {
   }
   const { betId } = recordBet(task_id, user_id, picked, candidate_a_id, candidate_b_id);
   res.json({ ok: true, bet_id: betId });
+});
+
+// on_task_settled: the game polls this during the fight animation until settled:true.
+router.get("/signal/:betId", (req, res) => {
+  const betId = typeof req.params.betId === "string" ? req.params.betId.trim() : "";
+  if (!betId) { res.status(400).json({ error: "betId is required" }); return; }
+  res.json(getBetResult(betId));
 });
 
 router.get("/leaderboard", (req, res) => {

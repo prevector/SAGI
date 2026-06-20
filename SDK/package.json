@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "concurrently --names \"api,web\" --prefix-colors \"cyan,magenta\" \"npm run dev --prefix mock-network\" \"npm run dev --prefix web\"",
-    "install:all": "npm install --prefix mock-network && npm install --prefix web"
+    "dev": "concurrently --names \"api,web,game\" --prefix-colors \"cyan,magenta,yellow\" \"npm run dev --prefix mock-network\" \"npm run dev --prefix web\" \"npm run dev --prefix game\"",
+    "install:all": "npm install --prefix mock-network && npm install --prefix web && npm install --prefix game"
   },
   "devDependencies": {
     "concurrently": "^9.0.0"

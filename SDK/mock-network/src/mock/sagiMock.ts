@@ -87,6 +87,10 @@ interface Bet {
   candidateAId: string;
   candidateBId: string;
   settled: boolean;
+  // Populated by settleBet so the game can read the outcome of any bet (win OR loss).
+  winnerSide: "a" | "b" | null;
+  won: boolean | null;
+  tokens: number;
 }
 
 // ─── Candidate & node generation (deterministic) ──────────────────────────────
@@ -150,7 +154,6 @@ const shortId = () => Math.random().toString(36).slice(2, 9);
 function settleBet(betId: string): void {
   const bet = bets.get(betId);
   if (!bet || bet.settled) return;
-  bet.settled = true;
 
   const cA = candidates.find((c) => c.id === bet.candidateAId);
   const cB = candidates.find((c) => c.id === bet.candidateBId);
@@ -160,12 +163,20 @@ function settleBet(betId: string): void {
   const user = [...users.values()].find((u) => u.userId === bet.userId);
   if (!user) return;
 
+  const won = bet.picked === winnerSide;
+  const closeness = 1 - Math.abs(cA.trueScore - cB.trueScore);
+  const reward = won ? Math.max(5, Math.round(10 + closeness * 40)) : 0;
+
+  // Write all result fields together so getBetResult never sees a half-settled bet.
+  bet.settled = true;
+  bet.winnerSide = winnerSide;
+  bet.won = won;
+  bet.tokens = reward;
+
   user.scouts += 1;
   totalVotes += 1;
 
-  if (bet.picked === winnerSide) {
-    const closeness = 1 - Math.abs(cA.trueScore - cB.trueScore);
-    const reward = Math.max(5, Math.round(10 + closeness * 40));
+  if (won) {
     user.tokens += reward;
     user.correct += 1;
     totalTokensAwarded += reward;
@@ -213,9 +224,24 @@ export function createDuel(_userId: string): SignalTask {
 
 export function recordBet(taskId: string, userId: string, picked: "a" | "b", candidateAId: string, candidateBId: string): { betId: string } {
   const betId = `bet-${shortId()}`;
-  bets.set(betId, { betId, userId, taskId, picked, candidateAId, candidateBId, settled: false });
+  bets.set(betId, { betId, userId, taskId, picked, candidateAId, candidateBId, settled: false, winnerSide: null, won: null, tokens: 0 });
   setTimeout(() => settleBet(betId), 3000 + Math.random() * 2000);
   return { betId };
+}
+
+export interface BetResult {
+  settled: boolean;
+  won: boolean | null;
+  winner: "a" | "b" | null;
+  tokens: number;
+}
+
+// The spec's on_task_settled: report the outcome of a bet once the network has
+// settled it against ground truth. Unknown or unsettled bets read as settled:false.
+export function getBetResult(betId: string): BetResult {
+  const bet = bets.get(betId);
+  if (!bet || !bet.settled) return { settled: false, won: null, winner: null, tokens: 0 };
+  return { settled: true, won: bet.won, winner: bet.winnerSide, tokens: bet.tokens };
 }
 
 export function getWallet(userId: string): Wallet {
