@@ -1,0 +1,237 @@
+.page {
+  display: grid;
+  gap: var(--s5);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--s3);
+}
+
+.message {
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  gap: var(--s5);
+  align-items: start;
+}
+
+.library {
+  position: sticky;
+  top: 84px;
+  display: grid;
+  gap: var(--s3);
+}
+
+.panelTitle {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  color: var(--text);
+  font-weight: 600;
+}
+
+.geneList,
+.workspace {
+  display: grid;
+  gap: var(--s4);
+}
+
+.geneButton {
+  width: 100%;
+  display: grid;
+  gap: var(--s1);
+  text-align: left;
+  padding: var(--s3);
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition:
+    background var(--motion-fast) var(--ease-out),
+    border-color var(--motion-fast) var(--ease-out);
+}
+
+.geneButton:hover,
+.activeGene {
+  border-color: var(--border-strong);
+  background: var(--surface-2);
+}
+
+.geneButton span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.geneButton small {
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.editor,
+.controls,
+.visual,
+.weights {
+  display: grid;
+  gap: var(--s4);
+}
+
+.sectionHead {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: var(--s4);
+}
+
+.sectionHead h2 {
+  margin: 0 0 var(--s1);
+  font-size: var(--fs-h3);
+}
+
+.sectionHead p,
+.moreWeights {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+}
+
+.runButtons {
+  display: flex;
+  gap: var(--s2);
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.field {
+  display: grid;
+  gap: var(--s2);
+  min-width: 0;
+}
+
+.field span,
+.weightCell span {
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+}
+
+.field input,
+.field select,
+.field textarea,
+.weightCell input {
+  width: 100%;
+  min-width: 0;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  padding: var(--s3);
+  font: inherit;
+}
+
+.field textarea {
+  min-height: 84px;
+  resize: vertical;
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus,
+.weightCell input:focus,
+.geneButton:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.grid4,
+.grid5 {
+  display: grid;
+  gap: var(--s3);
+}
+
+.grid4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.grid5 {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--s3);
+}
+
+.metrics span {
+  display: grid;
+  gap: var(--s1);
+  padding: var(--s3);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.metrics b {
+  font-family: var(--font-mono);
+  font-size: var(--fs-h3);
+}
+
+.metrics small {
+  color: var(--text-muted);
+}
+
+.weightGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
+  gap: var(--s2);
+}
+
+.weightCell {
+  display: grid;
+  gap: var(--s1);
+}
+
+.weightCell input {
+  font-family: var(--font-mono);
+  font-size: var(--fs-mono);
+  padding: var(--s2);
+}
+
+@media (max-width: 1100px) {
+  .grid4,
+  .grid5,
+  .metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 860px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .library {
+    position: static;
+  }
+}
+
+@media (max-width: 560px) {
+  .grid4,
+  .grid5,
+  .metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .sectionHead {
+    display: grid;
+  }
+}

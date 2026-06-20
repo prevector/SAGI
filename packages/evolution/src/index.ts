@@ -8,3 +8,4 @@ export * from "./learning/fitness.js";
 export * from "./learning/placeholderAlgorithm.js";
 export * from "./learning/trainer.js";
 export * from "./learning/verify.js";
+export * from "./iaf.js";
