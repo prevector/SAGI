@@ -22,5 +22,12 @@ export const config = {
     sessionTrainVisual: true,
     // Mini chain explorer on the network page (C3).
     ledgerExplorer: true
+  },
+  // Top-bar compute HUD (CPU/GPU specs + fabricated realtime %). Behind a
+  // swappable ComputeMetricsSource seam — only `mock` is implemented; the
+  // browser/agent tiers (real %) are deferred. See
+  // SAGI-compute-metrics-feasibility.md.
+  computeMetrics: {
+    source: "mock" as "mock" | "browser" | "agent"
   }
 } as const;
