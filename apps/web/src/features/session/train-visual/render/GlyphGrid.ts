@@ -116,10 +116,12 @@ export class GlyphGrid {
     ctx.textBaseline = "middle";
 
     const fadeW = this.w * R.leftFade;
+    const pulse = Math.max(0, Math.min(1, breakthrough));
 
     // Resolved colour shifts white→teal as the field highlights; a breakthrough
-    // nudges it toward orange (the economy axis), redundant with the pulse.
-    const resolvedColor = breakthrough > 0.01 ? PALETTE.orange : PALETTE.resolved;
+    // lerps it toward orange (the economy axis) by the pulse amount — redundant
+    // with the HUD's "▲ breakthrough" label so it never relies on colour.
+    const resolvedColor = pulse > 0.001 ? lerpColor(PALETTE.resolved, PALETTE.orange, pulse) : PALETTE.resolved;
 
     let highlighted = 0;
 
@@ -154,9 +156,10 @@ export class GlyphGrid {
       const cy = this.originY + bandH * 0.25;
       const rad = Math.max(this.w, bandH) * 0.6;
       const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, rad);
-      g.addColorStop(0, PALETTE.teal);
+      g.addColorStop(0, pulse > 0.001 ? PALETTE.orange : PALETTE.teal);
       g.addColorStop(1, "transparent");
-      ctx.globalAlpha = R.glowAlpha * Math.min(1, highlightFrac * 2.2);
+      // The breakthrough briefly intensifies the glow (a non-colour pulse cue).
+      ctx.globalAlpha = R.glowAlpha * Math.min(1, highlightFrac * 2.2) + pulse * 0.3;
       ctx.fillStyle = g;
       ctx.fillRect(cx - rad, cy - rad, rad * 2, rad * 2);
     }

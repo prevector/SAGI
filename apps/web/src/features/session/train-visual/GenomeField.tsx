@@ -10,6 +10,7 @@ import { usePopulation } from "./usePopulation";
 import { usePerf } from "./render/usePerf";
 import { useVisible } from "./render/useVisible";
 import { useReducedMotion } from "./render/useReducedMotion";
+import { useBreakthrough } from "./render/useBreakthrough";
 import { TRAIN_CONFIG, type SessionStatus } from "./config";
 import { PALETTE } from "./palette";
 
@@ -39,6 +40,7 @@ export default function GenomeField({ seed, status, progress, debug = false }: G
   const visible = useVisible(wrapRef);
   const reduced = useReducedMotion();
   const perf = usePerf();
+  const breakthrough = useBreakthrough(status, reduced);
 
   const { rows, stats } = usePopulation(seed, status, progress);
 
@@ -47,6 +49,8 @@ export default function GenomeField({ seed, status, progress, debug = false }: G
   rowsRef.current = rows;
   const perfRef = useRef(perf);
   perfRef.current = perf;
+  const breakthroughRef = useRef(breakthrough);
+  breakthroughRef.current = breakthrough;
 
   // Build the grid + size to the container. ResizeObserver keeps it crisp.
   useEffect(() => {
@@ -65,7 +69,7 @@ export default function GenomeField({ seed, status, progress, debug = false }: G
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
       grid.resize(rect.width, rect.height, dpr, TRAIN_CONFIG.sim.populationSize);
       // Static repaint so resizes look instant even when the loop is paused.
-      grid.draw(performance.now(), rowsRef.current, { frozen: true });
+      grid.draw(performance.now(), rowsRef.current, { frozen: true, breakthrough: breakthroughRef.current });
     };
 
     apply();
@@ -81,8 +85,8 @@ export default function GenomeField({ seed, status, progress, debug = false }: G
   useEffect(() => {
     if (!reduced) return;
     const grid = gridRef.current;
-    if (grid) grid.draw(performance.now(), rowsRef.current, { frozen: true });
-  }, [reduced, rows]);
+    if (grid) grid.draw(performance.now(), rowsRef.current, { frozen: true, breakthrough: breakthroughRef.current });
+  }, [reduced, rows, breakthrough]);
 
   // The animation loop: throttled to ~25fps, paused when off-screen / tab hidden.
   useEffect(() => {
@@ -95,7 +99,7 @@ export default function GenomeField({ seed, status, progress, debug = false }: G
       last = now;
       const grid = gridRef.current;
       if (!grid) return;
-      grid.draw(now, rowsRef.current);
+      grid.draw(now, rowsRef.current, { breakthrough: breakthroughRef.current });
       perfRef.current.sample();
     };
     raf = requestAnimationFrame(frame);
@@ -105,7 +109,7 @@ export default function GenomeField({ seed, status, progress, debug = false }: G
   return (
     <div ref={wrapRef} style={wrapStyle} aria-hidden="true">
       <canvas ref={canvasRef} style={{ width: "100%", height: "100%", display: "block" }} />
-      <Hud stats={stats} status={status} fps={perf.fps} showFps={debug} />
+      <Hud stats={stats} status={status} fps={perf.fps} showFps={debug} breakthrough={breakthrough} />
     </div>
   );
 }
