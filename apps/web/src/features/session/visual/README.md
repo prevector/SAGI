@@ -19,10 +19,46 @@ visual/
   SessionVisual.tsx     # default export; the only thing SessionPage imports (lazily)
   palette.ts rng.ts config.ts ErrorBoundary.tsx
   maze/                 # generate (recursive-backtracker), sensors, Maze (R3F)
-  creature/             # genome, assemble (2-bone IK), gaits, Creature, CreatureRunner
+  creature/             # genome, assemble (2-bone IK), gaits, materials, Creature, CreatureRunner
   learning/             # types, mlp, placeholderAlgorithm, fitness, trainer, sources
-  scene/                # Stage (Canvas), Effects (Bloom), PathLine, GhostTrails, hooks
+  scene/                # Stage (Canvas), PathLine, Footprints, GhostTrails, anim, hooks
 ```
+
+## Look & the quality ladder
+
+The stage is a **clean white "studio"**: bright simple lighting, regular
+real-time shadows, neutral slate maze walls with a quiet static teal top-edge
+accent, and a vivid teal hero creature that pops against the neutral maze. The
+champion's current route is drawn as a teal floor line, and it leaves fading
+footprints as it walks (`scene/Footprints.tsx`). No post-processing chain — the
+look comes from lighting + materials, which is both simpler and far more robust.
+
+Fidelity is gated through one resolved `QualitySettings` object
+(`config.ts` → `useQuality`), never by `isMobile`/`reducedMotion` directly. The
+base tier comes from the device (reduced-motion → `low`, mobile → `medium`, else
+`high`); a one-way perf governor drops a tier if FPS stays under
+`perf.downgradeFps`. Today the live tier mainly drives shadow map size +
+creature/maze geometry density (`bodySegments`, `limbRadial`, `wallBevel`,
+`circuitTraces`).
+
+The **living creature** (`creature/`) is the detail showcase: per-segment
+materials with a subtle fitness-driven emissive energy wave (`materials.ts`),
+breathing, a flexing/swaying spine, a nodding head + blinking layered eyes, a
+trailing tail, knee knuckles, dorsal spines, banking into turns
+(`CreatureRunner`), and tier-scaled geometry density.
+
+Determinism holds: morphology, maze, and evolution derive only from
+`seed = session.id`. Colorblind cues are intact (start/exit rings + flag shape +
+path line styles carry meaning without relying on colour).
+
+> ⚠️ **Do not add drei `<SoftShadows>` on three 0.184.** Its PCSS patch rewrites
+> the global shadow shader chunk in a way that fails to compile, which silently
+> breaks *every* lit (`MeshStandard`/`MeshPhysical`) material — the whole maze
+> and creature vanish while only line/point/shader materials still draw. Regular
+> shadows (`shadows={{ type: PCFSoftShadowMap }}`) work fine.
+
+(`scene/Effects.tsx` — the original dark-stage selective-bloom pass — is no
+longer wired into the white theme; left in place but unused.)
 
 Mounted in `SessionPage` behind `config.features.session3dVisual`, a `<Suspense>`,
 and the module's `VisualErrorBoundary`. Bound to the latest session:
