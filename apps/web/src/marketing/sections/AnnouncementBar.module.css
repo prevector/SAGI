@@ -1,0 +1,39 @@
+.bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: var(--s2) var(--s5);
+  background: var(--sagi-black);
+  color: var(--text);
+  text-align: center;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.bar:hover {
+  color: var(--text);
+}
+
+.earn {
+  color: var(--accent-2);
+}
+
+.arrow {
+  color: var(--accent);
+}
+
+.short {
+  display: none;
+}
+
+@media (max-width: 600px) {
+  .full {
+    display: none;
+  }
+  .short {
+    display: inline;
+  }
+}

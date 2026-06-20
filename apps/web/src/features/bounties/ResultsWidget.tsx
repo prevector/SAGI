@@ -12,7 +12,7 @@ export function ResultsWidget() {
     <Widget
       title="Recent results"
       eyebrow="Historic bounties"
-      to="/bounties?tab=history"
+      to="/app/bounties?tab=history"
       state={state}
       isEmpty={(rows) => rows.length === 0}
     >

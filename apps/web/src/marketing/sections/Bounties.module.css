@@ -1,0 +1,52 @@
+.section {
+  background: var(--sagi-light-muted);
+}
+
+.head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s5);
+  max-width: 760px;
+  margin-bottom: var(--s7);
+}
+
+.title {
+  color: var(--sagi-dark);
+}
+
+.intro {
+  color: rgba(43, 42, 41, 0.64);
+}
+
+.bounties {
+  list-style: none;
+  margin: var(--s6) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s3);
+}
+
+.bountyRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s4);
+  padding: var(--s4) var(--s5);
+  background: var(--sagi-white);
+  border: 1px solid rgba(43, 42, 41, 0.12);
+  border-radius: var(--radius);
+}
+
+.bountyTitle {
+  font-size: 16px;
+  color: var(--sagi-dark);
+}
+
+.bountyReward {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  color: var(--accent-2);
+  white-space: nowrap;
+}

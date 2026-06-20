@@ -1,0 +1,32 @@
+.section {
+  background: var(--sagi-dark);
+}
+
+.head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s5);
+  max-width: 760px;
+  margin-bottom: var(--s8);
+}
+
+.title {
+  color: var(--text);
+}
+
+.intro {
+  color: var(--text-muted);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--s5);
+}
+
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: 1fr;
+    max-width: 520px;
+  }
+}

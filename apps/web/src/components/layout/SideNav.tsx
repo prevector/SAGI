@@ -14,7 +14,7 @@ export function SideNav() {
           <li key={to}>
             <NavLink
               to={to}
-              end={to === "/"}
+              end={to === "/app"}
               className={({ isActive }) => [styles.link, isActive ? styles.active : ""].join(" ")}
             >
               <Icon size={18} aria-hidden className={styles.icon} />

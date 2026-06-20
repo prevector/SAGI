@@ -1,0 +1,136 @@
+/* Shared landing-page primitives: container, section rhythm, the DESIGN.md §3
+   type scale, and the diffuse-in reveal. Section-specific surface/colour styling
+   lives in each section's own module. All values come from tokens.css. */
+
+.page {
+  /* Suppress the global body teal radial glow so light sections render clean. */
+  background: var(--sagi-dark);
+  width: 100%;
+  overflow-x: clip;
+}
+
+/* Sticky header: announcement bar + nav travel together at the top. */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.container {
+  width: 100%;
+  max-width: var(--container);
+  margin: 0 auto;
+  padding-inline: var(--s7); /* 48 desktop */
+}
+
+@media (max-width: 810px) {
+  .container {
+    padding-inline: var(--s5); /* 24 mobile/tablet */
+  }
+}
+
+/* Section vertical rhythm (DESIGN.md §4). */
+.section {
+  padding-block: 128px;
+  scroll-margin-top: 104px; /* clear the sticky header on anchor jumps */
+}
+@media (max-width: 810px) {
+  .section {
+    padding-block: 88px;
+  }
+}
+@media (max-width: 480px) {
+  .section {
+    padding-block: 56px;
+  }
+}
+
+/* ---- Type scale (DESIGN.md §3) ---- */
+.h1 {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: 64px;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+.h2 {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: 48px;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+.h3 {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 30px;
+  line-height: 1.2;
+  margin: 0;
+}
+.bodyL {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: 18px;
+  line-height: 1.5;
+  margin: 0;
+  text-wrap: balance;
+}
+.body {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 1.55;
+  margin: 0;
+}
+.small {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 1.4;
+}
+.mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 810px) {
+  .h1 {
+    font-size: 40px;
+  }
+  .h2 {
+    font-size: 32px;
+  }
+  .h3 {
+    font-size: 24px;
+  }
+  .bodyL {
+    font-size: 17px;
+  }
+}
+
+/* ---- diffuse-in reveal (DESIGN.md §6) ---- */
+.reveal {
+  opacity: 0;
+  transform: translateY(16px);
+  filter: blur(6px);
+  transition:
+    opacity var(--motion-slow) var(--ease-out),
+    transform var(--motion-slow) var(--ease-out),
+    filter var(--motion-slow) var(--ease-out);
+}
+.revealIn {
+  opacity: 1;
+  transform: none;
+  filter: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    transition: none;
+  }
+}

@@ -1,0 +1,26 @@
+.section {
+  background: var(--sagi-paper);
+}
+
+.col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s5);
+  max-width: 760px;
+  margin: 0 auto;
+  text-align: center;
+  align-items: center;
+}
+
+.title {
+  color: var(--sagi-dark);
+  max-width: 20ch;
+}
+
+.body {
+  color: var(--sagi-dark);
+}
+
+.highlight {
+  color: var(--accent-hover);
+}

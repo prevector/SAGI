@@ -14,7 +14,7 @@ export default function LoginPage() {
 
   // Already authenticated (incl. dev auto-auth) → straight to the dashboard.
   if (!loading && username) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/app" replace />;
   }
 
   async function onSubmit(event: FormEvent) {
@@ -28,7 +28,7 @@ export default function LoginPage() {
     setError(null);
     try {
       await login(value);
-      navigate("/", { replace: true });
+      navigate("/app", { replace: true });
     } catch {
       setError("Could not sign in. Enter a name and try again.");
     } finally {

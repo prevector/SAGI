@@ -7,7 +7,7 @@ export function LeaderboardWidget() {
   const state = useAsync(() => api.getLeaderboard({ limit: 5 }), []);
 
   return (
-    <Widget title="Leaderboard" eyebrow="Top organisms" to="/leaderboard" state={state} isEmpty={(rows) => rows.length === 0}>
+    <Widget title="Leaderboard" eyebrow="Top organisms" to="/app/leaderboard" state={state} isEmpty={(rows) => rows.length === 0}>
       {(rows) => <LeaderboardTable entries={rows} variant="compact" />}
     </Widget>
   );
