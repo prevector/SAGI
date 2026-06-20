@@ -1,47 +1,125 @@
-// usePopulation — the driver hook between the data layer and the renderer.
+// usePopulation — the driver between the data layer and the renderer.
 //
-// C1: returns a static field of noise rows (fitness 0) + idle stats, so the
-// scaffold renders the hero's glyph-noise look with no sim yet. C3 replaces the
-// body with the real PopulationSim driver (throttled step() bound to status /
-// progress); GenomeField does not change.
+// Owns a deterministic PopulationSim (recreated only when the seed changes) and
+// advances it on a time-accumulating loop whose rate is bound to the session
+// (generationsPerSec(status, progress) — PLAN-TRAIN-ANIM §4). It publishes the
+// current population as renderer rows + the HUD stats. GenomeField reads these;
+// the swap to a remote PopulationSource later changes only this file.
 
-import { useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { RowState } from "./render/GlyphGrid";
 import type { PopulationStats, Seed } from "./sim/types";
-import type { SessionStatus } from "./config";
-import { TRAIN_CONFIG } from "./config";
-import { makeRng } from "./rng";
+import { TRAIN_CONFIG, generationsPerSec, type SessionStatus } from "./config";
+import { createLocalSource } from "./sim/localSource";
+import type { PopulationSim } from "./sim/PopulationSim";
+import { useReducedMotion } from "./render/useReducedMotion";
 
 export interface PopulationView {
   rows: RowState[];
   stats: PopulationStats;
 }
 
-/** Deterministic noise rows for the idle/scaffold state. */
-function noiseRows(seed: Seed): RowState[] {
-  const rng = makeRng(`${seed}:noise`);
-  const chars = TRAIN_CONFIG.charset;
-  const { populationSize, genomeLength } = TRAIN_CONFIG.sim;
-  return Array.from({ length: populationSize }, () => {
-    let s = "";
-    for (let i = 0; i < genomeLength; i++) s += chars[Math.floor(rng() * chars.length)];
-    return { chars: s, fitness: 0, locked: undefined };
-  });
+const MAX_GEN = TRAIN_CONFIG.sim.maxGenerations;
+
+function toView(sim: PopulationSim, genPerSec: number): PopulationView {
+  const rows: RowState[] = sim.population().map((g) => ({
+    chars: g.chars,
+    fitness: g.fitness,
+    locked: g.locked,
+  }));
+  const base = sim.stats();
+  return {
+    rows,
+    stats: { ...base, evaluationsPerSec: sim.evaluationsPerGeneration() * genPerSec },
+  };
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function usePopulation(seed: Seed, _status: SessionStatus, _progress: number): PopulationView {
-  // C1 placeholder: idle noise. Real sim wiring lands in C3.
-  const rows = useMemo(() => noiseRows(seed), [seed]);
-  const stats = useMemo<PopulationStats>(
-    () => ({
-      generation: 0,
-      bestFitness: 0,
-      populationSize: TRAIN_CONFIG.sim.populationSize,
-      evaluationsPerSec: 0,
-      highlightedFraction: 0,
-    }),
-    []
-  );
-  return { rows, stats };
+/** For the static reduced-motion frame: how resolved the field should look. */
+function reducedTargetGen(status: SessionStatus, progress: number): number {
+  if (status === "completed") return MAX_GEN;
+  if (status === "running") return Math.round(Math.max(0, Math.min(1, progress)) * MAX_GEN);
+  return 0; // queued / failed → noise
+}
+
+function fastForward(sim: PopulationSim, targetGen: number): void {
+  while (sim.stats().generation < targetGen) sim.step();
+}
+
+export function usePopulation(seed: Seed, status: SessionStatus, progress: number): PopulationView {
+  const reduced = useReducedMotion();
+  const simRef = useRef<PopulationSim | null>(null);
+
+  // Keep the latest status/progress readable by the loop without restarting it.
+  const statusRef = useRef(status);
+  statusRef.current = status;
+  const progressRef = useRef(progress);
+  progressRef.current = progress;
+
+  const [view, setView] = useState<PopulationView>(() => {
+    const sim = createLocalSource(seed).sim;
+    return toView(sim, generationsPerSec(status, progress));
+  });
+
+  const publish = useCallback(() => {
+    const sim = simRef.current;
+    if (!sim) return;
+    setView(toView(sim, generationsPerSec(statusRef.current, progressRef.current)));
+  }, []);
+
+  // Create/reset the sim on seed (or reduced-motion) change only.
+  useEffect(() => {
+    const sim = createLocalSource(seed).sim;
+    simRef.current = sim;
+    if (reduced) fastForward(sim, reducedTargetGen(statusRef.current, progressRef.current));
+    publish();
+  }, [seed, reduced, publish]);
+
+  // The stepping loop: rate bound to the session; paused via the document
+  // visibility the browser already gives RAF (and GenomeField's own gate).
+  useEffect(() => {
+    if (reduced) return;
+    let raf = 0;
+    let last = 0;
+    let acc = 0; // accumulated generations owed
+    const loop = (now: number) => {
+      raf = requestAnimationFrame(loop);
+      const sim = simRef.current;
+      if (!sim) return;
+      const st = statusRef.current;
+
+      // On completion, snap the field to a fully-resolved state once.
+      if (st === "completed") {
+        if (sim.stats().generation < MAX_GEN) {
+          fastForward(sim, MAX_GEN);
+          publish();
+        }
+        last = 0;
+        return;
+      }
+
+      const gps = generationsPerSec(st, progressRef.current);
+      if (gps <= 0) {
+        last = 0; // queued/failed: idle, reset the clock
+        return;
+      }
+      if (!last) {
+        last = now;
+        return;
+      }
+      acc += ((now - last) / 1000) * gps;
+      last = now;
+      let stepped = false;
+      while (acc >= 1 && sim.stats().generation < MAX_GEN) {
+        sim.step();
+        acc -= 1;
+        stepped = true;
+      }
+      if (sim.stats().generation >= MAX_GEN) acc = 0;
+      if (stepped) publish();
+    };
+    raf = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(raf);
+  }, [reduced, seed, publish]);
+
+  return useMemo(() => view, [view]);
 }
