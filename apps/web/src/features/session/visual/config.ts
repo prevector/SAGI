@@ -5,16 +5,19 @@
 export const VISUAL_CONFIG = {
   /** Genetic algorithm (the placeholder "brain" being trained). */
   ga: {
-    populationSize: 64,
+    populationSize: 80,
     eliteCount: 4,
     tournamentSize: 3,
     crossoverRate: 0.6,
-    mutationRate: 0.1, // per-weight probability
-    mutationStd: 0.15, // Gaussian sigma on a mutated weight
+    mutationRate: 0.12, // per-weight probability
+    mutationStd: 0.18, // Gaussian sigma on a mutated weight
+    /** Fresh random individuals injected each generation (diversity / escapes
+     *  local optima so every seed converges). */
+    immigrantCount: 3,
     /** Hidden-layer width of the MLP policy. */
     hiddenUnits: 8,
     /** Max generations before we stop (visual + headless cap). */
-    maxGenerations: 80,
+    maxGenerations: 120,
   },
 
   /** Maze sizing (cell counts). Shrinks on small screens (see scene). */

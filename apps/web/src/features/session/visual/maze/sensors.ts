@@ -1,24 +1,27 @@
-// Sensor API: turns an agent's pose in the maze into a fixed-length observation
-// vector for the policy (MLP). The agent is a discrete grid walker (cell +
-// facing) — cheap, fully deterministic, and learnable — and the visual later
-// interpolates the resulting cell path into smooth creature motion.
+// Sensor API: turns an agent's pose into a fixed-length observation for the
+// policy (MLP). The agent is a discrete grid walker (cell + facing) — cheap,
+// deterministic, learnable — and the visual interpolates the resulting cell
+// path into smooth creature motion.
 //
-// Observation layout (OBS_SIZE = 8), all roughly in [-1, 1]:
-//   0  wall ahead        (1 blocked, 0 open)
+// Channels (OBS_SIZE = 8), all in [-1, 1]:
+//   0  wall ahead          (1 blocked, 0 open)
 //   1  wall to the left
 //   2  wall to the right
-//   3  open distance ahead, normalized (cells until a wall / maxDim)
-//   4  exit offset x, normalized (signed)
-//   5  exit offset y, normalized (signed)
-//   6  heading alignment to exit (cos of angle; 1 = facing straight at exit)
+//   3  scent ahead         (+1 if stepping ahead gets closer to the exit, -1 if
+//   4  scent left           farther, 0 if blocked) — a "smell the goal" gradient
+//   5  scent right          from the maze distance field; absent => 0
+//   6  heading alignment to the exit (straight-line cos angle)
 //   7  bias (constant 1)
+//
+// The scent channels are what make the maze solvable by a memoryless reactive
+// policy; the GA must still *learn* to weight and combine them.
 
 import {
-  DIR,
   DIR_DELTA,
   type Dir,
   type Grid,
   cellAt,
+  idx,
   inBounds,
   isOpen,
 } from "./generate";
@@ -45,48 +48,50 @@ export function cellAhead(state: AgentState): [number, number] {
   return [state.x + dx, state.y + dy];
 }
 
-/** Count open cells in a straight line from (x,y) facing `dir`, capped. */
-function openDistance(grid: Grid, x: number, y: number, dir: Dir, cap: number): number {
-  let count = 0;
-  let cx = x;
-  let cy = y;
-  while (count < cap && isOpen(grid, cx, cy, dir)) {
-    const [dx, dy] = DIR_DELTA[dir];
-    cx += dx;
-    cy += dy;
-    count++;
-  }
-  return count;
-}
-
 /** Unit-ish heading vector in grid space for a direction. */
 function headingVec(dir: Dir): [number, number] {
   return [DIR_DELTA[dir][0], DIR_DELTA[dir][1]];
 }
 
-/** Build the observation vector for the policy. Reuses `out` if provided. */
-export function sense(grid: Grid, state: AgentState, out?: Float32Array): Float32Array {
+/**
+ * Scent for one relative direction: +1 if the open neighbour there is one step
+ * closer to the exit, -1 if farther, 0 if blocked or no field provided.
+ */
+function scent(grid: Grid, x: number, y: number, dir: Dir, dist?: Int32Array): number {
+  if (!dist || !isOpen(grid, x, y, dir)) return 0;
+  const [dx, dy] = DIR_DELTA[dir];
+  const here = dist[idx(grid, x, y)];
+  const there = dist[idx(grid, x + dx, y + dy)];
+  const d = here - there;
+  return d > 0 ? 1 : d < 0 ? -1 : 0;
+}
+
+/** Build the observation vector. Pass `dist` (distance field) for scent. */
+export function sense(
+  grid: Grid,
+  state: AgentState,
+  dist?: Int32Array,
+  out?: Float32Array
+): Float32Array {
   const o = out ?? new Float32Array(OBS_SIZE);
   const { x, y, dir } = state;
+  const left = turnLeft(dir);
+  const right = turnRight(dir);
 
-  const blocked = (d: Dir): number => (isOpen(grid, x, y, d) ? 0 : 1);
-  o[0] = blocked(dir);
-  o[1] = blocked(turnLeft(dir));
-  o[2] = blocked(turnRight(dir));
+  o[0] = isOpen(grid, x, y, dir) ? 0 : 1;
+  o[1] = isOpen(grid, x, y, left) ? 0 : 1;
+  o[2] = isOpen(grid, x, y, right) ? 0 : 1;
 
-  const maxDim = Math.max(grid.cols, grid.rows);
-  o[3] = openDistance(grid, x, y, dir, maxDim) / maxDim;
+  o[3] = scent(grid, x, y, dir, dist);
+  o[4] = scent(grid, x, y, left, dist);
+  o[5] = scent(grid, x, y, right, dist);
 
   const [ex, ey] = grid.exit;
-  const dx = ex - x;
-  const dy = ey - y;
-  o[4] = dx / grid.cols;
-  o[5] = dy / grid.rows;
-
-  // Heading alignment: cos of angle between facing and the exit direction.
+  const dxe = ex - x;
+  const dye = ey - y;
   const [hx, hy] = headingVec(dir);
-  const len = Math.hypot(dx, dy) || 1;
-  o[6] = (hx * dx + hy * dy) / len;
+  const len = Math.hypot(dxe, dye) || 1;
+  o[6] = (hx * dxe + hy * dye) / len;
 
   o[7] = 1; // bias
   return o;
