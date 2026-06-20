@@ -3,8 +3,10 @@
 // under Bloom. Markers carry NON-COLOUR cues per the colorblind rule
 // (PLAN-3D.md §7): start = teal ring; exit = orange ring + a flag shape.
 
-import { useMemo } from "react";
+import { useMemo, useRef } from "react";
 import { Instance, Instances } from "@react-three/drei";
+import { useFrame } from "@react-three/fiber";
+import type { Group } from "three";
 import { DIR, type Grid, cellAt, worldPos } from "./generate";
 import { PALETTE, glow } from "../palette";
 
@@ -48,9 +50,47 @@ interface MazeProps {
   grid: Grid;
   cellSize: number;
   wallHeight: number;
+  /** Pulse the exit marker on success. */
+  celebrate?: boolean;
 }
 
-export function Maze({ grid, cellSize, wallHeight }: MazeProps) {
+/** Exit marker (orange ring + flag) with an optional success pulse. */
+function Exit({
+  pos,
+  cellSize,
+  wallHeight,
+  celebrate,
+}: {
+  pos: [number, number, number];
+  cellSize: number;
+  wallHeight: number;
+  celebrate: boolean;
+}) {
+  const ref = useRef<Group>(null);
+  useFrame((state) => {
+    if (!ref.current) return;
+    const s = celebrate ? 1 + Math.sin(state.clock.elapsedTime * 5) * 0.12 : 1;
+    ref.current.scale.setScalar(s);
+  });
+  return (
+    <group ref={ref} position={pos}>
+      <mesh position={[0, 0.02, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <ringGeometry args={[cellSize * 0.3, cellSize * 0.42, 32]} />
+        <meshStandardMaterial color={PALETTE.orange} emissive={PALETTE.orange} emissiveIntensity={glow(1.5)} />
+      </mesh>
+      <mesh position={[0, wallHeight * 0.9, 0]}>
+        <cylinderGeometry args={[0.03, 0.03, wallHeight * 1.8, 8]} />
+        <meshStandardMaterial color={PALETTE.paper} roughness={0.6} />
+      </mesh>
+      <mesh position={[0.18, wallHeight * 1.55, 0]}>
+        <coneGeometry args={[0.18, 0.36, 3]} />
+        <meshStandardMaterial color={PALETTE.orange} emissive={PALETTE.orange} emissiveIntensity={glow(1.4)} />
+      </mesh>
+    </group>
+  );
+}
+
+export function Maze({ grid, cellSize, wallHeight, celebrate = false }: MazeProps) {
   const walls = useMemo(
     () => buildWalls(grid, cellSize, wallHeight),
     [grid, cellSize, wallHeight]
@@ -115,30 +155,7 @@ export function Maze({ grid, cellSize, wallHeight }: MazeProps) {
       </mesh>
 
       {/* Exit marker — orange ring + flag SHAPE (colorblind cue, not colour alone). */}
-      <group position={[ex, 0, ez]}>
-        <mesh position={[0, 0.02, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-          <ringGeometry args={[cellSize * 0.3, cellSize * 0.42, 32]} />
-          <meshStandardMaterial
-            color={PALETTE.orange}
-            emissive={PALETTE.orange}
-            emissiveIntensity={glow(1.5)}
-          />
-        </mesh>
-        {/* Flag pole */}
-        <mesh position={[0, wallHeight * 0.9, 0]}>
-          <cylinderGeometry args={[0.03, 0.03, wallHeight * 1.8, 8]} />
-          <meshStandardMaterial color={PALETTE.paper} roughness={0.6} />
-        </mesh>
-        {/* Flag pennant (triangle) */}
-        <mesh position={[0.18, wallHeight * 1.55, 0]} rotation={[0, 0, 0]}>
-          <coneGeometry args={[0.18, 0.36, 3]} />
-          <meshStandardMaterial
-            color={PALETTE.orange}
-            emissive={PALETTE.orange}
-            emissiveIntensity={glow(1.4)}
-          />
-        </mesh>
-      </group>
+      <Exit pos={[ex, 0, ez]} cellSize={cellSize} wallHeight={wallHeight} celebrate={celebrate} />
     </group>
   );
 }
