@@ -71,6 +71,28 @@ npm run experiment:iaf
 
 This runs a local TypeScript Evolution Strategies benchmark for a single GRU-like ENU on an integrate-and-fire target. It is a development-scale benchmark, not the full paper-scale reproduction.
 
+Closer step-by-step reproduction:
+
+```bash
+npm run experiment:iaf:reproduce -- --mode diagnostics
+npm run experiment:iaf:reproduce -- --mode optimizer --generations 100
+npm run experiment:iaf:reproduce -- --mode train --task potential --output-gain 1
+npm run experiment:iaf:reproduce -- --mode train --task iaf
+```
+
+See [experiments/IAF_REPRODUCTION.md](/Users/tim/Code/SAGI/experiments/IAF_REPRODUCTION.md:1) for the Python mapping, staged checks, and current results.
+
+## Local gene lab
+
+Open `/genes` in the web app to inspect, edit, save, run, and continue training local genes. Genes are stored in browser `localStorage`.
+
+Current local training tasks:
+
+- `potential`: smoother membrane-potential prediction, useful for seeing whether recurrent memory is learning
+- `iaf`: hard integrate-and-fire spike timing, closer to the paper benchmark
+
+The gene stores architecture and weights. The phenotype is decoded only when a run starts. The gene currently includes neuron state size and synapse state size; the IAF task uses the neuron state path, while synapse state size is carried for the next network/synapse experiments.
+
 ## Python reference implementation
 
 The full paper implementation we are using as the reference is already in this repo at:

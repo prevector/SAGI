@@ -20,6 +20,7 @@ const NetworkPage = lazy(() => import("./pages/NetworkPage"));
 const SessionPage = lazy(() => import("./pages/SessionPage"));
 const SandboxPage = lazy(() => import("./pages/SandboxPage"));
 const LedgerPage = lazy(() => import("./pages/LedgerPage"));
+const GeneLabPage = lazy(() => import("./pages/GeneLabPage"));
 
 // The public marketing site lives at "/"; the authenticated dashboard is
 // mounted under "/app" (login at "/app/login").
@@ -40,6 +41,7 @@ export default function AppRoutes() {
           <Route path="network" element={<NetworkPage />} />
           {config.features.ledgerExplorer ? <Route path="ledger" element={<LedgerPage />} /> : null}
           <Route path="session" element={<SessionPage />} />
+          <Route path="genes" element={<GeneLabPage />} />
           <Route path="sandbox" element={<SandboxPage />} />
         </Route>
       </Route>

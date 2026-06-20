@@ -1,0 +1,119 @@
+.wrap {
+  display: grid;
+  gap: var(--s3);
+}
+
+.head {
+  display: grid;
+  gap: var(--s1);
+}
+
+.head b {
+  font-size: var(--fs-base);
+}
+
+.head span {
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s4);
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+}
+
+.legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s2);
+}
+
+.legend i {
+  width: 18px;
+  height: 3px;
+  border-radius: var(--radius-pill);
+}
+
+.targetMark {
+  background: var(--accent);
+}
+
+.outputMark {
+  background: var(--accent-2);
+}
+
+.inputMark {
+  background: var(--text-faint);
+}
+
+.chart {
+  width: 100%;
+  min-height: 220px;
+  background:
+    linear-gradient(rgba(250, 248, 240, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(250, 248, 240, 0.025) 1px, transparent 1px),
+    var(--surface-2);
+  background-size: 24px 24px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.axis,
+.grid {
+  vector-effect: non-scaling-stroke;
+}
+
+.axis {
+  stroke: var(--border-strong);
+  stroke-width: 1.2;
+}
+
+.grid {
+  stroke: var(--border);
+  stroke-width: 1;
+}
+
+.targetLine,
+.outputLine,
+.inputLine {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.targetLine {
+  stroke: var(--accent);
+  stroke-width: 2.4;
+}
+
+.outputLine {
+  stroke: var(--accent-2);
+  stroke-width: 2;
+}
+
+.inputLine {
+  stroke: var(--text-faint);
+  stroke-width: 0.9;
+  opacity: 0.38;
+}
+
+.spike {
+  stroke: var(--accent);
+  stroke-width: 1;
+  opacity: 0.18;
+  vector-effect: non-scaling-stroke;
+}
+
+.empty {
+  min-height: 240px;
+  display: grid;
+  place-items: center;
+  color: var(--text-muted);
+  background: var(--surface-2);
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius);
+}
