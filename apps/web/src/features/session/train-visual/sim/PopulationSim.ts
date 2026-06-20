@@ -22,13 +22,13 @@ interface Individual {
 }
 
 const C = TRAIN_CONFIG.sim;
-const CHARS = TRAIN_CONFIG.charset;
+const CHARS: readonly string[] = TRAIN_CONFIG.charset.split("");
 /** Offspring per generation (λ). Larger than μ for reliable, fast convergence. */
 const OFFSPRING = 160;
 
 function randomString(rng: RNG, len: number): string {
   let s = "";
-  for (let i = 0; i < len; i++) s += pick(rng, CHARS as unknown as readonly string[]);
+  for (let i = 0; i < len; i++) s += pick(rng, CHARS);
   return s;
 }
 
@@ -140,7 +140,7 @@ export class PopulationSim implements IPopulationSim {
   private mutate(chars: string, rate: number): string {
     const arr = chars.split("");
     for (let i = 0; i < arr.length; i++) {
-      if (this.gaRng() < rate) arr[i] = pick(this.gaRng, CHARS as unknown as readonly string[]);
+      if (this.gaRng() < rate) arr[i] = pick(this.gaRng, CHARS);
     }
     return arr.join("");
   }
