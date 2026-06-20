@@ -26,6 +26,7 @@ import { buildGenesis } from "./fixtures.js";
 import { bountySeeds } from "./seedData.js";
 import { buildNetworkSnapshot } from "./read.js";
 import type { SseHub } from "./sse.js";
+import type { PresenceHub } from "./presence.js";
 
 const WORK_SCALE = 1_000_000;
 const ONE = 1_000_000_000n; // base units per SAGI (DECIMALS=9)
@@ -43,16 +44,18 @@ export class LedgerService {
   private readonly cfg: LedgerConfig;
   private readonly emissionCfg: EmissionConfig;
   private readonly hub: SseHub;
+  private readonly presence: PresenceHub;
   private timer: ReturnType<typeof setInterval> | null = null;
   private sessionCounter = 0;
   private driverCounter = 0;
 
-  constructor(handle: DbHandle, cfg: LedgerConfig, hub: SseHub) {
+  constructor(handle: DbHandle, cfg: LedgerConfig, hub: SseHub, presence: PresenceHub) {
     this.db = handle.db;
     this.raw = handle.raw;
     this.cfg = cfg;
     this.emissionCfg = cfg.emission;
     this.hub = hub;
+    this.presence = presence;
   }
 
   // ---- lifecycle -----------------------------------------------------------
@@ -542,6 +545,8 @@ export class LedgerService {
   // ---- realtime ------------------------------------------------------------
 
   broadcast(): void {
-    this.hub.broadcast(buildNetworkSnapshot(this.db, this.cfg, this.currentEpoch()));
+    this.hub.broadcast(
+      buildNetworkSnapshot(this.db, this.cfg, this.currentEpoch(), this.presence.listConnectedUsers())
+    );
   }
 }

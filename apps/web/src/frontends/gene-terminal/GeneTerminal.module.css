@@ -136,6 +136,82 @@
     linear-gradient(180deg, #eee7db, #e2d8ca);
 }
 
+.networkPanel {
+  align-content: stretch;
+  padding: 0;
+  overflow: hidden;
+  grid-template-rows: auto minmax(0, 1fr);
+  background:
+    radial-gradient(circle at 18% 18%, rgba(110, 140, 166, 0.16), transparent 24%),
+    radial-gradient(circle at 82% 72%, rgba(154, 104, 65, 0.12), transparent 28%),
+    linear-gradient(180deg, #eee7db, #e2d8ca);
+}
+
+.networkHeader {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 42px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--terminal-line);
+  background: rgba(239, 234, 226, 0.9);
+}
+
+.networkHeader strong {
+  font-size: 12px;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.networkCanvas {
+  position: relative;
+  min-height: 0;
+  height: 100%;
+}
+
+.networkEmpty {
+  position: absolute;
+  inset: auto 16px 16px auto;
+  display: grid;
+  gap: 4px;
+  padding: 10px 12px;
+  border: 1px dashed var(--terminal-line-strong);
+  background: rgba(239, 234, 226, 0.88);
+  color: var(--terminal-text-muted);
+  font-size: 12px;
+}
+
+.networkEmpty strong {
+  color: var(--terminal-text);
+}
+
+.networkNodeLabel {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 6px;
+  border: 1px solid rgba(54, 47, 40, 0.08);
+  background: rgba(246, 242, 235, 0.72);
+  color: var(--terminal-text);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateY(4px) scale(0.98);
+  transition:
+    opacity 140ms ease,
+    transform 140ms ease,
+    background-color 140ms ease;
+}
+
+.networkNodeLabelVisible {
+  opacity: 0.9;
+  transform: translateY(0) scale(1);
+  background: rgba(246, 242, 235, 0.84);
+}
+
 .panelTools {
   display: flex;
   flex-wrap: wrap;
@@ -180,6 +256,43 @@
   overflow: auto;
 }
 
+.creatureEditor {
+  display: grid;
+  gap: 8px;
+}
+
+.paletteCard {
+  display: grid;
+  grid-template-columns: 92px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  padding: 8px;
+  border: 1px solid var(--terminal-line);
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.paletteSwatch {
+  height: 42px;
+  border: 1px solid rgba(54, 47, 40, 0.08);
+}
+
+.paletteMeta {
+  display: grid;
+  gap: 2px;
+}
+
+.paletteMeta strong {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.paletteMeta span {
+  color: var(--terminal-text-muted);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
 .geneList button {
   display: grid;
   gap: 2px;
@@ -201,6 +314,20 @@
   background:
     linear-gradient(90deg, rgba(110, 140, 166, 0.08), rgba(255, 255, 255, 0.46));
   transform: translateX(1px);
+}
+
+.creatureListTitle {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.creatureDot {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(54, 47, 40, 0.08);
+  flex: 0 0 auto;
 }
 
 .geneList small,

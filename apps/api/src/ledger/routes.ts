@@ -13,6 +13,7 @@ import type { LedgerConfig } from "./config.js";
 import type { LedgerService } from "./service.js";
 import type { DemoDriver } from "./driver.js";
 import type { SseHub } from "./sse.js";
+import type { PresenceHub } from "./presence.js";
 import {
   buildBounties,
   buildLeaderboard,
@@ -29,14 +30,19 @@ export interface LedgerDeps {
   handle: DbHandle;
   cfg: LedgerConfig;
   hub: SseHub;
+  presence: PresenceHub;
   env: AppEnv;
   driver?: DemoDriver | null;
 }
 
 export function createLedgerRouter(deps: LedgerDeps): Router {
-  const { service, handle, cfg, hub, env, driver } = deps;
+  const { service, handle, cfg, hub, presence, env, driver } = deps;
   const db = handle.db;
   const router = Router();
+
+  const snapshot = () => buildNetworkSnapshot(db, cfg, service.currentEpoch(), presence.listConnectedUsers());
+
+  const broadcastSnapshot = () => hub.broadcast(snapshot());
 
   const requireAuth = (req: Request, res: Response): boolean => {
     if (isAuthenticated(req, env)) return true;
@@ -58,7 +64,7 @@ export function createLedgerRouter(deps: LedgerDeps): Router {
 
   router.get("/api/network", (req, res) => {
     if (!requireAuth(req, res)) return;
-    res.json(buildNetworkSnapshot(db, cfg, service.currentEpoch()));
+    res.json(snapshot());
   });
 
   router.get("/api/network/stream", (req, res) => {
@@ -66,10 +72,21 @@ export function createLedgerRouter(deps: LedgerDeps): Router {
       res.status(401).json({ error: "Authentication required." });
       return;
     }
+    const username = getAuthenticatedUsername(req, env);
+    if (!username) {
+      res.status(401).json({ error: "Authentication required." });
+      return;
+    }
+    const surface = req.query.surface === "terminal" ? "terminal" : "app";
+    const presenceId = presence.register(username, surface);
     hub.add(res);
-    // Push the current state immediately so the client paints without waiting.
-    res.write(`data: ${JSON.stringify(buildNetworkSnapshot(db, cfg, service.currentEpoch()))}\n\n`);
-    req.on("close", () => hub.remove(res));
+    res.write(`data: ${JSON.stringify(snapshot())}\n\n`);
+    broadcastSnapshot();
+    req.on("close", () => {
+      hub.remove(res);
+      presence.unregister(presenceId);
+      broadcastSnapshot();
+    });
   });
 
   router.get("/api/bounties", (req, res) => {

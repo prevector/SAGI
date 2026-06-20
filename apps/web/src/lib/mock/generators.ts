@@ -1,5 +1,6 @@
 import type {
   Bounty,
+  ConnectedUser,
   LeaderboardEntry,
   NetworkNode,
   NetworkSnapshot,
@@ -267,17 +268,44 @@ function nodeFromContributor(username: string, computePower: number, device: str
   };
 }
 
+function buildConnectedUsers(rng: () => number): ConnectedUser[] {
+  const picked = contributors
+    .filter(() => rng() > 0.35)
+    .slice(0, 8)
+    .map((contributor) => ({
+      username: contributor.username,
+      connectedAt: new Date(Date.now() - Math.floor(rng() * 3600_000)).toISOString(),
+      surface: rng() > 0.7 ? ("terminal" as const) : ("app" as const),
+      sessions: 1
+    }));
+  return picked.length > 0
+    ? picked
+    : contributors.slice(0, 3).map((contributor) => ({
+        username: contributor.username,
+        connectedAt: new Date().toISOString(),
+        surface: "app" as const,
+        sessions: 1
+      }));
+}
+
 export function buildNetworkBase(): NetworkSnapshot {
   const rng = rngFor("network");
-  const nodes = contributors.map((c) => nodeFromContributor(c.username, c.computePower, c.device, c.region, rng));
+  const connectedUsers = buildConnectedUsers(rng);
+  const online = new Set(connectedUsers.map((user) => user.username));
+  const nodes = contributors.map((c) => ({
+    ...nodeFromContributor(c.username, c.computePower, c.device, c.region, rng),
+    online: online.has(c.username)
+  }));
   return {
     at: new Date().toISOString(),
     nodes,
+    connectedUsers,
     stats: {
       activeContributors: 11_842,
       totalCompute: nodes.reduce((acc, n) => acc + n.computePower, 0) * 1000,
       runningSessions: 63,
-      tokensEmitted24h: 241_500
+      tokensEmitted24h: 241_500,
+      onlineUsers: connectedUsers.length
     }
   };
 }
@@ -285,10 +313,29 @@ export function buildNetworkBase(): NetworkSnapshot {
 /** Mutate the previous snapshot for a live tick: jitter stats, flip statuses. */
 export function stepNetwork(prev: NetworkSnapshot): NetworkSnapshot {
   const r = Math.random;
+  const connectedUsers = prev.connectedUsers.map((user) => ({
+    ...user,
+    connectedAt: user.connectedAt
+  }));
+  if (r() > 0.92 && prev.connectedUsers.length < 12) {
+    const candidate = contributors[Math.floor(r() * contributors.length)];
+    if (!connectedUsers.some((user) => user.username === candidate.username)) {
+      connectedUsers.push({
+        username: candidate.username,
+        connectedAt: new Date().toISOString(),
+        surface: r() > 0.5 ? "terminal" : "app",
+        sessions: 1
+      });
+    }
+  } else if (r() > 0.95 && connectedUsers.length > 2) {
+    connectedUsers.splice(Math.floor(r() * connectedUsers.length), 1);
+  }
+  const online = new Set(connectedUsers.map((user) => user.username));
   const nodes = prev.nodes.map((n) => ({
     ...n,
     status: r() > 0.85 ? (n.status === "active" ? "idle" : "active") : n.status,
-    computePower: Math.max(60, Math.round(n.computePower * (0.97 + r() * 0.06)))
+    computePower: Math.max(60, Math.round(n.computePower * (0.97 + r() * 0.06))),
+    online: online.has(n.username)
   }));
 
   const jitter = (v: number, pct: number) => Math.round(v * (1 - pct + r() * pct * 2));
@@ -296,11 +343,13 @@ export function stepNetwork(prev: NetworkSnapshot): NetworkSnapshot {
   return {
     at: new Date().toISOString(),
     nodes,
+    connectedUsers,
     stats: {
       activeContributors: jitter(prev.stats.activeContributors, 0.01),
       totalCompute: nodes.reduce((acc, n) => acc + n.computePower, 0) * 1000,
       runningSessions: Math.max(0, prev.stats.runningSessions + Math.round((r() - 0.5) * 6)),
-      tokensEmitted24h: jitter(prev.stats.tokensEmitted24h, 0.02)
+      tokensEmitted24h: jitter(prev.stats.tokensEmitted24h, 0.02),
+      onlineUsers: connectedUsers.length
     }
   };
 }

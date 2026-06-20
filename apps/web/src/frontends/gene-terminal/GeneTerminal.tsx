@@ -9,12 +9,14 @@ import { shortId } from "./components";
 import { GeneTerminalProvider, useGeneTerminal } from "./state";
 import { CreaturePanel } from "./panels/CreaturePanel";
 import { GenesPanel } from "./panels/GenesPanel";
+import { NetworkPanel } from "./panels/NetworkPanel";
 import { TrainingPanel } from "./panels/TrainingPanel";
 import styles from "./GeneTerminal.module.css";
 
 const dockComponents = {
   creature: CreaturePanel,
   genes: GenesPanel,
+  network: NetworkPanel,
   training: TrainingPanel
 };
 
@@ -40,6 +42,13 @@ function Workspace() {
       component: "creature",
       title: "CREATURE",
       position: { referencePanel: "training", direction: "below" }
+    });
+    event.api.addPanel({
+      id: "network",
+      component: "network",
+      title: "NETWORK",
+      position: { referencePanel: "creature", direction: "right" },
+      initialWidth: 520
     });
   }
 

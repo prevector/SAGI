@@ -10,6 +10,7 @@ export function CreaturePanel(_: IDockviewPanelProps) {
     <section className={`${styles.panel} ${styles.creaturePanel}`}>
       <CreatureViewport
         gene={terminal.selectedGene}
+        phenotype={terminal.selectedCreature.phenotype}
         status={terminal.status}
         generation={terminal.generation}
       />
