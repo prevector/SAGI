@@ -1,3 +1,4 @@
+export { Async } from "./Async";
 export { Button } from "./Button";
 export { Card } from "./Card";
 export { Tag } from "./Tag";

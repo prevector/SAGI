@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import styles from "./PageHeader.module.css";
 
 interface PageHeaderProps {
-  eyebrow?: string;
+  eyebrow?: ReactNode;
   title: string;
   subtitle?: string;
   actions?: ReactNode;

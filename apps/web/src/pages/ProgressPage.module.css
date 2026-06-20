@@ -1,0 +1,62 @@
+.sectionLabel {
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+  margin-bottom: var(--s4);
+}
+
+.stepper {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--s4);
+}
+
+.step {
+  display: flex;
+  gap: var(--s3);
+  align-items: flex-start;
+}
+
+.marker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.reached {
+  background: rgba(23, 196, 196, 0.16);
+  color: var(--accent);
+  border: 1px solid rgba(23, 196, 196, 0.3);
+}
+
+.upcoming {
+  background: var(--surface-2);
+  color: var(--text-faint);
+  border: 1px dashed var(--border-strong);
+}
+
+.stepBody {
+  display: grid;
+  gap: 2px;
+}
+
+.stepLabel {
+  font-size: var(--fs-body);
+}
+
+.stepMeta {
+  font-family: var(--font-mono);
+  font-size: var(--fs-mono);
+  color: var(--text-faint);
+}
+
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--s4);
+}
