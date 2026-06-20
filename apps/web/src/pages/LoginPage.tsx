@@ -20,7 +20,7 @@ export default function LoginPage() {
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
     if (!value.trim()) {
-      setError("Pick a username to continue.");
+      setError("Enter a name to continue.");
       return;
     }
 
@@ -30,7 +30,7 @@ export default function LoginPage() {
       await login(value);
       navigate("/", { replace: true });
     } catch {
-      setError("Could not sign in. Pick a username and try again.");
+      setError("Could not sign in. Enter a name and try again.");
     } finally {
       setSubmitting(false);
     }
@@ -39,19 +39,19 @@ export default function LoginPage() {
   return (
     <main className={styles.shell}>
       <section className={styles.card}>
-        <p className={styles.eyebrow}>{config.brand.name} access</p>
-        <h1 className={styles.title}>Enter the network.</h1>
-        <p className={styles.lede}>{config.brand.tagline}.</p>
+        <p className={styles.eyebrow}>{config.brand.name}</p>
+        <h1 className={styles.title}>Enter the lab.</h1>
+        <p className={styles.lede}>Choose a name and continue into the live search for general intelligence.</p>
 
         <form className={styles.form} onSubmit={onSubmit} noValidate>
           <label className={styles.label}>
-            Username
+            Your name
             <input
               className={styles.input}
               type="text"
               name="username"
               autoComplete="username"
-              placeholder="e.g. ada"
+              placeholder="Ada"
               value={value}
               onChange={(event) => setValue(event.target.value)}
               autoFocus
@@ -65,7 +65,7 @@ export default function LoginPage() {
           ) : null}
 
           <button className={styles.button} type="submit" disabled={submitting}>
-            {submitting ? "Entering…" : "Enter network"}
+            {submitting ? "Entering…" : "Enter SAGI"}
           </button>
         </form>
 
