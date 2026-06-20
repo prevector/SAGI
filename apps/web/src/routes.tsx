@@ -5,7 +5,6 @@ import { AppShell } from "./components/layout/AppShell";
 import { config } from "./lib/config";
 import LoginPage from "./pages/LoginPage";
 import NotFoundPage from "./pages/NotFoundPage";
-
 // Authenticated pages are code-split so the initial (login) bundle stays small
 // and recharts only loads with the pages that use it.
 const DashboardPage = lazy(() => import("./pages/DashboardPage"));

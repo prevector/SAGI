@@ -1,0 +1,12 @@
+{
+  "name": "sagi-sdk-demo",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently --names \"api,web\" --prefix-colors \"cyan,magenta\" \"npm run dev --prefix mock-network\" \"npm run dev --prefix web\"",
+    "install:all": "npm install --prefix mock-network && npm install --prefix web"
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.0"
+  }
+}
