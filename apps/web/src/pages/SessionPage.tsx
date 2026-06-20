@@ -1,6 +1,6 @@
 import { Suspense, lazy, useCallback, useEffect, useState, type FormEvent } from "react";
-import { useSearchParams } from "react-router-dom";
-import { Zap } from "lucide-react";
+import { Link, useSearchParams } from "react-router-dom";
+import { Dna, Zap } from "lucide-react";
 import { useAuth } from "../auth/AuthContext";
 import { Button, Card, PageHeader, ProgressBar, SkeletonLines, Tag } from "../components/ui";
 import { api } from "../lib/api";
@@ -93,6 +93,17 @@ export default function SessionPage() {
             </Suspense>
           </VisualErrorBoundary>
         </div>
+      ) : null}
+
+      {config.features.sessionTrainVisual ? (
+        <p style={{ marginTop: "calc(-1 * var(--s3))", marginBottom: "var(--s5)" }}>
+          <Link
+            to="/app/session/train"
+            style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: "var(--fs-sm)", color: "var(--accent)", textDecoration: "none" }}
+          >
+            <Dna size={14} /> Watch the population evolve →
+          </Link>
+        </p>
       ) : null}
 
       <div className={styles.layout}>
