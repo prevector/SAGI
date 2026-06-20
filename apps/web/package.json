@@ -1,0 +1,16 @@
+{
+  "name": "@sagi/web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -b && vite build",
+    "dev": "vite"
+  },
+  "dependencies": {
+    "@sagi/shared": "0.1.0"
+  },
+  "devDependencies": {
+    "vite": "^7.1.3"
+  }
+}
