@@ -1,4 +1,3 @@
-import type { EvolutionGene } from "@sagi/evolution";
 import type { MockPoint, TrainingStatus } from "./state";
 import styles from "./GeneTerminal.module.css";
 
@@ -54,52 +53,6 @@ export function NumberField({
         onChange={(event) => onChange(numberInput(Number(event.target.value), value))}
       />
     </label>
-  );
-}
-
-export function CreatureGlyph({
-  gene,
-  status,
-  generation
-}: {
-  gene: EvolutionGene;
-  status: TrainingStatus;
-  generation: number;
-}) {
-  const nodes = Array.from({ length: 10 }, (_, index) => {
-    const weight = gene.weights[index % gene.weights.length] ?? 0;
-    const angle = index * 0.64 + generation * 0.01;
-    const radius = 54 + Math.abs(weight) * 34 + (index % 3) * 12;
-    return {
-      x: 160 + Math.cos(angle) * radius,
-      y: 160 + Math.sin(angle * 1.08) * radius * 0.72,
-      pulse: Math.abs(Math.sin(angle))
-    };
-  });
-
-  return (
-    <svg className={styles.creature} viewBox="0 0 320 320" role="img" aria-label="Mock creature visualization">
-      {nodes.map((node, index) => (
-        <line
-          key={`link-${index}`}
-          x1="160"
-          y1="160"
-          x2={node.x}
-          y2={node.y}
-          className={styles.creatureLink}
-        />
-      ))}
-      {nodes.map((node, index) => (
-        <circle
-          key={index}
-          cx={node.x}
-          cy={node.y}
-          r={6 + node.pulse * 7}
-          className={status === "running" ? styles.creatureNodeActive : styles.creatureNode}
-        />
-      ))}
-      <circle cx="160" cy="160" r="26" className={styles.creatureCore} />
-    </svg>
   );
 }
 

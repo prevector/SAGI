@@ -1,5 +1,5 @@
 import type { IDockviewPanelProps } from "dockview";
-import { CreatureGlyph } from "../components";
+import { CreatureViewport } from "../CreatureViewport";
 import { useGeneTerminal } from "../state";
 import styles from "../GeneTerminal.module.css";
 
@@ -8,7 +8,7 @@ export function CreaturePanel(_: IDockviewPanelProps) {
 
   return (
     <section className={`${styles.panel} ${styles.creaturePanel}`}>
-      <CreatureGlyph
+      <CreatureViewport
         gene={terminal.selectedGene}
         status={terminal.status}
         generation={terminal.generation}

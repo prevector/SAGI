@@ -32,6 +32,7 @@ export interface GeneTerminalState {
   weightCount: number;
   selectGene: (id: string) => void;
   createGene: () => void;
+  generateCreature: () => void;
   duplicateGene: () => void;
   updateArchitecture: (key: keyof EvolutionGene["architecture"], value: number) => void;
   updateEs: (key: keyof EsHyperparams, value: number) => void;
@@ -58,6 +59,19 @@ const PAPER_IAF_ES: EsHyperparams = {
 
 const GeneTerminalContext = createContext<GeneTerminalState | null>(null);
 
+function makeGeneId(prefix: string): string {
+  return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function getInitialGeneState(): { genes: EvolutionGene[]; selectedId: string } {
+  const genes = loadGenes();
+  const fallback = genes[0] ?? createSeedGene();
+  return {
+    genes: genes.length > 0 ? genes : [fallback],
+    selectedId: fallback.id
+  };
+}
+
 function initialLoss(gene: EvolutionGene): number {
   return 88 + (gene.weights.length % 47) * 0.73;
 }
@@ -73,6 +87,7 @@ function nextMockPoint(previous: MockPoint, gene: EvolutionGene): MockPoint {
 
 function createPaperGene(index: number): EvolutionGene {
   return createRandomGene(makeRng(`paper-gene:${Date.now()}:${index}`), {
+    id: makeGeneId("gene"),
     name: `Paper IAF ${index}`,
     notes: "Mock client gene. Real ES execution is intentionally not wired into this redesign yet.",
     architecture: {
@@ -83,9 +98,23 @@ function createPaperGene(index: number): EvolutionGene {
   });
 }
 
+function createCreatureGene(source: EvolutionGene, index: number): EvolutionGene {
+  return createRandomGene(makeRng(`creature-gene:${Date.now()}:${index}`), {
+    id: makeGeneId("creature"),
+    name: `Creature ${index}`,
+    notes: "Morphology test gene for the local creature viewport.",
+    architecture: {
+      neuronStateSize: source.architecture.neuronStateSize,
+      synapseStateSize: source.architecture.synapseStateSize,
+      outputGain: source.architecture.outputGain
+    }
+  });
+}
+
 export function GeneTerminalProvider({ children }: { children: ReactNode }) {
-  const [genes, setGenes] = useState<EvolutionGene[]>(() => loadGenes());
-  const [selectedId, setSelectedId] = useState(() => loadGenes()[0]?.id ?? createSeedGene().id);
+  const [initialState] = useState(getInitialGeneState);
+  const [genes, setGenes] = useState<EvolutionGene[]>(initialState.genes);
+  const [selectedId, setSelectedId] = useState(initialState.selectedId);
   const selectedGene = genes.find((gene) => gene.id === selectedId) ?? genes[0] ?? createSeedGene();
   const [runConfig] = useState<IafRunConfig>(PAPER_IAF_RUN);
   const [es, setEs] = useState<EsHyperparams>(PAPER_IAF_ES);
@@ -96,7 +125,11 @@ export function GeneTerminalProvider({ children }: { children: ReactNode }) {
   });
 
   useEffect(() => {
-    saveGenes(genes);
+    try {
+      saveGenes(genes);
+    } catch (error) {
+      console.warn("Failed to persist genes to local storage.", error);
+    }
   }, [genes]);
 
   useEffect(() => {
@@ -139,11 +172,16 @@ export function GeneTerminalProvider({ children }: { children: ReactNode }) {
       setGenes((items) => [gene, ...items]);
       setSelectedId(gene.id);
     },
+    generateCreature: () => {
+      const gene = createCreatureGene(selectedGene, genes.length + 1);
+      setGenes((items) => [gene, ...items]);
+      setSelectedId(gene.id);
+    },
     duplicateGene: () => {
       const now = new Date().toISOString();
       const copy = {
         ...selectedGene,
-        id: `gene-${Date.now().toString(36)}`,
+        id: makeGeneId("gene"),
         name: `${selectedGene.name} copy`,
         createdAt: now,
         updatedAt: now

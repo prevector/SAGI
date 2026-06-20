@@ -9,9 +9,10 @@ export function GenesPanel(_: IDockviewPanelProps) {
   const gene = terminal.selectedGene;
 
   return (
-    <section className={styles.panel}>
+    <section className={`${styles.panel} ${styles.panelGenes}`}>
       <div className={styles.panelTools}>
         <button onClick={terminal.createGene}>NEW</button>
+        <button onClick={terminal.generateCreature}>NEW CREATURE</button>
         <button onClick={terminal.duplicateGene}>DUPLICATE</button>
       </div>
 

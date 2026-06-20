@@ -8,7 +8,13 @@ const basename = import.meta.env.BASE_URL.replace(/\/$/, "") || "/";
 
 export default function App() {
   return (
-    <BrowserRouter basename={basename}>
+    <BrowserRouter
+      basename={basename}
+      future={{
+        v7_startTransition: true,
+        v7_relativeSplatPath: true
+      }}
+    >
       <AuthProvider>
         <AppRoutes />
       </AuthProvider>

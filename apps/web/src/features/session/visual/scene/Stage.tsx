@@ -89,7 +89,7 @@ export function Stage({
       <Canvas
         frameloop={effectiveLoop}
         dpr={dpr}
-        shadows={shadowMap ? { type: THREE.PCFSoftShadowMap } : false}
+        shadows={shadowMap ? { type: THREE.PCFShadowMap } : false}
         gl={{ antialias: true, powerPreference: "high-performance" }}
         camera={{ position: [7, 9, 10.5], fov: 42, near: 0.1, far: 100 }}
         onCreated={({ gl }) => gl.setClearColor(new THREE.Color(STAGE_BG), 1)}

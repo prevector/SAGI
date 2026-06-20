@@ -6,6 +6,20 @@ import {
 } from "@sagi/evolution";
 
 const STORAGE_KEY = "sagi.genes.v1";
+const MAX_STORED_GENES = 32;
+
+function trimGenesForStorage(genes: EvolutionGene[], limit = MAX_STORED_GENES): EvolutionGene[] {
+  if (genes.length <= limit) {
+    return genes;
+  }
+  return [...genes]
+    .sort((left, right) => new Date(right.updatedAt).getTime() - new Date(left.updatedAt).getTime())
+    .slice(0, limit);
+}
+
+function writeGenesPayload(genes: EvolutionGene[]): void {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(genes));
+}
 
 export function loadGenes(): EvolutionGene[] {
   try {
@@ -24,7 +38,34 @@ export function loadGenes(): EvolutionGene[] {
 }
 
 export function saveGenes(genes: EvolutionGene[]): void {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(genes, null, 2));
+  const trimmed = trimGenesForStorage(genes);
+
+  try {
+    writeGenesPayload(trimmed);
+    return;
+  } catch (error) {
+    if (!isQuotaExceededError(error)) {
+      throw error;
+    }
+  }
+
+  for (const limit of [16, 8, 4, 2, 1]) {
+    try {
+      writeGenesPayload(trimGenesForStorage(genes, limit));
+      console.warn(`Gene storage trimmed to ${limit} genes due to local storage quota.`);
+      return;
+    } catch (error) {
+      if (!isQuotaExceededError(error)) {
+        throw error;
+      }
+    }
+  }
+
+  throw new Error("Failed to persist genes to local storage after quota trimming.");
+}
+
+function isQuotaExceededError(error: unknown): boolean {
+  return error instanceof DOMException && error.name === "QuotaExceededError";
 }
 
 export function createSeedGene(): EvolutionGene {

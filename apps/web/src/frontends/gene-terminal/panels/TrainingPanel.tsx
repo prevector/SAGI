@@ -13,7 +13,7 @@ export function TrainingPanel(_: IDockviewPanelProps) {
   const progress = clamp(terminal.generation / Math.max(terminal.es.generations, 1), 0, 1);
 
   return (
-    <section className={styles.panel}>
+    <section className={`${styles.panel} ${styles.panelTraining}`}>
       <div className={styles.trainingHeader}>
         <div>
           <h2>{terminal.selectedGene.name}</h2>
