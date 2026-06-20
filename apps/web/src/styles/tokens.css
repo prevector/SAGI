@@ -1,0 +1,82 @@
+/* SAGI design tokens — single source of truth.
+   Hex values are copied verbatim from DESIGN.md §2 (brand palette). The
+   semantic layer below is the dark-dashboard mapping from the build plan §3.
+   Never hardcode a hex anywhere else; reference these variables. */
+
+:root {
+  color-scheme: dark;
+
+  /* ---- Brand palette (DESIGN.md §2) ---- */
+  --sagi-black: #000000;
+  --sagi-dark: #041414;
+  --sagi-dark-raised: #0b1e1e;
+  --sagi-paper: #faf8f0;
+  --sagi-white: #ffffff;
+  --sagi-light-muted: #f7f7f7;
+  --sagi-teal: #17c4c4;
+  --sagi-teal-deep: #159999;
+  --sagi-teal-pale: #eff9f9;
+  --sagi-orange: #f0783d;
+  --sagi-orange-deep: #c85e2a;
+
+  /* ---- Semantic (dark dashboard) ---- */
+  --bg: var(--sagi-dark);
+  --surface: var(--sagi-dark-raised);
+  --surface-2: #0e2626;
+  --text: var(--sagi-paper);
+  --text-muted: #9fb6b6;
+  --text-faint: #6e8585;
+  --border: rgba(250, 248, 240, 0.1);
+  --border-strong: rgba(250, 248, 240, 0.18);
+
+  /* Ink on accent fills (DESIGN.md) */
+  --ink-on-teal: #041414;
+  --ink-on-orange: #2b1206;
+
+  /* intelligence / network / token axis */
+  --accent: var(--sagi-teal);
+  --accent-hover: var(--sagi-teal-deep);
+  /* economy / reward axis */
+  --accent-2: var(--sagi-orange);
+  --accent-2-hover: var(--sagi-orange-deep);
+
+  /* Status + deltas — ALWAYS paired with an icon/label, never colour alone */
+  --status-open: var(--sagi-teal);
+  --status-live: var(--sagi-orange);
+  --status-closed: #7c8e8e;
+  --positive: #36c690;
+  --negative: #e1664b;
+
+  /* ---- Type ---- */
+  --font-sans: "Geist Variable", system-ui, sans-serif;
+  --font-mono: "Geist Mono Variable", ui-monospace, monospace;
+  --fs-display: 2.5rem;
+  --fs-h1: 2rem;
+  --fs-h2: 1.5rem;
+  --fs-h3: 1.125rem;
+  --fs-body: 0.95rem;
+  --fs-sm: 0.8125rem;
+  --fs-mono: 0.8125rem;
+
+  /* ---- Space / radius / shadow / container ---- */
+  --s1: 4px;
+  --s2: 8px;
+  --s3: 12px;
+  --s4: 16px;
+  --s5: 24px;
+  --s6: 32px;
+  --s7: 48px;
+  --s8: 64px;
+  --radius-sm: 6px;
+  --radius: 10px;
+  --radius-lg: 16px;
+  --radius-pill: 9999px;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.25);
+  --container: 1320px;
+
+  /* ---- Motion (DESIGN.md §6) ---- */
+  --motion-fast: 150ms;
+  --motion-base: 300ms;
+  --motion-slow: 600ms;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+}
