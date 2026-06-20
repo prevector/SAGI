@@ -1,0 +1,34 @@
+@import "@fontsource-variable/geist";
+@import "@fontsource-variable/geist-mono";
+
+:root {
+  color-scheme: dark;
+
+  --bg: #041414;
+  --text: #faf8f0;
+  --text-muted: #9fb6b6;
+  --text-faint: #6e8585;
+  --teal: #17c4c4;
+  --orange: #f0783d;
+
+  --font-sans: "Geist Variable", system-ui, sans-serif;
+  --font-mono: "Geist Mono Variable", ui-monospace, monospace;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+@keyframes sagi-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(23, 196, 196, 0.6); }
+  70%  { box-shadow: 0 0 0 8px rgba(23, 196, 196, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(23, 196, 196, 0); }
+}
