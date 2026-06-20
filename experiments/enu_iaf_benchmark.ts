@@ -24,6 +24,8 @@ interface EvaluationResult {
   intervalError: number;
   countError: number;
   intensityError: number;
+  spikeMatchError: number;
+  silenceError: number;
   firstOutputs: number[];
 }
 
@@ -337,6 +339,8 @@ function evaluateGenome(config: ExperimentConfig, genome: Float32Array, seed: nu
   let totalIntervalError = 0;
   let totalCountError = 0;
   let totalIntensityError = 0;
+  let totalSpikeMatchError = 0;
+  let totalSilenceError = 0;
   let firstOutputs: number[] = [];
 
   for (let envIndex = 0; envIndex < config.environments; envIndex += 1) {
@@ -360,6 +364,22 @@ function evaluateGenome(config: ExperimentConfig, genome: Float32Array, seed: nu
     const intervals = intervalError(sequence.targetPositions, predictedPositions, config.sequenceLength);
     const count = Math.abs(predictedPositions.length - sequence.targetPositions.length) / config.sequenceLength;
 
+    let spikeMatch = 0;
+    let silence = 0;
+    let spikeSteps = 0;
+    let quietSteps = 0;
+    for (let step = 0; step < config.sequenceLength; step += 1) {
+      if (sequence.spikes[step] === 1) {
+        spikeMatch += Math.abs(1 - spikeOutputs[step]);
+        spikeSteps += 1;
+      } else {
+        silence += spikeOutputs[step];
+        quietSteps += 1;
+      }
+    }
+    const spikeMatchError = spikeSteps > 0 ? spikeMatch / spikeSteps : 1;
+    const silenceError = quietSteps > 0 ? silence / quietSteps : 0;
+
     let intensity = 1;
     if (predictedPositions.length > 0) {
       let acc = 0;
@@ -372,20 +392,32 @@ function evaluateGenome(config: ExperimentConfig, genome: Float32Array, seed: nu
     totalIntervalError += intervals;
     totalCountError += count;
     totalIntensityError += intensity;
+    totalSpikeMatchError += spikeMatchError;
+    totalSilenceError += silenceError;
   }
 
   const envCount = config.environments;
   const avgIntervalError = totalIntervalError / envCount;
   const avgCountError = totalCountError / envCount;
   const avgIntensityError = totalIntensityError / envCount;
+  const avgSpikeMatchError = totalSpikeMatchError / envCount;
+  const avgSilenceError = totalSilenceError / envCount;
 
-  const fitness = -(avgIntervalError * 2.5 + avgCountError * 1.5 + avgIntensityError);
+  const fitness = -(
+    avgSpikeMatchError * 2.5 +
+    avgSilenceError * 1.5 +
+    avgIntervalError * 1.25 +
+    avgCountError * 0.75 +
+    avgIntensityError * 0.5
+  );
 
   return {
     fitness,
     intervalError: avgIntervalError,
     countError: avgCountError,
     intensityError: avgIntensityError,
+    spikeMatchError: avgSpikeMatchError,
+    silenceError: avgSilenceError,
     firstOutputs
   };
 }
@@ -463,6 +495,8 @@ function main(): void {
           generation,
           bestFitness: Number(bestFitness.toFixed(4)),
           centerFitness: Number(centerEval.fitness.toFixed(4)),
+          spikeMatchError: Number(centerEval.spikeMatchError.toFixed(4)),
+          silenceError: Number(centerEval.silenceError.toFixed(4)),
           intervalError: Number(centerEval.intervalError.toFixed(4)),
           countError: Number(centerEval.countError.toFixed(4)),
           intensityError: Number(centerEval.intensityError.toFixed(4)),
