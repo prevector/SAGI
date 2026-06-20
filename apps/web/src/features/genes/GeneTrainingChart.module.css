@@ -1,0 +1,117 @@
+.wrap,
+.empty {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background:
+    radial-gradient(circle at 18% 20%, rgba(41, 230, 161, 0.11), transparent 30%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.015));
+}
+
+.wrap {
+  display: grid;
+  gap: var(--s3);
+  padding: var(--s3);
+}
+
+.empty {
+  display: grid;
+  min-height: 160px;
+  place-items: center;
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+}
+
+.head {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: var(--s3);
+}
+
+.head div {
+  display: grid;
+  gap: var(--s1);
+}
+
+.head b {
+  font-size: var(--fs-base);
+}
+
+.head span,
+.legend span {
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--s3);
+}
+
+.legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s2);
+  font-family: var(--font-mono);
+}
+
+.legend i {
+  width: 22px;
+  height: 3px;
+  border-radius: 999px;
+}
+
+.lossMark {
+  background: var(--accent-2);
+}
+
+.bestMark {
+  background: var(--accent);
+}
+
+.chart {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.axis {
+  stroke: var(--border-strong);
+  stroke-width: 1;
+}
+
+.grid {
+  stroke: var(--border);
+  stroke-dasharray: 4 8;
+  stroke-width: 1;
+}
+
+.lossLine,
+.bestLine {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 3;
+}
+
+.lossLine {
+  stroke: var(--accent-2);
+  filter: drop-shadow(0 0 8px rgba(255, 118, 50, 0.28));
+}
+
+.bestLine {
+  stroke: var(--accent);
+  filter: drop-shadow(0 0 8px rgba(41, 230, 161, 0.2));
+}
+
+@media (max-width: 560px) {
+  .head {
+    display: grid;
+  }
+
+  .legend {
+    justify-content: flex-start;
+  }
+}

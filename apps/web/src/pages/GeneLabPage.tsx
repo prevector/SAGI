@@ -1,21 +1,23 @@
-import { useEffect, useMemo, useState } from "react";
-import { Copy, Dna, Play, Save, Sparkles, Trash2 } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Copy, Dna, Pause, Play, Save, Sparkles, StepForward, Trash2 } from "lucide-react";
 import {
   createRandomGene,
+  createIafTrainingSession,
   iafGenomeLength,
   makeRng,
   resizeGeneArchitecture,
   runGeneOnIaf,
-  trainGeneOnIaf,
   type EsHyperparams,
   type EvolutionGene,
   type IafEvaluation,
   type IafRunConfig,
   type IafTask,
+  type IafTrainingSession,
   type TrainingGeneration
 } from "@sagi/evolution";
 import { Button, Card, PageHeader, Tag } from "../components/ui";
 import { formatInt } from "../lib/format";
+import { GeneTrainingChart } from "../features/genes/GeneTrainingChart";
 import { GeneTrace } from "../features/genes/GeneTrace";
 import { createSeedGene, loadGenes, saveGenes, upsertGene } from "../features/genes/geneStorage";
 import styles from "./GeneLabPage.module.css";
@@ -43,6 +45,8 @@ function numberInput(value: number, fallback: number): number {
   return Number.isFinite(value) ? value : fallback;
 }
 
+type TrainingState = "idle" | "running" | "paused" | "complete";
+
 export default function GeneLabPage() {
   const [genes, setGenes] = useState<EvolutionGene[]>(() => loadGenes());
   const [selectedId, setSelectedId] = useState(() => genes[0]?.id ?? "");
@@ -51,20 +55,63 @@ export default function GeneLabPage() {
   const [es, setEs] = useState<EsHyperparams>(DEFAULT_ES);
   const [evaluation, setEvaluation] = useState<IafEvaluation | null>(null);
   const [history, setHistory] = useState<TrainingGeneration[]>([]);
+  const [trainingState, setTrainingState] = useState<TrainingState>("idle");
+  const [generation, setGeneration] = useState(0);
   const [message, setMessage] = useState("");
+  const trainingSession = useRef<IafTrainingSession | null>(null);
+  const esRef = useRef(es);
 
   useEffect(() => {
     saveGenes(genes);
   }, [genes]);
 
   useEffect(() => {
+    esRef.current = es;
+  }, [es]);
+
+  useEffect(() => {
     const next = genes.find((gene) => gene.id === selectedId);
-    if (next) {
+    if (next && next.id !== draft.id) {
+      trainingSession.current = null;
       setDraft(next);
       setEvaluation(null);
       setHistory([]);
+      setGeneration(0);
+      setTrainingState("idle");
     }
-  }, [genes, selectedId]);
+  }, [draft.id, genes, selectedId]);
+
+  useEffect(() => {
+    if (trainingState !== "running") return;
+    let cancelled = false;
+    let timer: number | null = null;
+
+    const tick = () => {
+      const session = trainingSession.current;
+      if (!session || cancelled) return;
+
+      const snapshot = session.step(esRef.current);
+      const trainedGene = { ...snapshot.gene, name: draft.name, notes: draft.notes };
+      setEvaluation(snapshot.current);
+      setHistory(snapshot.history);
+      setGeneration(snapshot.generation);
+      setDraft(trainedGene);
+      setGenes((items) => upsertGene(items, trainedGene));
+
+      if (snapshot.done) {
+        setTrainingState("complete");
+        setMessage(`Training complete, best loss ${snapshot.best.loss.toFixed(4)}`);
+        return;
+      }
+      timer = window.setTimeout(tick, 25);
+    };
+
+    timer = window.setTimeout(tick, 0);
+    return () => {
+      cancelled = true;
+      if (timer !== null) window.clearTimeout(timer);
+    };
+  }, [draft.name, draft.notes, trainingState]);
 
   const expectedLength = useMemo(() => iafGenomeLength(draft.architecture), [draft]);
   const dirty = JSON.stringify(draft) !== JSON.stringify(genes.find((gene) => gene.id === draft.id));
@@ -72,6 +119,9 @@ export default function GeneLabPage() {
     if (!best || item.fitness > best.fitness) return item;
     return best;
   }, null);
+  const progress = Math.min(1, generation / Math.max(es.generations, 1));
+  const isTraining = trainingState === "running";
+  const hasActiveTraining = trainingState === "running" || trainingState === "paused";
 
   function persist(gene: EvolutionGene = draft) {
     const saved = { ...gene, updatedAt: new Date().toISOString() };
@@ -117,27 +167,64 @@ export default function GeneLabPage() {
   }
 
   function updateArchitecture(key: keyof EvolutionGene["architecture"], value: number) {
+    if (isTraining) return;
     const resized = resizeGeneArchitecture(draft, { [key]: value }, makeRng(`${draft.id}:${key}:${value}`));
     setDraft(resized);
     setEvaluation(null);
   }
 
   function run() {
+    if (isTraining) return;
     const result = runGeneOnIaf(draft, runConfig);
     setEvaluation(result);
     setHistory([]);
+    setGeneration(0);
+    setTrainingState("idle");
+    trainingSession.current = null;
     setMessage("Run complete");
   }
 
-  function train() {
-    const result = trainGeneOnIaf(draft, runConfig, es);
-    persist({ ...result.gene, name: draft.name, notes: draft.notes });
-    setEvaluation(result.best);
-    setHistory(result.history);
-    setMessage(`Training complete, best loss ${result.best.loss.toFixed(4)}`);
+  function startTraining() {
+    const session = createIafTrainingSession(draft, runConfig, es);
+    const snapshot = session.snapshot(es);
+    trainingSession.current = session;
+    setEvaluation(snapshot.current);
+    setHistory(snapshot.history);
+    setGeneration(snapshot.generation);
+    setTrainingState("running");
+    setMessage("Training started");
+  }
+
+  function pauseTraining() {
+    setTrainingState("paused");
+    setMessage("Training paused");
+  }
+
+  function continueTraining() {
+    if (!trainingSession.current) {
+      startTraining();
+      return;
+    }
+    setTrainingState("running");
+    setMessage("Training resumed");
+  }
+
+  function stepTraining() {
+    const session = trainingSession.current ?? createIafTrainingSession(draft, runConfig, es);
+    trainingSession.current = session;
+    const snapshot = session.step(es);
+    const trainedGene = { ...snapshot.gene, name: draft.name, notes: draft.notes };
+    setEvaluation(snapshot.current);
+    setHistory(snapshot.history);
+    setGeneration(snapshot.generation);
+    setDraft(trainedGene);
+    setGenes((items) => upsertGene(items, trainedGene));
+    setTrainingState(snapshot.done ? "complete" : "paused");
+    setMessage(snapshot.done ? `Training complete, best loss ${snapshot.best.loss.toFixed(4)}` : `Stepped to generation ${snapshot.generation}`);
   }
 
   function updateWeight(index: number, value: number) {
+    if (isTraining) return;
     const weights = draft.weights.slice();
     weights[index] = value;
     setDraft({ ...draft, weights, updatedAt: new Date().toISOString() });
@@ -152,10 +239,10 @@ export default function GeneLabPage() {
       />
 
       <div className={styles.actions}>
-        <Button variant="primary" icon={<Sparkles size={16} />} onClick={createNewGene}>New gene</Button>
-        <Button variant="ghost" icon={<Copy size={16} />} onClick={duplicateGene}>Duplicate</Button>
-        <Button variant="ghost" icon={<Save size={16} />} onClick={() => persist()} disabled={!dirty}>Save</Button>
-        <Button variant="ghost" icon={<Trash2 size={16} />} onClick={deleteGene}>Delete</Button>
+        <Button variant="primary" icon={<Sparkles size={16} />} onClick={createNewGene} disabled={isTraining}>New gene</Button>
+        <Button variant="ghost" icon={<Copy size={16} />} onClick={duplicateGene} disabled={isTraining}>Duplicate</Button>
+        <Button variant="ghost" icon={<Save size={16} />} onClick={() => persist()} disabled={!dirty || isTraining}>Save</Button>
+        <Button variant="ghost" icon={<Trash2 size={16} />} onClick={deleteGene} disabled={isTraining}>Delete</Button>
         {message ? <span className={styles.message}>{message}</span> : null}
       </div>
 
@@ -171,6 +258,7 @@ export default function GeneLabPage() {
                 key={gene.id}
                 className={[styles.geneButton, gene.id === draft.id ? styles.activeGene : ""].join(" ")}
                 onClick={() => setSelectedId(gene.id)}
+                disabled={isTraining}
               >
                 <span>{gene.name}</span>
                 <small>{shortId(gene.id)} · {formatInt(gene.weights.length)} weights</small>
@@ -191,7 +279,7 @@ export default function GeneLabPage() {
 
             <label className={styles.field}>
               <span>Name</span>
-              <input value={draft.name} onChange={(event) => setDraft({ ...draft, name: event.target.value })} />
+              <input value={draft.name} onChange={(event) => setDraft({ ...draft, name: event.target.value })} disabled={isTraining} />
             </label>
 
             <div className={styles.grid4}>
@@ -203,6 +291,7 @@ export default function GeneLabPage() {
                   max={64}
                   value={draft.architecture.neuronStateSize}
                   onChange={(event) => updateArchitecture("neuronStateSize", numberInput(Number(event.target.value), 8))}
+                  disabled={isTraining}
                 />
               </label>
               <label className={styles.field}>
@@ -213,6 +302,7 @@ export default function GeneLabPage() {
                   max={64}
                   value={draft.architecture.synapseStateSize}
                   onChange={(event) => updateArchitecture("synapseStateSize", numberInput(Number(event.target.value), 0))}
+                  disabled={isTraining}
                 />
               </label>
               <label className={styles.field}>
@@ -224,6 +314,7 @@ export default function GeneLabPage() {
                   step={0.1}
                   value={draft.architecture.outputGain}
                   onChange={(event) => updateArchitecture("outputGain", numberInput(Number(event.target.value), 1000))}
+                  disabled={isTraining}
                 />
               </label>
               <label className={styles.field}>
@@ -234,7 +325,7 @@ export default function GeneLabPage() {
 
             <label className={styles.field}>
               <span>Notes</span>
-              <textarea value={draft.notes ?? ""} onChange={(event) => setDraft({ ...draft, notes: event.target.value })} />
+              <textarea value={draft.notes ?? ""} onChange={(event) => setDraft({ ...draft, notes: event.target.value })} disabled={isTraining} />
             </label>
           </Card>
 
@@ -245,30 +336,48 @@ export default function GeneLabPage() {
                 <p>Use potential to check memory. Use IAF to test hard spike timing.</p>
               </div>
               <div className={styles.runButtons}>
-                <Button variant="ghost" icon={<Play size={16} />} onClick={run}>Run</Button>
-                <Button variant="reward" icon={<Sparkles size={16} />} onClick={train}>Train</Button>
+                <Button variant="ghost" icon={<Play size={16} />} onClick={run} disabled={isTraining}>Run</Button>
+                {trainingState === "running" ? (
+                  <Button variant="ghost" icon={<Pause size={16} />} onClick={pauseTraining}>Pause</Button>
+                ) : trainingSession.current && trainingState !== "complete" ? (
+                  <Button variant="reward" icon={<Play size={16} />} onClick={continueTraining}>Continue</Button>
+                ) : (
+                  <Button variant="reward" icon={<Sparkles size={16} />} onClick={startTraining}>Train</Button>
+                )}
+                <Button variant="ghost" icon={<StepForward size={16} />} onClick={stepTraining} disabled={isTraining}>Step</Button>
               </div>
+            </div>
+
+            <div className={styles.trainingStatus}>
+              <div>
+                <b>{trainingState}</b>
+                <span>generation {formatInt(generation)} / {formatInt(es.generations)}</span>
+              </div>
+              <div className={styles.progressTrack} aria-label="Training progress">
+                <span className={styles.progressFill} style={{ width: `${progress * 100}%` }} />
+              </div>
+              <small>Current ES params are applied to the next generation, so you can pause or tune while training.</small>
             </div>
 
             <div className={styles.grid4}>
               <label className={styles.field}>
                 <span>Task</span>
-                <select value={runConfig.task} onChange={(event) => setRunConfig({ ...runConfig, task: event.target.value as IafTask })}>
+                <select value={runConfig.task} onChange={(event) => setRunConfig({ ...runConfig, task: event.target.value as IafTask })} disabled={hasActiveTraining}>
                   <option value="potential">Potential</option>
                   <option value="iaf">IAF spikes</option>
                 </select>
               </label>
               <label className={styles.field}>
                 <span>Seed</span>
-                <input value={runConfig.seed} onChange={(event) => setRunConfig({ ...runConfig, seed: event.target.value })} />
+                <input value={runConfig.seed} onChange={(event) => setRunConfig({ ...runConfig, seed: event.target.value })} disabled={hasActiveTraining} />
               </label>
               <label className={styles.field}>
                 <span>Sequence</span>
-                <input type="number" min={20} max={400} value={runConfig.sequenceLength} onChange={(event) => setRunConfig({ ...runConfig, sequenceLength: numberInput(Number(event.target.value), 100) })} />
+                <input type="number" min={20} max={400} value={runConfig.sequenceLength} onChange={(event) => setRunConfig({ ...runConfig, sequenceLength: numberInput(Number(event.target.value), 100) })} disabled={hasActiveTraining} />
               </label>
               <label className={styles.field}>
                 <span>Environments</span>
-                <input type="number" min={1} max={64} value={runConfig.environments} onChange={(event) => setRunConfig({ ...runConfig, environments: numberInput(Number(event.target.value), 8) })} />
+                <input type="number" min={1} max={64} value={runConfig.environments} onChange={(event) => setRunConfig({ ...runConfig, environments: numberInput(Number(event.target.value), 8) })} disabled={hasActiveTraining} />
               </label>
             </div>
 
@@ -303,6 +412,7 @@ export default function GeneLabPage() {
               <span><b>{evaluation ? formatInt(evaluation.predictedSpikes) : "—"}</b><small>predicted spikes</small></span>
               <span><b>{historyBest ? historyBest.loss.toFixed(4) : "—"}</b><small>best trained loss</small></span>
             </div>
+            <GeneTrainingChart history={history} />
             <GeneTrace evaluation={evaluation} task={runConfig.task} />
           </Card>
 

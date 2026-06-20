@@ -64,6 +64,17 @@ export interface TrainGeneResult {
   history: TrainingGeneration[];
 }
 
+export interface IafTrainingSnapshot {
+  generation: number;
+  targetGenerations: number;
+  gene: EvolutionGene;
+  initial: IafEvaluation;
+  current: IafEvaluation;
+  best: IafEvaluation;
+  history: TrainingGeneration[];
+  done: boolean;
+}
+
 const DEFAULT_ARCHITECTURE: EnuArchitectureGene = {
   neuronStateSize: 8,
   synapseStateSize: 0,
@@ -168,72 +179,141 @@ export function trainGeneOnIaf(
   config: IafRunConfig,
   hyperparams: EsHyperparams
 ): TrainGeneResult {
-  const normalized = normalizeGene(gene);
-  const rng = makeRng(`${config.seed}:es:${normalized.id}`);
-  let center = Float32Array.from(normalized.weights);
-  const velocity = new Float32Array(center.length);
-  const validationSequences = buildSequences(config);
-  const initial = evaluateWeights(normalized.architecture, Array.from(center), config.task, validationSequences);
-  let best = initial;
-  let bestWeights = Array.from(center);
-  const history: TrainingGeneration[] = [{ generation: 0, ...initial }];
+  const session = createIafTrainingSession(gene, config, hyperparams);
+  let snapshot = session.snapshot(hyperparams);
+  while (!snapshot.done) {
+    snapshot = session.step(hyperparams);
+  }
+  return {
+    gene: snapshot.gene,
+    initial: snapshot.initial,
+    best: snapshot.best,
+    history: snapshot.history
+  };
+}
 
-  for (let generation = 1; generation <= hyperparams.generations; generation += 1) {
+export class IafTrainingSession {
+  private readonly normalized: EvolutionGene;
+  private readonly rng: RNG;
+  private readonly velocity: Float32Array;
+  private readonly validationSequences: IafSequence[];
+  private readonly initial: IafEvaluation;
+  private readonly history: TrainingGeneration[];
+  private center: Float32Array;
+  private generation = 0;
+  private current: IafEvaluation;
+  private best: IafEvaluation;
+  private bestWeights: number[];
+
+  constructor(gene: EvolutionGene, private readonly config: IafRunConfig) {
+    this.normalized = normalizeGene(gene);
+    this.rng = makeRng(`${config.seed}:es:${this.normalized.id}`);
+    this.center = Float32Array.from(this.normalized.weights);
+    this.velocity = new Float32Array(this.center.length);
+    this.validationSequences = buildSequences(config);
+    this.initial = evaluateWeights(
+      this.normalized.architecture,
+      Array.from(this.center),
+      config.task,
+      this.validationSequences
+    );
+    this.current = this.initial;
+    this.best = this.initial;
+    this.bestWeights = Array.from(this.center);
+    this.history = [{ generation: 0, ...this.initial }];
+  }
+
+  step(hyperparams: EsHyperparams): IafTrainingSnapshot {
+    const targetGenerations = clampInteger(hyperparams.generations, 1, 10_000);
+    if (this.generation >= targetGenerations) {
+      return this.snapshot(hyperparams);
+    }
+
+    const generation = this.generation + 1;
+    const populationPairs = clampInteger(hyperparams.populationPairs, 1, 10_000);
+    const sigma = Math.max(1e-7, hyperparams.sigma);
+    const learningRate = Number.isFinite(hyperparams.learningRate) ? hyperparams.learningRate : 1;
+    const momentum = Math.max(0, Math.min(0.999, hyperparams.momentum));
     const trainingSequences = buildSequences({
-      ...config,
-      seed: `${config.seed}:generation:${generation}`
+      ...this.config,
+      seed: `${this.config.seed}:generation:${generation}`
     });
     const deltas: Float32Array[] = [];
     const fitnesses: number[] = [];
 
-    for (let pair = 0; pair < hyperparams.populationPairs; pair += 1) {
-      const delta = new Float32Array(center.length);
+    for (let pair = 0; pair < populationPairs; pair += 1) {
+      const delta = new Float32Array(this.center.length);
       for (let index = 0; index < delta.length; index += 1) {
-        delta[index] = gaussian(rng);
+        delta[index] = gaussian(this.rng);
       }
       deltas.push(delta);
       fitnesses.push(
-        evaluateCandidate(normalized.architecture, center, delta, hyperparams.sigma, config.task, trainingSequences),
-        evaluateCandidate(normalized.architecture, center, delta, -hyperparams.sigma, config.task, trainingSequences)
+        evaluateCandidate(this.normalized.architecture, this.center, delta, sigma, this.config.task, trainingSequences),
+        evaluateCandidate(this.normalized.architecture, this.center, delta, -sigma, this.config.task, trainingSequences)
       );
     }
 
     const weights = rankWeights(fitnesses);
-    const gradient = new Float32Array(center.length);
-    for (let pair = 0; pair < hyperparams.populationPairs; pair += 1) {
-      const scale = hyperparams.sigma * (weights[pair * 2] - weights[pair * 2 + 1]);
+    const gradient = new Float32Array(this.center.length);
+    for (let pair = 0; pair < populationPairs; pair += 1) {
+      const scale = sigma * (weights[pair * 2] - weights[pair * 2 + 1]);
       for (let index = 0; index < gradient.length; index += 1) {
         gradient[index] += deltas[pair][index] * scale;
       }
     }
-    for (let index = 0; index < center.length; index += 1) {
-      velocity[index] = hyperparams.momentum * velocity[index] + hyperparams.learningRate * gradient[index];
-      center[index] += velocity[index];
+    for (let index = 0; index < this.center.length; index += 1) {
+      this.velocity[index] = momentum * this.velocity[index] + learningRate * gradient[index];
+      this.center[index] += this.velocity[index];
     }
 
     const evaluation = evaluateWeights(
-      normalized.architecture,
-      Array.from(center),
-      config.task,
-      validationSequences
+      this.normalized.architecture,
+      Array.from(this.center),
+      this.config.task,
+      this.validationSequences
     );
-    history.push({ generation, ...evaluation });
-    if (evaluation.fitness > best.fitness) {
-      best = evaluation;
-      bestWeights = Array.from(center);
+    this.generation = generation;
+    this.current = evaluation;
+    this.history.push({ generation, ...evaluation });
+    if (evaluation.fitness > this.best.fitness) {
+      this.best = evaluation;
+      this.bestWeights = Array.from(this.center);
     }
+    return this.snapshot(hyperparams);
   }
 
-  return {
-    gene: {
-      ...normalized,
-      weights: bestWeights,
-      updatedAt: new Date().toISOString()
-    },
-    initial,
-    best,
-    history
-  };
+  snapshot(hyperparams: EsHyperparams): IafTrainingSnapshot {
+    const targetGenerations = clampInteger(hyperparams.generations, 1, 10_000);
+    return {
+      generation: this.generation,
+      targetGenerations,
+      gene: {
+        ...this.normalized,
+        weights: this.bestWeights.slice(),
+        updatedAt: new Date().toISOString()
+      },
+      initial: this.initial,
+      current: this.current,
+      best: this.best,
+      history: this.history.slice(),
+      done: this.generation >= targetGenerations
+    };
+  }
+}
+
+export function createIafTrainingSession(
+  gene: EvolutionGene,
+  config: IafRunConfig,
+  hyperparams: EsHyperparams
+): IafTrainingSession {
+  const session = new IafTrainingSession(gene, config);
+  session.snapshot(hyperparams);
+  return session;
+}
+
+function clampInteger(value: number, min: number, max: number): number {
+  if (!Number.isFinite(value)) return min;
+  return Math.max(min, Math.min(max, Math.floor(value)));
 }
 
 function fillOrthonormalRows(
