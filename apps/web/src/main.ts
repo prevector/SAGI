@@ -243,29 +243,27 @@ function renderLogin(session: SessionInfo): void {
     <main class="dashboard-shell">
       <section class="auth-layout">
         <article class="panel auth-copy">
-          <p class="eyebrow">SAGI Access</p>
-          <h1>Simple auth for the MVP.</h1>
+          <p class="eyebrow">SAGI</p>
+          <h1>Enter the lab.</h1>
           <p class="hero__text">
-            Production asks only for a username and stores it in a simple signed session. Local development bypasses auth automatically.
+            Choose a name and continue into the live search for general intelligence.
           </p>
-          <div class="auth-mode-chip">Mode: ${session.mode}</div>
         </article>
 
         <article class="panel auth-panel">
           <form id="login-form" class="auth-form">
             <label class="field">
-              <span class="field__label">Username</span>
+              <span class="field__label">Your name</span>
               <input
                 class="field__input"
                 type="text"
                 name="username"
                 autocomplete="username"
-                placeholder="tim"
+                placeholder="Ada"
                 required
               />
             </label>
-            <button class="button button--primary auth-submit" type="submit">Unlock dashboard</button>
-            <p class="muted auth-hint">For local development, just run <code>npm run dev</code>.</p>
+            <button class="button button--primary auth-submit" type="submit">Enter SAGI</button>
             <p class="auth-error" hidden></p>
           </form>
         </article>
@@ -293,7 +291,7 @@ function renderLogin(session: SessionInfo): void {
     if (!response.ok) {
       if (errorNode) {
         errorNode.hidden = false;
-        errorNode.textContent = "Enter any username to continue.";
+        errorNode.textContent = "Enter a name to continue.";
       }
       return;
     }
