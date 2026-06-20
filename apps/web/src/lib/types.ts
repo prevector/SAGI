@@ -27,6 +27,8 @@ export type MetricSeries = Domain.MetricSeries;
 export type ProgressOverview = Domain.ProgressOverview;
 
 export type NodeStatus = Domain.NodeStatus;
+export type ConnectedUser = Domain.ConnectedUser;
+export type PresenceSurface = Domain.PresenceSurface;
 export type NetworkNode = Domain.NetworkNode;
 export type NetworkStats = Domain.NetworkStats;
 export type NetworkSnapshot = Domain.NetworkSnapshot;

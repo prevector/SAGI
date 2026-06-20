@@ -37,7 +37,7 @@ export interface Api {
   getProgress(): Promise<ProgressOverview>;
   getNetwork(): Promise<NetworkSnapshot>;
   /** Subscribe to live network snapshots. Returns an unsubscribe function. */
-  subscribeNetwork(cb: (snap: NetworkSnapshot) => void): () => void;
+  subscribeNetwork(cb: (snap: NetworkSnapshot) => void, opts?: { surface?: "app" | "terminal" }): () => void;
   getSessions(userId: ID): Promise<Session[]>;
   startSession(userId: ID, input: NewSessionInput): Promise<Session>;
   /* Chain explorer (exact base-unit amounts as decimal strings). */

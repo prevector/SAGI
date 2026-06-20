@@ -58,7 +58,10 @@ export const httpApi: Api = {
   getBounty: (id: ID) => fetchJson(`/api/bounties/${encodeURIComponent(id)}`),
   getProgress: () => fetchJson(`/api/progress`),
   getNetwork: () => fetchJson(`/api/network`),
-  subscribeNetwork: (cb: (snap: NetworkSnapshot) => void) => subscribeSse<NetworkSnapshot>("/api/network/stream", cb),
+  subscribeNetwork: (cb: (snap: NetworkSnapshot) => void, opts?: { surface?: "app" | "terminal" }) => {
+    const query = opts?.surface ? `?surface=${encodeURIComponent(opts.surface)}` : "";
+    return subscribeSse<NetworkSnapshot>(`/api/network/stream${query}`, cb);
+  },
   getSessions: (userId: ID) => fetchJson(`/api/sessions/${encodeURIComponent(userId)}`),
   startSession: (userId: ID, input: NewSessionInput) =>
     fetchJson(`/api/sessions`, { method: "POST", body: JSON.stringify({ userId, ...input }) }),

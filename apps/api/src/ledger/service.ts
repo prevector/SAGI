@@ -27,6 +27,7 @@ import { buildGenesis } from "./fixtures.js";
 import { bountySeeds } from "./seedData.js";
 import { buildLeaderboard, buildNetworkSnapshot } from "./read.js";
 import type { SseHub } from "./sse.js";
+import type { PresenceHub } from "./presence.js";
 
 /** Top-N pushed over the leaderboard SSE stream. */
 const LEADERBOARD_STREAM_LIMIT = 10;
@@ -71,17 +72,19 @@ export class LedgerService {
   private readonly cfg: LedgerConfig;
   private readonly emissionCfg: EmissionConfig;
   private readonly hub: SseHub;
+  private readonly presence: PresenceHub;
   private readonly lbHub: SseHub | null;
   private timer: ReturnType<typeof setInterval> | null = null;
   private sessionCounter = 0;
   private driverCounter = 0;
 
-  constructor(handle: DbHandle, cfg: LedgerConfig, hub: SseHub, lbHub?: SseHub) {
+  constructor(handle: DbHandle, cfg: LedgerConfig, hub: SseHub, presence: PresenceHub, lbHub?: SseHub) {
     this.db = handle.db;
     this.raw = handle.raw;
     this.cfg = cfg;
     this.emissionCfg = cfg.emission;
     this.hub = hub;
+    this.presence = presence;
     this.lbHub = lbHub ?? null;
   }
 
@@ -602,7 +605,9 @@ export class LedgerService {
   // ---- realtime ------------------------------------------------------------
 
   broadcast(): void {
-    this.hub.broadcast(buildNetworkSnapshot(this.db, this.cfg, this.currentEpoch()));
+    this.hub.broadcast(
+      buildNetworkSnapshot(this.db, this.cfg, this.currentEpoch(), this.presence.listConnectedUsers())
+    );
     this.lbHub?.broadcast(this.leaderboardSnapshot());
   }
 }

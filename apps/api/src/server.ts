@@ -10,6 +10,7 @@ import { buildLedgerConfig } from "./ledger/config.js";
 import { openDb } from "./ledger/db/client.js";
 import { LedgerService } from "./ledger/service.js";
 import { SseHub } from "./ledger/sse.js";
+import { PresenceHub } from "./ledger/presence.js";
 import { DemoDriver } from "./ledger/driver.js";
 import { createLedgerRouter } from "./ledger/routes.js";
 
@@ -101,12 +102,13 @@ const ledgerCfg = buildLedgerConfig(env);
 const dbHandle = openDb(ledgerCfg.dbPath);
 const sseHub = new SseHub();
 const leaderboardHub = new SseHub();
-const ledger = new LedgerService(dbHandle, ledgerCfg, sseHub, leaderboardHub);
+const presenceHub = new PresenceHub();
+const ledger = new LedgerService(dbHandle, ledgerCfg, sseHub, presenceHub, leaderboardHub);
 ledger.init();
 // Live demo driver — only in demo mode; animates the synthetic population.
 const demoDriver = ledgerCfg.mode === "demo" ? new DemoDriver(ledger) : null;
 demoDriver?.start();
-app.use(createLedgerRouter({ service: ledger, handle: dbHandle, cfg: ledgerCfg, hub: sseHub, lbHub: leaderboardHub, env, driver: demoDriver }));
+app.use(createLedgerRouter({ service: ledger, handle: dbHandle, cfg: ledgerCfg, hub: sseHub, lbHub: leaderboardHub, presence: presenceHub, env, driver: demoDriver }));
 console.log(
   `SAGI ledger: mode=${ledgerCfg.mode} db=${ledgerCfg.dbPath} epoch=${ledgerCfg.emission.epochMs}ms driver=${demoDriver ? "on" : "off"}`
 );

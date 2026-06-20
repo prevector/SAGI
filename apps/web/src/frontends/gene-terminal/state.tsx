@@ -8,7 +8,18 @@ import {
   type EvolutionGene,
   type IafRunConfig
 } from "@sagi/evolution";
-import { createSeedGene, loadGenes, saveGenes, upsertGene } from "../../features/genes/geneStorage";
+import { createSeedGene } from "../../features/genes/geneStorage";
+import {
+  createCreaturePhenotype,
+  createSeedCreature,
+  loadCreatures,
+  makeCreatureName,
+  sanitizeCreatureName,
+  saveCreatures,
+  summarizeCreatureGene,
+  type StoredCreature,
+  upsertCreature
+} from "./creatureLibrary";
 
 export type TrainingStatus = "idle" | "running" | "paused";
 
@@ -19,6 +30,8 @@ export interface MockPoint {
 }
 
 export interface GeneTerminalState {
+  creatures: StoredCreature[];
+  selectedCreature: StoredCreature;
   genes: EvolutionGene[];
   selectedGene: EvolutionGene;
   selectedId: string;
@@ -31,8 +44,11 @@ export interface GeneTerminalState {
   history: MockPoint[];
   weightCount: number;
   selectGene: (id: string) => void;
+  renameCreature: (name: string) => void;
+  saveCreature: () => void;
   createGene: () => void;
   generateCreature: () => void;
+  mutateGene: () => void;
   duplicateGene: () => void;
   updateArchitecture: (key: keyof EvolutionGene["architecture"], value: number) => void;
   updateEs: (key: keyof EsHyperparams, value: number) => void;
@@ -63,11 +79,25 @@ function makeGeneId(prefix: string): string {
   return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
-function getInitialGeneState(): { genes: EvolutionGene[]; selectedId: string } {
-  const genes = loadGenes();
-  const fallback = genes[0] ?? createSeedGene();
+function syncCreatureName(creature: StoredCreature, name: string): StoredCreature {
+  const normalizedName = sanitizeCreatureName(name, creature.name);
   return {
-    genes: genes.length > 0 ? genes : [fallback],
+    ...creature,
+    name: normalizedName,
+    updatedAt: new Date().toISOString(),
+    gene: {
+      ...creature.gene,
+      name: normalizedName,
+      updatedAt: new Date().toISOString()
+    }
+  };
+}
+
+function getInitialGeneState(): { creatures: StoredCreature[]; selectedId: string } {
+  const creatures = loadCreatures();
+  const fallback = creatures[0] ?? createSeedCreature();
+  return {
+    creatures: creatures.length > 0 ? creatures : [fallback],
     selectedId: fallback.id
   };
 }
@@ -85,10 +115,11 @@ function nextMockPoint(previous: MockPoint, gene: EvolutionGene): MockPoint {
   return { generation, sampledLoss, selectedLoss };
 }
 
-function createPaperGene(index: number): EvolutionGene {
+function createPaperGene(index: number, existingNames: string[]): EvolutionGene {
+  const phenotype = createCreaturePhenotype(`paper-gene:${Date.now()}:${index}`);
   return createRandomGene(makeRng(`paper-gene:${Date.now()}:${index}`), {
     id: makeGeneId("gene"),
-    name: `Paper IAF ${index}`,
+    name: makeCreatureName(phenotype, existingNames, `paper-gene:${Date.now()}:${index}`),
     notes: "Mock client gene. Real ES execution is intentionally not wired into this redesign yet.",
     architecture: {
       neuronStateSize: 32,
@@ -98,10 +129,12 @@ function createPaperGene(index: number): EvolutionGene {
   });
 }
 
-function createCreatureGene(source: EvolutionGene, index: number): EvolutionGene {
-  return createRandomGene(makeRng(`creature-gene:${Date.now()}:${index}`), {
+function createCreatureGene(source: EvolutionGene, index: number, existingNames: string[]): EvolutionGene {
+  const seed = `creature-gene:${Date.now()}:${index}`;
+  const phenotype = createCreaturePhenotype(seed);
+  return createRandomGene(makeRng(seed), {
     id: makeGeneId("creature"),
-    name: `Creature ${index}`,
+    name: makeCreatureName(phenotype, existingNames, seed),
     notes: "Morphology test gene for the local creature viewport.",
     architecture: {
       neuronStateSize: source.architecture.neuronStateSize,
@@ -111,11 +144,56 @@ function createCreatureGene(source: EvolutionGene, index: number): EvolutionGene
   });
 }
 
+function mutateCreatureGene(source: EvolutionGene, index: number, existingNames: string[]): EvolutionGene {
+  const seed = `mutate-creature:${source.id}:${Date.now()}:${index}`;
+  const rng = makeRng(seed);
+  const phenotype = createCreaturePhenotype(seed);
+  const now = new Date().toISOString();
+  const weights = source.weights.map((weight, weightIndex) => {
+    const influence =
+      weightIndex < 128 ? 0.12 :
+      weightIndex < 256 ? 0.08 :
+      0.03;
+    const shouldMutate = rng() < 0.78;
+    if (!shouldMutate) {
+      return weight;
+    }
+
+    const delta = (rng() * 2 - 1) * influence;
+    return weight + delta;
+  });
+
+  return {
+    ...source,
+    id: makeGeneId("creature"),
+    name: makeCreatureName(phenotype, existingNames, seed),
+    createdAt: now,
+    updatedAt: now,
+    notes: "Local morphology mutation derived from the current creature gene.",
+    weights
+  };
+}
+
+function geneToCreature(gene: EvolutionGene, existingNames: string[]): StoredCreature {
+  const id = `creature-${gene.id}`;
+  const phenotype = createCreaturePhenotype(id);
+  const name = sanitizeCreatureName(gene.name || makeCreatureName(phenotype, existingNames, id), gene.name || "Creature");
+  return {
+    id,
+    name,
+    gene: { ...gene, name, updatedAt: new Date().toISOString() },
+    phenotype,
+    createdAt: gene.createdAt,
+    updatedAt: new Date().toISOString()
+  };
+}
+
 export function GeneTerminalProvider({ children }: { children: ReactNode }) {
   const [initialState] = useState(getInitialGeneState);
-  const [genes, setGenes] = useState<EvolutionGene[]>(initialState.genes);
+  const [creatures, setCreatures] = useState<StoredCreature[]>(initialState.creatures);
   const [selectedId, setSelectedId] = useState(initialState.selectedId);
-  const selectedGene = genes.find((gene) => gene.id === selectedId) ?? genes[0] ?? createSeedGene();
+  const selectedCreature = creatures.find((creature) => creature.id === selectedId) ?? creatures[0] ?? createSeedCreature();
+  const selectedGene = selectedCreature.gene ?? createSeedGene();
   const [runConfig] = useState<IafRunConfig>(PAPER_IAF_RUN);
   const [es, setEs] = useState<EsHyperparams>(PAPER_IAF_ES);
   const [status, setStatus] = useState<TrainingStatus>("idle");
@@ -126,11 +204,11 @@ export function GeneTerminalProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     try {
-      saveGenes(genes);
+      saveCreatures(creatures);
     } catch (error) {
-      console.warn("Failed to persist genes to local storage.", error);
+      console.warn("Failed to persist creatures to local storage.", error);
     }
-  }, [genes]);
+  }, [creatures]);
 
   useEffect(() => {
     const loss = initialLoss(selectedGene);
@@ -155,7 +233,9 @@ export function GeneTerminalProvider({ children }: { children: ReactNode }) {
 
   const latest = history[history.length - 1];
   const value = useMemo<GeneTerminalState>(() => ({
-    genes,
+    creatures,
+    selectedCreature,
+    genes: creatures.map((item) => item.gene),
     selectedGene,
     selectedId,
     runConfig,
@@ -167,27 +247,50 @@ export function GeneTerminalProvider({ children }: { children: ReactNode }) {
     history,
     weightCount: iafGenomeLength(selectedGene.architecture),
     selectGene: setSelectedId,
+    renameCreature: (name) => {
+      const renamed = syncCreatureName(selectedCreature, name);
+      setCreatures((items) => upsertCreature(items, renamed));
+    },
+    saveCreature: () => {
+      const saved = {
+        ...selectedCreature,
+        updatedAt: new Date().toISOString(),
+        gene: {
+          ...selectedGene,
+          name: selectedCreature.name,
+          updatedAt: new Date().toISOString()
+        }
+      };
+      setCreatures((items) => upsertCreature(items, saved));
+    },
     createGene: () => {
-      const gene = createPaperGene(genes.length + 1);
-      setGenes((items) => [gene, ...items]);
-      setSelectedId(gene.id);
+      const gene = createPaperGene(creatures.length + 1, creatures.map((item) => item.name));
+      const creature = geneToCreature(gene, creatures.map((item) => item.name));
+      setCreatures((items) => [creature, ...items]);
+      setSelectedId(creature.id);
     },
     generateCreature: () => {
-      const gene = createCreatureGene(selectedGene, genes.length + 1);
-      setGenes((items) => [gene, ...items]);
-      setSelectedId(gene.id);
+      const gene = createCreatureGene(selectedGene, creatures.length + 1, creatures.map((item) => item.name));
+      const creature = geneToCreature(gene, creatures.map((item) => item.name));
+      setCreatures((items) => [creature, ...items]);
+      setSelectedId(creature.id);
+    },
+    mutateGene: () => {
+      const gene = mutateCreatureGene(selectedGene, creatures.length + 1, creatures.map((item) => item.name));
+      const creature = geneToCreature(gene, creatures.map((item) => item.name));
+      setCreatures((items) => [creature, ...items]);
+      setSelectedId(creature.id);
     },
     duplicateGene: () => {
-      const now = new Date().toISOString();
-      const copy = {
+      const copiedGene = {
         ...selectedGene,
         id: makeGeneId("gene"),
-        name: `${selectedGene.name} copy`,
-        createdAt: now,
-        updatedAt: now
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
       };
-      setGenes((items) => [copy, ...items]);
-      setSelectedId(copy.id);
+      const creature = geneToCreature(copiedGene, creatures.map((item) => item.name));
+      setCreatures((items) => [creature, ...items]);
+      setSelectedId(creature.id);
     },
     updateArchitecture: (key, value) => {
       const resized = resizeGeneArchitecture(
@@ -195,7 +298,15 @@ export function GeneTerminalProvider({ children }: { children: ReactNode }) {
         { [key]: value },
         makeRng(`${selectedGene.id}:${key}:${value}`)
       );
-      setGenes((items) => upsertGene(items, resized));
+      const updated = {
+        ...selectedCreature,
+        updatedAt: new Date().toISOString(),
+        gene: {
+          ...resized,
+          name: selectedCreature.name
+        }
+      };
+      setCreatures((items) => upsertCreature(items, updated));
     },
     updateEs: (key, value) => setEs((current) => ({ ...current, [key]: value })),
     start: () => setStatus("running"),
@@ -212,7 +323,7 @@ export function GeneTerminalProvider({ children }: { children: ReactNode }) {
       setHistory([{ generation: 0, selectedLoss: loss, sampledLoss: loss }]);
       setStatus("idle");
     }
-  }), [es, genes, history, latest, runConfig, selectedGene, selectedId, status]);
+  }), [creatures, es, history, latest, runConfig, selectedCreature, selectedGene, selectedId, status]);
 
   return <GeneTerminalContext.Provider value={value}>{children}</GeneTerminalContext.Provider>;
 }

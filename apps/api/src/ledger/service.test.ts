@@ -7,6 +7,7 @@ import { defaultEmissionConfig, emission } from "@sagi/ledger";
 import { openDb } from "./db/client.js";
 import { LedgerService } from "./service.js";
 import { SseHub } from "./sse.js";
+import { PresenceHub } from "./presence.js";
 import type { LedgerConfig } from "./config.js";
 
 function makeService(mode: LedgerConfig["mode"] = "sandbox") {
@@ -19,7 +20,7 @@ function makeService(mode: LedgerConfig["mode"] = "sandbox") {
     genesisUsers: mode === "demo" ? 6 : 0,
     genesisDays: 30
   };
-  const svc = new LedgerService(handle, cfg, new SseHub());
+  const svc = new LedgerService(handle, cfg, new SseHub(), new PresenceHub());
   svc.init({ startTimer: false });
   return { handle, svc, cfg };
 }

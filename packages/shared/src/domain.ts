@@ -115,6 +115,15 @@ export interface ProgressOverview {
 
 export type NodeStatus = "active" | "idle";
 
+export type PresenceSurface = "app" | "terminal";
+
+export interface ConnectedUser {
+  username: string;
+  connectedAt: ISODate;
+  surface: PresenceSurface;
+  sessions?: number;
+}
+
 export interface NetworkNode {
   id: ID;
   username: string;
@@ -123,6 +132,7 @@ export interface NetworkNode {
   device: string;
   region?: string;
   joinedAt: ISODate;
+  online?: boolean;
 }
 
 export interface NetworkStats {
@@ -130,6 +140,7 @@ export interface NetworkStats {
   totalCompute: number;
   runningSessions: number;
   tokensEmitted24h: number;
+  onlineUsers?: number;
   // Ledger-economy fields (display SAGI / safe ints), present when the snapshot
   // is served by the token-economy ledger. Exact base-unit amounts for the
   // chain explorer travel separately as strings; these are display-safe.
@@ -142,6 +153,7 @@ export interface NetworkStats {
 export interface NetworkSnapshot {
   stats: NetworkStats;
   nodes: NetworkNode[];
+  connectedUsers: ConnectedUser[];
   at: ISODate;
 }
 
