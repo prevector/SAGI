@@ -9,9 +9,9 @@ export default defineConfig({
       registerType: "autoUpdate",
       includeAssets: ["icons/icon.svg"],
       manifest: {
-        name: "SAGI Battle Arena",
-        short_name: "SAGI Arena",
-        description: "Bet on the winner. Train the swarm.",
+        name: "SAGI · Contribute",
+        short_name: "SAGI",
+        description: "Judge which model is better. Earn tokens. Built on the SAGI SDK.",
         start_url: "/",
         scope: "/",
         display: "standalone",

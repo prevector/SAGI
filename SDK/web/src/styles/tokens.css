@@ -20,9 +20,15 @@
 html, body, #root {
   margin: 0;
   padding: 0;
-  height: 100%;
+  min-height: 100%;
   background: var(--bg);
   color: var(--text);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+}
+
+@keyframes sagi-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(23, 196, 196, 0.6); }
+  70%  { box-shadow: 0 0 0 8px rgba(23, 196, 196, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(23, 196, 196, 0); }
 }

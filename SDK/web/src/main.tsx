@@ -1,10 +1,10 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./styles/tokens.css";
-import SwarmPage from "./pages/SwarmPage";
+import WebsitePage from "./pages/WebsitePage";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <SwarmPage />
+    <WebsitePage />
   </StrictMode>
 );

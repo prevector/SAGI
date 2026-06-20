@@ -1,10 +1,10 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./styles/tokens.css";
-import GamePage from "./pages/GamePage";
+import ContributePage from "./pages/ContributePage";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <GamePage />
+    <ContributePage />
   </StrictMode>
 );
