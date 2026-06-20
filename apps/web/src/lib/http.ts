@@ -38,5 +38,8 @@ export const httpApi: Api = {
   },
   getSessions: (userId: ID) => fetchJson(`/api/sessions/${encodeURIComponent(userId)}`),
   startSession: (userId: ID, input: NewSessionInput) =>
-    fetchJson(`/api/sessions`, { method: "POST", body: JSON.stringify({ userId, ...input }) })
+    fetchJson(`/api/sessions`, { method: "POST", body: JSON.stringify({ userId, ...input }) }),
+  getLedgerStats: () => fetchJson(`/api/ledger/stats`),
+  getRecentTx: (limit?: number) => fetchJson(`/api/ledger/tx${limit ? `?limit=${limit}` : ""}`),
+  getWalletView: (address: string) => fetchJson(`/api/ledger/wallet/${encodeURIComponent(address)}`)
 };

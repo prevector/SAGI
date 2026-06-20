@@ -70,5 +70,31 @@ export const mockApi: Api = {
   async startSession(userId, input) {
     await delay(260);
     return createSession(userId, input);
+  },
+  // Chain explorer — the mock has no real ledger, so these return empty/zeroed
+  // shapes. The real httpApi serves populated data from the SQL ledger.
+  async getLedgerStats() {
+    await delay(120);
+    return {
+      supplyTotal: "0",
+      supplyCirculating: "0",
+      emissionThisEpoch: "0",
+      epoch: 0,
+      height: 0,
+      latestHash: "",
+      activeContributors: currentNetwork.nodes.length,
+      totalCompute: 0
+    };
+  },
+  async getRecentTx() {
+    await delay(120);
+    return [];
+  },
+  async getWalletView(address) {
+    await delay(120);
+    return {
+      wallet: { address, username: address, total: "0", pending: "0", bountiesWon: 0, computeUnits: 0 },
+      txs: []
+    };
   }
 };

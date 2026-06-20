@@ -1,4 +1,5 @@
 import {
+  Boxes,
   Coins,
   LayoutDashboard,
   Radio,
@@ -9,6 +10,7 @@ import {
   Zap,
   type LucideIcon
 } from "lucide-react";
+import { config } from "../../lib/config";
 
 export interface NavItem {
   to: string;
@@ -24,5 +26,6 @@ export const navItems: NavItem[] = [
   { to: "/bounties", label: "Bounties", icon: Target },
   { to: "/progress", label: "Progress", icon: TrendingUp },
   { to: "/network", label: "Network", icon: Radio },
+  ...(config.features.ledgerExplorer ? [{ to: "/ledger", label: "Ledger", icon: Boxes }] : []),
   { to: "/session", label: "Session", icon: Zap }
 ];

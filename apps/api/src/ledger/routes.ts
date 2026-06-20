@@ -21,6 +21,7 @@ import {
   buildTokenSummary,
   sessionToDTO
 } from "./read.js";
+import { buildLedgerStats, getTx, getWalletView, listBlocks, recentTx } from "./explorer.js";
 
 export interface LedgerDeps {
   service: LedgerService;
@@ -116,6 +117,44 @@ export function createLedgerRouter(deps: LedgerDeps): Router {
     };
     const row = service.createSession(username, input);
     res.json(sessionToDTO(row));
+  });
+
+  // ---- chain explorer (exact base-unit strings) ----------------------------
+
+  router.get("/api/ledger/stats", (req, res) => {
+    if (!requireAuth(req, res)) return;
+    res.json(buildLedgerStats(db, cfg, service.currentEpoch()));
+  });
+
+  router.get("/api/ledger/tx", (req, res) => {
+    if (!requireAuth(req, res)) return;
+    const limit = req.query.limit ? Number(req.query.limit) : undefined;
+    res.json(recentTx(db, limit));
+  });
+
+  router.get("/api/ledger/tx/:id", (req, res) => {
+    if (!requireAuth(req, res)) return;
+    const tx = getTx(db, req.params.id);
+    if (!tx) {
+      res.status(404).json({ error: `Transaction ${req.params.id} not found` });
+      return;
+    }
+    res.json(tx);
+  });
+
+  router.get("/api/ledger/wallet/:address", (req, res) => {
+    if (!requireAuth(req, res)) return;
+    const view = getWalletView(db, req.params.address);
+    if (!view) {
+      res.status(404).json({ error: `Wallet ${req.params.address} not found` });
+      return;
+    }
+    res.json(view);
+  });
+
+  router.get("/api/ledger/blocks", (req, res) => {
+    if (!requireAuth(req, res)) return;
+    res.json(listBlocks());
   });
 
   return router;

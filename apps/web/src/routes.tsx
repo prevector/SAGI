@@ -2,6 +2,7 @@ import { lazy } from "react";
 import { Route, Routes } from "react-router-dom";
 import ProtectedRoute from "./auth/ProtectedRoute";
 import { AppShell } from "./components/layout/AppShell";
+import { config } from "./lib/config";
 import LoginPage from "./pages/LoginPage";
 import NotFoundPage from "./pages/NotFoundPage";
 
@@ -17,6 +18,7 @@ const ProgressPage = lazy(() => import("./pages/ProgressPage"));
 const NetworkPage = lazy(() => import("./pages/NetworkPage"));
 const SessionPage = lazy(() => import("./pages/SessionPage"));
 const SandboxPage = lazy(() => import("./pages/SandboxPage"));
+const LedgerPage = lazy(() => import("./pages/LedgerPage"));
 
 export default function AppRoutes() {
   return (
@@ -32,6 +34,7 @@ export default function AppRoutes() {
           <Route path="/bounties/:id" element={<BountyDetailPage />} />
           <Route path="/progress" element={<ProgressPage />} />
           <Route path="/network" element={<NetworkPage />} />
+          {config.features.ledgerExplorer ? <Route path="/ledger" element={<LedgerPage />} /> : null}
           <Route path="/session" element={<SessionPage />} />
           <Route path="/sandbox" element={<SandboxPage />} />
         </Route>
