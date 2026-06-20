@@ -30,6 +30,7 @@ export default function AppRoutes() {
       <Route path="/" element={<LandingPage />} />
       <Route path="/app/login" element={<LoginPage />} />
       <Route element={<ProtectedRoute />}>
+        <Route path="/app/genes" element={<GeneLabPage />} />
         <Route path="/app" element={<AppShell />}>
           <Route index element={<DashboardPage />} />
           <Route path="profile" element={<ProfilePage />} />
@@ -41,7 +42,6 @@ export default function AppRoutes() {
           <Route path="network" element={<NetworkPage />} />
           {config.features.ledgerExplorer ? <Route path="ledger" element={<LedgerPage />} /> : null}
           <Route path="session" element={<SessionPage />} />
-          <Route path="genes" element={<GeneLabPage />} />
           <Route path="sandbox" element={<SandboxPage />} />
         </Route>
       </Route>
