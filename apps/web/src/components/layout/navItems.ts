@@ -2,7 +2,6 @@ import {
   Boxes,
   Coins,
   Dna,
-  LayoutDashboard,
   Radio,
   Target,
   TrendingUp,
@@ -20,7 +19,7 @@ export interface NavItem {
 }
 
 export const navItems: NavItem[] = [
-  { to: "/app", label: "Dashboard", icon: LayoutDashboard },
+  { to: "/app", label: "Terminal", icon: Dna },
   { to: "/app/profile", label: "Profile", icon: User },
   { to: "/app/tokens", label: "Tokens", icon: Coins },
   { to: "/app/leaderboard", label: "Leaderboard", icon: Trophy },
@@ -28,6 +27,5 @@ export const navItems: NavItem[] = [
   { to: "/app/progress", label: "Progress", icon: TrendingUp },
   { to: "/app/network", label: "Network", icon: Radio },
   ...(config.features.ledgerExplorer ? [{ to: "/app/ledger", label: "Ledger", icon: Boxes }] : []),
-  { to: "/app/session", label: "Session", icon: Zap },
-  { to: "/app/genes", label: "Genes", icon: Dna }
+  { to: "/app/session", label: "Session", icon: Zap }
 ];

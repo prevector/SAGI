@@ -8,7 +8,7 @@ import styles from "./AppShell.module.css";
 
 export function AppShell() {
   useEffect(() => {
-    document.title = "SAGI Dashboard";
+    document.title = "SAGI Workspace";
   }, []);
 
   return (

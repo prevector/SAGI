@@ -16,7 +16,6 @@ export function TrainingPanel(_: IDockviewPanelProps) {
     <section className={styles.panel}>
       <div className={styles.trainingHeader}>
         <div>
-          <div className={styles.sectionLabel}>training state</div>
           <h2>{terminal.selectedGene.name}</h2>
         </div>
         <div className={styles.panelTools}>
@@ -32,7 +31,6 @@ export function TrainingPanel(_: IDockviewPanelProps) {
 
       <div className={styles.marketGrid}>
         <Readout label="selected loss" value={terminal.bestLoss.toFixed(4)} tone="good" />
-        <Readout label="sampled loss" value={terminal.sampledLoss.toFixed(4)} tone="warn" />
         <Readout label="generation" value={`${formatInt(terminal.generation)} / ${formatInt(terminal.es.generations)}`} />
         <Readout label="population pairs" value={formatInt(terminal.es.populationPairs)} />
         <Readout label="sigma" value={terminal.es.sigma.toFixed(3)} />
@@ -44,7 +42,6 @@ export function TrainingPanel(_: IDockviewPanelProps) {
       </div>
 
       <div className={styles.chartPane}>
-        <div className={styles.sectionLabel}>mock telemetry</div>
         <MockChart history={terminal.history} />
       </div>
 

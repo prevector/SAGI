@@ -66,25 +66,24 @@ export function CreatureGlyph({
   status: TrainingStatus;
   generation: number;
 }) {
-  const nodes = Array.from({ length: 18 }, (_, index) => {
+  const nodes = Array.from({ length: 10 }, (_, index) => {
     const weight = gene.weights[index % gene.weights.length] ?? 0;
-    const angle = index * 0.92 + generation * 0.015;
-    const radius = 38 + Math.abs(weight) * 40 + (index % 4) * 9;
+    const angle = index * 0.64 + generation * 0.01;
+    const radius = 54 + Math.abs(weight) * 34 + (index % 3) * 12;
     return {
       x: 160 + Math.cos(angle) * radius,
-      y: 125 + Math.sin(angle * 1.17) * radius * 0.62,
+      y: 160 + Math.sin(angle * 1.08) * radius * 0.72,
       pulse: Math.abs(Math.sin(angle))
     };
   });
 
   return (
-    <svg className={styles.creature} viewBox="0 0 320 250" role="img" aria-label="Mock creature visualization">
-      <rect x="1" y="1" width="318" height="248" />
+    <svg className={styles.creature} viewBox="0 0 320 320" role="img" aria-label="Mock creature visualization">
       {nodes.map((node, index) => (
         <line
           key={`link-${index}`}
           x1="160"
-          y1="125"
+          y1="160"
           x2={node.x}
           y2={node.y}
           className={styles.creatureLink}
@@ -95,11 +94,11 @@ export function CreatureGlyph({
           key={index}
           cx={node.x}
           cy={node.y}
-          r={3 + node.pulse * 4}
+          r={6 + node.pulse * 7}
           className={status === "running" ? styles.creatureNodeActive : styles.creatureNode}
         />
       ))}
-      <circle cx="160" cy="125" r="13" className={styles.creatureCore} />
+      <circle cx="160" cy="160" r="26" className={styles.creatureCore} />
     </svg>
   );
 }

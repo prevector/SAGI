@@ -2,7 +2,7 @@
 // site/STRUCTURE.md (reconciled with the Framer build). Sample/illustrative data
 // (counters, leaderboard, bounties, sponsors) mirrors the Framer site 1:1.
 
-/** Where "Join the network" sends visitors — into the dashboard's login. */
+/** Where "Join the network" sends visitors — into the terminal workspace login. */
 export const APP_LOGIN = "/app/login";
 /** Placeholder destination for not-yet-wired secondary links. */
 export const PLACEHOLDER = "#";

@@ -14,7 +14,7 @@ import styles from "./marketing.module.css";
 
 /**
  * SAGI marketing landing page — a native React recreation of the Framer site
- * (S00–S10). Mounted at the public root "/"; the dashboard lives under /app.
+ * (S00–S10). Mounted at the public root "/"; the terminal workspace lives under /app.
  */
 export default function LandingPage() {
   useEffect(() => {

@@ -34,7 +34,7 @@ export function GenesPanel(_: IDockviewPanelProps) {
         <Readout label="id" value={shortId(gene.id)} />
         <Readout label="schema" value={`v${gene.schemaVersion}`} />
         <Readout label="weights" value={formatInt(terminal.weightCount)} />
-        <Readout label="updated" value={new Date(gene.updatedAt).toLocaleTimeString()} />
+        <Readout label="states" value={`${formatInt(gene.architecture.neuronStateSize)} / ${formatInt(gene.architecture.synapseStateSize)}`} />
       </div>
 
       <div className={styles.formGrid}>
@@ -62,9 +62,6 @@ export function GenesPanel(_: IDockviewPanelProps) {
         />
       </div>
 
-      <div className={styles.note}>
-        Shared client state is real. Optimizer execution is not connected yet.
-      </div>
     </section>
   );
 }

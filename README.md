@@ -2,9 +2,9 @@
 
 Minimal TypeScript monorepo for a hackathon MVP:
 
-- `apps/web`: Vite-powered vanilla TypeScript dashboard
+- `apps/web`: Vite-powered TypeScript client
 - `apps/api`: Express API
-- `packages/shared`: shared types and mock dashboard data
+- `packages/shared`: shared types
 
 The production build is intentionally simple:
 
@@ -84,7 +84,7 @@ See [experiments/IAF_REPRODUCTION.md](/Users/tim/Code/SAGI/experiments/IAF_REPRO
 
 ## Local gene lab
 
-Open `/app/genes` in the web app to inspect, edit, save, run, and continue training local genes. Genes are stored in browser `localStorage`. The current redesigned client is a full-screen Dockview mock terminal with three panes, `GENES`, `TRAINING`, and `CREATURE`; real ES execution is intentionally not wired into this UI yet.
+Open `/app` in the web app to inspect, edit, save, run, and continue training local genes. Genes are stored in browser `localStorage`. The current redesigned client is a full-screen Dockview terminal workspace with three panes, `GENES`, `TRAINING`, and `CREATURE`; real ES execution is intentionally not wired into this UI yet.
 
 Current local training tasks:
 

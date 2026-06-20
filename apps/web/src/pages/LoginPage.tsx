@@ -12,7 +12,7 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  // Already authenticated (incl. dev auto-auth) → straight to the dashboard.
+  // Already authenticated (incl. dev auto-auth) → straight to the terminal.
   if (!loading && username) {
     return <Navigate to="/app" replace />;
   }

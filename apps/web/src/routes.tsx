@@ -1,5 +1,5 @@
 import { lazy } from "react";
-import { Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
 import ProtectedRoute from "./auth/ProtectedRoute";
 import { AppShell } from "./components/layout/AppShell";
 import { config } from "./lib/config";
@@ -9,7 +9,6 @@ import NotFoundPage from "./pages/NotFoundPage";
 
 // Authenticated pages are code-split so the initial bundle stays small
 // and recharts only loads with the pages that use it.
-const DashboardPage = lazy(() => import("./pages/DashboardPage"));
 const ProfilePage = lazy(() => import("./pages/ProfilePage"));
 const TokensPage = lazy(() => import("./pages/TokensPage"));
 const LeaderboardPage = lazy(() => import("./pages/LeaderboardPage"));
@@ -22,17 +21,17 @@ const SandboxPage = lazy(() => import("./pages/SandboxPage"));
 const LedgerPage = lazy(() => import("./pages/LedgerPage"));
 const GeneLabPage = lazy(() => import("./pages/GeneLabPage"));
 
-// The public marketing site lives at "/"; the authenticated dashboard is
-// mounted under "/app" (login at "/app/login").
+// The public marketing site lives at "/"; the authenticated terminal workspace
+// lives at "/app" (login at "/app/login").
 export default function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={<LandingPage />} />
       <Route path="/app/login" element={<LoginPage />} />
       <Route element={<ProtectedRoute />}>
-        <Route path="/app/genes" element={<GeneLabPage />} />
+        <Route path="/app" element={<GeneLabPage />} />
+        <Route path="/app/genes" element={<Navigate to="/app" replace />} />
         <Route path="/app" element={<AppShell />}>
-          <Route index element={<DashboardPage />} />
           <Route path="profile" element={<ProfilePage />} />
           <Route path="tokens" element={<TokensPage />} />
           <Route path="leaderboard" element={<LeaderboardPage />} />

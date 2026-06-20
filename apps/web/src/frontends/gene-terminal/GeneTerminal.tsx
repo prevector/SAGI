@@ -46,7 +46,8 @@ function Workspace() {
   return (
     <div className={styles.terminal}>
       <div className={styles.workspaceStrip}>
-        <span>SAGI TERMINAL</span>
+        <span className={styles.workspaceMark}>SAGI TERMINAL</span>
+        <span>{terminal.selectedGene.name}</span>
         <span>{shortId(terminal.selectedGene.id)}</span>
         <span>{terminal.status.toUpperCase()}</span>
         <span>GEN {formatInt(terminal.generation)}</span>

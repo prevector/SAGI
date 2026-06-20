@@ -7,7 +7,7 @@ export default function NotFoundPage() {
         404
       </p>
       <h1 style={{ fontSize: "var(--fs-h1)" }}>This page is off the map.</h1>
-      <Link to="/app">Back to the dashboard</Link>
+      <Link to="/app">Back to the workspace</Link>
     </main>
   );
 }
