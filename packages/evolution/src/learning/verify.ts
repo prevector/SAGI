@@ -4,7 +4,7 @@ import { MLP_SHAPE, PlaceholderAlgorithm } from "./placeholderAlgorithm.js";
 import { distanceField, fitnessOf, maxFiniteDistance, rollout, type RolloutResult } from "./fitness.js";
 import { genomeLength } from "./mlp.js";
 import { subRng } from "../rng.js";
-import type { Seed } from "./types.js";
+import type { RunConfig, RunOutcome, Seed } from "./types.js";
 
 export interface VerifyGenomeOptions {
   seed: Seed;
@@ -51,5 +51,28 @@ export function verifyGenome(opts: VerifyGenomeOptions): VerifyGenomeResult {
     rows,
     maxSteps,
     expectedGenomeLength: expectedLength
+  };
+}
+
+export function replayGenome(config: RunConfig & { genome: number[] }): RunOutcome {
+  const result = verifyGenome({
+    seed: config.seed,
+    genome: Float32Array.from(config.genome),
+    cols: config.cols,
+    rows: config.rows,
+    gaConfig: config.hiddenUnits === undefined ? undefined : { hiddenUnits: config.hiddenUnits }
+  });
+
+  return {
+    generation: 0,
+    bestFitness: result.fitness,
+    bestSteps: result.reached ? result.steps : 0,
+    solved: result.reached,
+    genome: [...config.genome],
+    path: result.path.map(([x, y]) => [x, y]),
+    attempts: [],
+    cols: result.cols,
+    rows: result.rows,
+    maxGenerations: config.maxGenerations ?? DEFAULT_GA_CONFIG.maxGenerations
   };
 }

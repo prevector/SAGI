@@ -3,7 +3,7 @@ import { generateMaze, type Grid } from "../maze/generate.js";
 import { subRng, type RNG } from "../rng.js";
 import { distanceField, fitnessOf, maxFiniteDistance, rollout, type RolloutResult } from "./fitness.js";
 import { PlaceholderAlgorithm } from "./placeholderAlgorithm.js";
-import type { Algorithm, Seed, Trainer, TrainerStats } from "./types.js";
+import type { Algorithm, RunConfig, RunOutcome, Seed, Trainer, TrainerStats } from "./types.js";
 
 interface Individual {
   genome: Float32Array;
@@ -129,4 +129,43 @@ export class GaTrainer implements Trainer {
   bestGenome(): Float32Array {
     return this.population[0].genome;
   }
+
+  bestResult(): RolloutResult {
+    return this.population[0].result;
+  }
+
+  maxGenerations(): number {
+    return this.ga.maxGenerations;
+  }
+
+  dimensions(): { cols: number; rows: number } {
+    return { cols: this.cols, rows: this.rows };
+  }
+}
+
+export function trainOne(config: RunConfig): RunOutcome {
+  const cols = config.cols ?? 11;
+  const rows = config.rows ?? 11;
+  const gaConfig = {
+    ...(config.hiddenUnits === undefined ? {} : { hiddenUnits: config.hiddenUnits }),
+    ...(config.maxGenerations === undefined ? {} : { maxGenerations: config.maxGenerations })
+  };
+
+  const trainer = new GaTrainer({ cols, rows, gaConfig });
+  trainer.reset(config.seed);
+
+  while (!trainer.stats().solved && trainer.stats().generation < trainer.maxGenerations()) {
+    trainer.step();
+  }
+
+  const stats = trainer.stats();
+  return {
+    ...stats,
+    genome: Array.from(trainer.bestGenome()),
+    path: trainer.championPath().map(([x, y]) => [x, y]),
+    attempts: trainer.attemptsPaths().map((path) => path.map(([x, y]) => [x, y])),
+    cols,
+    rows,
+    maxGenerations: trainer.maxGenerations()
+  };
 }

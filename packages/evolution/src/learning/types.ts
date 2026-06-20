@@ -20,6 +20,23 @@ export interface TrainerStats {
   solved: boolean;
 }
 
+export interface RunConfig {
+  seed: Seed;
+  cols?: number;
+  rows?: number;
+  hiddenUnits?: number;
+  maxGenerations?: number;
+}
+
+export interface RunOutcome extends TrainerStats {
+  genome: number[];
+  path: Array<[number, number]>;
+  attempts: Array<Array<[number, number]>>;
+  cols: number;
+  rows: number;
+  maxGenerations: number;
+}
+
 export interface Trainer {
   reset(seed: Seed): void;
   step(): void;

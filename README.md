@@ -47,6 +47,20 @@ Body:
 
 It replays the submitted genome on the server with the shared `@sagi/evolution` code and returns `solved`, `fitness`, `steps`, and the traversed `path`.
 
+Headless runs use:
+
+```bash
+POST /api/runs
+GET /api/runs/:id
+```
+
+`POST /api/runs` accepts:
+
+- `mode: "train"` to evolve one run headlessly on the server
+- `mode: "replay"` to replay one submitted genome deterministically
+
+Run records are stored as JSON files under `runs/` and include the config, genome, path, attempts, and summary stats. This is the simple storage layer for sending genomes between client and server and replaying them later.
+
 ## Local experiments
 
 First paper-shaped smoke test:
@@ -56,6 +70,14 @@ npm run experiment:iaf
 ```
 
 This runs a local TypeScript Evolution Strategies benchmark for a single GRU-like ENU on an integrate-and-fire target. It is a development-scale benchmark, not the full paper-scale reproduction.
+
+## Python reference implementation
+
+The full paper implementation we are using as the reference is already in this repo at:
+
+- [implementation_paper](/Users/tim/Code/SAGI/implementation_paper)
+
+That folder contains the original Python code for the ENU architecture and experiments from the paper. The TypeScript code in this repo is the new implementation path; the Python code is the reference baseline.
 
 ## Production
 
