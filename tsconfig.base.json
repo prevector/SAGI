@@ -10,6 +10,9 @@
       ],
       "@sagi/evolution": [
         "packages/evolution/src/index.ts"
+      ],
+      "@sagi/ledger": [
+        "packages/ledger/src/index.ts"
       ]
     },
     "allowSyntheticDefaultImports": true,

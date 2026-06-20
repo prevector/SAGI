@@ -1,3 +1,4 @@
+import type { NetworkStatsDTO, TxDTO, WalletDTO } from "@sagi/ledger";
 import type {
   Bounty,
   BountyStatus,
@@ -13,6 +14,12 @@ import type {
 import { config } from "./config";
 import { mockApi } from "./mock";
 import { httpApi } from "./http";
+
+/** Chain-explorer wallet view: the wallet plus its recent transactions. */
+export interface WalletView {
+  wallet: WalletDTO;
+  txs: TxDTO[];
+}
 
 /**
  * The single data contract for the whole app. Components only ever import
@@ -31,6 +38,10 @@ export interface Api {
   subscribeNetwork(cb: (snap: NetworkSnapshot) => void): () => void;
   getSessions(userId: ID): Promise<Session[]>;
   startSession(userId: ID, input: NewSessionInput): Promise<Session>;
+  /* Chain explorer (exact base-unit amounts as decimal strings). */
+  getLedgerStats(): Promise<NetworkStatsDTO>;
+  getRecentTx(limit?: number): Promise<TxDTO[]>;
+  getWalletView(address: string): Promise<WalletView>;
 }
 
 export const api: Api = config.useMock ? mockApi : httpApi;

@@ -8,6 +8,9 @@
       "path": "./packages/evolution"
     },
     {
+      "path": "./packages/ledger"
+    },
+    {
       "path": "./apps/api"
     },
     {

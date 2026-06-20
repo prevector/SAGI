@@ -1,11 +1,9 @@
 import type { Api } from "./api";
-import type { BountyStatus, ID, NewSessionInput } from "./types";
-import { fetchJson } from "./request";
+import type { BountyStatus, ID, NewSessionInput, NetworkSnapshot } from "./types";
+import { apiUrl, fetchJson } from "./request";
 
-// Real-engine implementation — a typed stub for now so the Api interface
-// compiles. The engine currently exposes only auth + /api/dashboard; these
-// routes do not exist yet. The co-founder fills these in, then flip
-// config.useMock = false. Mapping (see PLAN.md):
+// Real-engine implementation. The token-economy ledger (apps/api) serves these
+// routes; flip config.useMock = false to use them. Mapping (PLAN-LEDGER.md §8):
 //   getProfile      -> GET  /api/profile/:id
 //   getTokens       -> GET  /api/tokens/:id
 //   getLeaderboard  -> GET  /api/leaderboard?limit=
@@ -13,13 +11,9 @@ import { fetchJson } from "./request";
 //   getBounty       -> GET  /api/bounties/:id
 //   getProgress     -> GET  /api/progress
 //   getNetwork      -> GET  /api/network
-//   subscribeNetwork-> WS or SSE at /api/network/stream
+//   subscribeNetwork-> SSE  /api/network/stream
 //   getSessions     -> GET  /api/sessions/:id
 //   startSession    -> POST /api/sessions
-
-const notWired = (method: string) => (): never => {
-  throw new Error(`httpApi.${method} not wired — implement the engine endpoint and flip config.useMock.`);
-};
 
 export const httpApi: Api = {
   getProfile: (userId: ID) => fetchJson(`/api/profile/${encodeURIComponent(userId)}`),
@@ -29,9 +23,42 @@ export const httpApi: Api = {
   getBounty: (id: ID) => fetchJson(`/api/bounties/${encodeURIComponent(id)}`),
   getProgress: () => fetchJson(`/api/progress`),
   getNetwork: () => fetchJson(`/api/network`),
-  // Realtime needs a WS/SSE channel that does not exist yet.
-  subscribeNetwork: notWired("subscribeNetwork"),
+  subscribeNetwork: (cb: (snap: NetworkSnapshot) => void) => {
+    // SSE: the server pushes a NetworkSnapshot on every sealed epoch / change.
+    // EventSource auto-reconnects on transient errors; we just close on unmount.
+    // Bursts (driver tick + epoch close close together) are coalesced to one
+    // update per animation frame so the store never re-render-storms.
+    const es = new EventSource(apiUrl("/api/network/stream"), { withCredentials: true });
+    let latest: NetworkSnapshot | null = null;
+    let scheduled = false;
+    const schedule =
+      typeof requestAnimationFrame !== "undefined"
+        ? requestAnimationFrame
+        : (fn: () => void) => setTimeout(fn, 16);
+    const flush = () => {
+      scheduled = false;
+      if (latest) {
+        cb(latest);
+        latest = null;
+      }
+    };
+    es.onmessage = (event: MessageEvent<string>) => {
+      try {
+        latest = JSON.parse(event.data) as NetworkSnapshot;
+      } catch {
+        return; // ignore malformed frames (keep-alive comments never reach onmessage)
+      }
+      if (!scheduled) {
+        scheduled = true;
+        schedule(flush);
+      }
+    };
+    return () => es.close();
+  },
   getSessions: (userId: ID) => fetchJson(`/api/sessions/${encodeURIComponent(userId)}`),
   startSession: (userId: ID, input: NewSessionInput) =>
-    fetchJson(`/api/sessions`, { method: "POST", body: JSON.stringify({ userId, ...input }) })
+    fetchJson(`/api/sessions`, { method: "POST", body: JSON.stringify({ userId, ...input }) }),
+  getLedgerStats: () => fetchJson(`/api/ledger/stats`),
+  getRecentTx: (limit?: number) => fetchJson(`/api/ledger/tx${limit ? `?limit=${limit}` : ""}`),
+  getWalletView: (address: string) => fetchJson(`/api/ledger/wallet/${encodeURIComponent(address)}`)
 };

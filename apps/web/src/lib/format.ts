@@ -13,6 +13,26 @@ export function formatInt(n: number): string {
   return Math.round(n).toLocaleString();
 }
 
+/**
+ * Compact a base-unit token amount carried as a decimal string (the ledger
+ * wire format, BigInt-safe). Used by the chain explorer where exact amounts can
+ * exceed Number's safe range. DECIMALS=9 (1 SAGI = 1e9 base units).
+ */
+export function formatTokensStr(baseUnits: string, decimals = 9): string {
+  let neg = false;
+  let s = baseUnits.trim();
+  if (s.startsWith("-")) {
+    neg = true;
+    s = s.slice(1);
+  }
+  s = s.replace(/^0+(?=\d)/, "");
+  const padded = s.padStart(decimals + 1, "0");
+  const whole = padded.slice(0, padded.length - decimals);
+  // Compact the SAGI (whole) part; fractions are noise at display scale.
+  const sagi = Number(whole);
+  return `${neg ? "−" : ""}${formatTokens(sagi)}`;
+}
+
 /** GFLOPS / GFLOP-hours with a unit suffix. */
 export function formatCompute(gflops: number, unit = "GFLOPS"): string {
   if (gflops >= 1000) return `${(gflops / 1000).toFixed(2)} T${unit.slice(1)}`;

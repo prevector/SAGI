@@ -128,6 +128,13 @@ export interface NetworkStats {
   totalCompute: number;
   runningSessions: number;
   tokensEmitted24h: number;
+  // Ledger-economy fields (display SAGI / safe ints), present when the snapshot
+  // is served by the token-economy ledger. Exact base-unit amounts for the
+  // chain explorer travel separately as strings; these are display-safe.
+  supplyTotal?: number;
+  emissionThisEpoch?: number;
+  epoch?: number;
+  height?: number;
 }
 
 export interface NetworkSnapshot {
