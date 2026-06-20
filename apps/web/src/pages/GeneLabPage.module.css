@@ -152,6 +152,38 @@
   font-size: var(--fs-sm);
 }
 
+.presets {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s3);
+  padding: var(--s3);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.presets div:first-child {
+  display: grid;
+  gap: var(--s1);
+}
+
+.presets b {
+  font-size: var(--fs-sm);
+}
+
+.presets span {
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+}
+
+.presetButtons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s2);
+  justify-content: flex-end;
+}
+
 .progressTrack {
   height: 9px;
   overflow: hidden;
@@ -303,5 +335,13 @@
 
   .warning {
     display: grid;
+  }
+
+  .presets {
+    display: grid;
+  }
+
+  .presetButtons {
+    justify-content: flex-start;
   }
 }

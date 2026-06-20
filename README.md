@@ -91,6 +91,11 @@ Current local training tasks:
 - `potential`: smoother membrane-potential prediction, useful for seeing whether recurrent memory is learning
 - `iaf`: hard integrate-and-fire spike timing, closer to the paper benchmark
 
+The Gene Lab has two presets:
+
+- `Fast diagnostic`: small browser-friendly potential task for quick visual feedback.
+- `Paper IAF`: single-ENU IAF shape from [implementation_paper](/Users/tim/Code/SAGI/implementation_paper), with 32 neuron dynamic states, 0 synapse states, 512 ES offspring (`256` mirrored pairs), 32 pseudo-environments, `sigma=0.01`, spike output gain `1000`, and 10,000 generations.
+
 The gene stores architecture and weights. The phenotype is decoded only when a run starts. The gene currently includes neuron state size and synapse state size; the IAF task uses the neuron state path, while synapse state size is carried for the next network/synapse experiments.
 
 ## Python reference implementation

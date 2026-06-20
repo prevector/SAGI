@@ -37,6 +37,33 @@ const DEFAULT_ES: EsHyperparams = {
   momentum: 0.9
 };
 
+const FAST_DIAGNOSTIC_ARCHITECTURE: Partial<EvolutionGene["architecture"]> = {
+  neuronStateSize: 8,
+  synapseStateSize: 0,
+  outputGain: 2
+};
+
+const PAPER_IAF_ARCHITECTURE: Partial<EvolutionGene["architecture"]> = {
+  neuronStateSize: 32,
+  synapseStateSize: 0,
+  outputGain: 1000
+};
+
+const PAPER_IAF_RUN: IafRunConfig = {
+  seed: "paper-iaf",
+  task: "iaf",
+  sequenceLength: 100,
+  environments: 32
+};
+
+const PAPER_IAF_ES: EsHyperparams = {
+  generations: 10000,
+  populationPairs: 256,
+  sigma: 0.01,
+  learningRate: 1,
+  momentum: 0.9
+};
+
 function shortId(id: string): string {
   return id.slice(0, 10);
 }
@@ -178,6 +205,25 @@ export default function GeneLabPage() {
     const resized = resizeGeneArchitecture(draft, { [key]: value }, makeRng(`${draft.id}:${key}:${value}`));
     setDraft(resized);
     setEvaluation(null);
+  }
+
+  function applyPreset(
+    architecture: Partial<EvolutionGene["architecture"]>,
+    nextRunConfig: IafRunConfig,
+    nextEs: EsHyperparams,
+    presetName: string
+  ) {
+    if (hasActiveTraining) return;
+    const resized = resizeGeneArchitecture(draft, architecture, makeRng(`${draft.id}:${presetName}:preset`));
+    trainingSession.current = null;
+    setDraft(resized);
+    setRunConfig(nextRunConfig);
+    setEs(nextEs);
+    setEvaluation(null);
+    setHistory([]);
+    setGeneration(0);
+    setTrainingState("idle");
+    setMessage(`${presetName} preset loaded`);
   }
 
   function run() {
@@ -380,6 +426,38 @@ export default function GeneLabPage() {
               </div>
             ) : null}
 
+            <div className={styles.presets}>
+              <div>
+                <b>Presets</b>
+                <span>Fast is for browser inspection. Paper IAF matches the single-ENU experiment shape and is much heavier.</span>
+              </div>
+              <div className={styles.presetButtons}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() =>
+                    applyPreset(
+                      FAST_DIAGNOSTIC_ARCHITECTURE,
+                      DEFAULT_RUN,
+                      DEFAULT_ES,
+                      "Fast diagnostic"
+                    )
+                  }
+                  disabled={hasActiveTraining}
+                >
+                  Fast diagnostic
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => applyPreset(PAPER_IAF_ARCHITECTURE, PAPER_IAF_RUN, PAPER_IAF_ES, "Paper IAF")}
+                  disabled={hasActiveTraining}
+                >
+                  Paper IAF
+                </Button>
+              </div>
+            </div>
+
             <div className={styles.grid4}>
               <label className={styles.field}>
                 <span>Task</span>
@@ -405,7 +483,7 @@ export default function GeneLabPage() {
             <div className={styles.grid5}>
               <label className={styles.field}>
                 <span>Generations</span>
-                <input type="number" min={1} max={2000} value={es.generations} onChange={(event) => setEs({ ...es, generations: numberInput(Number(event.target.value), 40) })} />
+                <input type="number" min={1} max={10000} value={es.generations} onChange={(event) => setEs({ ...es, generations: numberInput(Number(event.target.value), 40) })} />
               </label>
               <label className={styles.field}>
                 <span>Population pairs</span>
