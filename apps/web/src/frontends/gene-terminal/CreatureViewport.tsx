@@ -868,8 +868,8 @@ function CreatureWalker({
       const hip = points[leg.hip].position;
       const foot = points[leg.foot];
       const hipRadius = spec.points[leg.hip].radius;
-      const forwardReach = Math.max(hipRadius * 1.15, leg.stride * 1.2);
-      const sideReach = Math.max(Math.abs(leg.restOffset.z), hipRadius * 1.15);
+      const forwardReach = Math.max(hipRadius * 0.18, leg.restOffset.x * 0.38);
+      const sideReach = Math.max(Math.abs(leg.restOffset.z), hipRadius * 1.05);
       const desiredFoot = TEMP_D.copy(hip)
         .addScaledVector(forward, forwardReach)
         .addScaledVector(lateral, leg.side * sideReach);
