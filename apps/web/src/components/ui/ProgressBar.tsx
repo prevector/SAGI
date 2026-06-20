@@ -29,7 +29,7 @@ export function ProgressBar({ value, label, showValue = true, tone = "teal" }: P
         aria-valuemax={100}
         aria-label={label}
       >
-        <div className={[styles.fill, styles[tone]].join(" ")} style={{ width: display }} />
+        <div className={[styles.fill, styles[tone]].join(" ")} style={{ transform: `scaleX(${pct})` }} />
       </div>
     </div>
   );
