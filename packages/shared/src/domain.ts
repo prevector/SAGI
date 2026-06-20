@@ -55,6 +55,8 @@ export interface LeaderboardEntry {
   rank: number;
   userId: ID;
   username: string;
+  score: number; // best normalized simulation/learning score (0..1) — the rank key
+  bountiesWon: number; // bounties this organism has won
   tokens: number;
   computePower: number;
   delta?: number;

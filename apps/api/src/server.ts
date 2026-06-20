@@ -100,12 +100,13 @@ function parseGenome(body: unknown): { genome: number[]; error?: never } | { err
 const ledgerCfg = buildLedgerConfig(env);
 const dbHandle = openDb(ledgerCfg.dbPath);
 const sseHub = new SseHub();
-const ledger = new LedgerService(dbHandle, ledgerCfg, sseHub);
+const leaderboardHub = new SseHub();
+const ledger = new LedgerService(dbHandle, ledgerCfg, sseHub, leaderboardHub);
 ledger.init();
 // Live demo driver — only in demo mode; animates the synthetic population.
 const demoDriver = ledgerCfg.mode === "demo" ? new DemoDriver(ledger) : null;
 demoDriver?.start();
-app.use(createLedgerRouter({ service: ledger, handle: dbHandle, cfg: ledgerCfg, hub: sseHub, env, driver: demoDriver }));
+app.use(createLedgerRouter({ service: ledger, handle: dbHandle, cfg: ledgerCfg, hub: sseHub, lbHub: leaderboardHub, env, driver: demoDriver }));
 console.log(
   `SAGI ledger: mode=${ledgerCfg.mode} db=${ledgerCfg.dbPath} epoch=${ledgerCfg.emission.epochMs}ms driver=${demoDriver ? "on" : "off"}`
 );

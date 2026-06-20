@@ -18,17 +18,30 @@ import {
   emission,
   epochRewards
 } from "@sagi/ledger";
+import { trainOne } from "@sagi/evolution";
 import type { Domain } from "@sagi/shared";
 import type { DbHandle } from "./db/client.js";
 import { bounties, epochs, meta, sessions, transactions, wallets, workReceipts } from "./db/schema.js";
 import type { LedgerConfig } from "./config.js";
 import { buildGenesis } from "./fixtures.js";
 import { bountySeeds } from "./seedData.js";
-import { buildNetworkSnapshot } from "./read.js";
+import { buildLeaderboard, buildNetworkSnapshot } from "./read.js";
 import type { SseHub } from "./sse.js";
+
+/** Top-N pushed over the leaderboard SSE stream. */
+const LEADERBOARD_STREAM_LIMIT = 10;
 
 const WORK_SCALE = 1_000_000;
 const ONE = 1_000_000_000n; // base units per SAGI (DECIMALS=9)
+
+// GA scoring caps: bounded so trainOne returns in well under ~100ms (kept off
+// the epoch-close timer — computed once at session creation).
+const SCORE_MAZE = 11;
+const SCORE_MAX_GENERATIONS = 40;
+// fitnessOf tops out near ~300 for an efficient solve (progress 100 + reached
+// 100 + step-efficiency 100, plus a small exploration bonus). Normalize against
+// that so `score` reads as a 0..1 transfer score, matching product semantics.
+const SCORE_NORM = 300;
 
 type WalletRow = typeof wallets.$inferSelect;
 type SessionRow = typeof sessions.$inferSelect;
@@ -37,22 +50,44 @@ function weightOf(computeUnits: number, usefulness: number): bigint {
   return BigInt(Math.max(0, Math.round(computeUnits * usefulness * WORK_SCALE)));
 }
 
+function clamp01(v: number): number {
+  return Math.max(0, Math.min(1, v));
+}
+
+/** Run the real GA (bounded) for `seed` and return a normalized 0..1 score.
+ *  Never throws — a GA failure degrades to 0 rather than blocking a session. */
+function gaScore(seed: string): number {
+  try {
+    const outcome = trainOne({ seed, cols: SCORE_MAZE, rows: SCORE_MAZE, maxGenerations: SCORE_MAX_GENERATIONS });
+    return clamp01(outcome.bestFitness / SCORE_NORM);
+  } catch {
+    return 0;
+  }
+}
+
 export class LedgerService {
   private readonly db: DbHandle["db"];
   private readonly raw: DbHandle["raw"];
   private readonly cfg: LedgerConfig;
   private readonly emissionCfg: EmissionConfig;
   private readonly hub: SseHub;
+  private readonly lbHub: SseHub | null;
   private timer: ReturnType<typeof setInterval> | null = null;
   private sessionCounter = 0;
   private driverCounter = 0;
 
-  constructor(handle: DbHandle, cfg: LedgerConfig, hub: SseHub) {
+  constructor(handle: DbHandle, cfg: LedgerConfig, hub: SseHub, lbHub?: SseHub) {
     this.db = handle.db;
     this.raw = handle.raw;
     this.cfg = cfg;
     this.emissionCfg = cfg.emission;
     this.hub = hub;
+    this.lbHub = lbHub ?? null;
+  }
+
+  /** The current top-N leaderboard, as pushed over the leaderboard SSE. */
+  leaderboardSnapshot(): Domain.LeaderboardEntry[] {
+    return buildLeaderboard(this.db, "", LEADERBOARD_STREAM_LIMIT);
   }
 
   // ---- lifecycle -----------------------------------------------------------
@@ -154,6 +189,7 @@ export class LedgerService {
           total: w.total.toString(),
           pending: "0",
           bountiesWon: 0,
+          bestScore: w.bestScore,
           computeUnits: w.computeUnits,
           synthetic: 1,
           createdAt: w.createdAt
@@ -240,6 +276,9 @@ export class LedgerService {
     const id = `s-${now}-${this.sessionCounter}`;
     // Demo-compress: a session completes in ~7-15s regardless of stated minutes.
     const simMs = Math.min(15_000, Math.max(7_000, input.durationMin * 700));
+    // Run the real evolution algorithm now (bounded) so the session has a
+    // genuine learning score; it's revealed + credited on completion.
+    const score = gaScore(`${username}:${id}`);
     this.db.insert(sessions).values({
       id,
       username,
@@ -251,6 +290,7 @@ export class LedgerService {
       durationMin: input.durationMin,
       progress: 0,
       simMs,
+      score,
       tokensEarned: null,
       result: null,
       synthetic: 0
@@ -286,15 +326,23 @@ export class LedgerService {
     if ((now - row.startedAt) / row.simMs < 1) return false;
     const epoch = this.currentEpoch();
     const computeUnits = row.computeAllocated * row.durationMin;
+    // Learning quality drives the reward: the GA score computed at creation
+    // (fallback 1.0 for legacy rows created before scoring existed).
+    const score = row.score ?? 1.0;
     this.submitReceipt({
       sessionId: row.id,
       address: row.address,
       computeUnits,
-      usefulness: 1.0, // seam: real GA fitness later
+      usefulness: score,
       ts: now,
       nonce: randomUUID(),
       epoch
     }, row.synthetic === 1);
+    // Record the organism's best score for the leaderboard.
+    const w = this.db.select().from(wallets).where(eq(wallets.address, row.address)).get();
+    if (w && score > w.bestScore) {
+      this.db.update(wallets).set({ bestScore: score }).where(eq(wallets.address, row.address)).run();
+    }
     const share = this.sessionShare(row.id, epoch);
     this.db.update(sessions).set({
       status: "completed",
@@ -492,15 +540,27 @@ export class LedgerService {
    *  epoch (live demo movement — not seeded, this is the live driver). */
   addSyntheticWork(address: string, computeUnits: number): void {
     this.driverCounter += 1;
+    const usefulness = 0.7 + Math.random() * 0.8;
     this.submitReceipt({
       sessionId: `drv-${this.driverCounter}-${address.slice(5, 13)}`,
       address,
       computeUnits,
-      usefulness: 0.7 + Math.random() * 0.8,
+      usefulness,
       ts: Date.now(),
       nonce: randomUUID(),
       epoch: this.currentEpoch()
     }, true);
+    // Occasionally a synthetic organism improves its best score, so the
+    // leaderboard reshuffles live during a showcase.
+    if (Math.random() < 0.25) {
+      const w = this.db.select().from(wallets).where(eq(wallets.address, address)).get();
+      if (w) {
+        const next = Math.min(0.99, w.bestScore + Math.random() * 0.03);
+        if (next > w.bestScore) {
+          this.db.update(wallets).set({ bestScore: next }).where(eq(wallets.address, address)).run();
+        }
+      }
+    }
   }
 
   private firstOpenBounty(): typeof bounties.$inferSelect | undefined {
@@ -543,5 +603,6 @@ export class LedgerService {
 
   broadcast(): void {
     this.hub.broadcast(buildNetworkSnapshot(this.db, this.cfg, this.currentEpoch()));
+    this.lbHub?.broadcast(this.leaderboardSnapshot());
   }
 }

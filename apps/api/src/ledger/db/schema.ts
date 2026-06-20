@@ -15,6 +15,7 @@ export const wallets = sqliteTable("wallets", {
   total: text("total").notNull().default("0"), // base units
   pending: text("pending").notNull().default("0"), // base units (provisional, current epoch)
   bountiesWon: integer("bounties_won").notNull().default(0),
+  bestScore: real("best_score").notNull().default(0), // best normalized GA transfer score (0..1)
   computeUnits: integer("compute_units").notNull().default(0),
   synthetic: integer("synthetic").notNull().default(0),
   createdAt: integer("created_at").notNull()
@@ -76,6 +77,7 @@ export const sessions = sqliteTable("sessions", {
   durationMin: integer("duration_min").notNull(),
   progress: real("progress").notNull().default(0),
   simMs: integer("sim_ms").notNull(), // demo-compressed wall-clock to completion
+  score: real("score"), // normalized GA transfer score (0..1) computed at creation
   tokensEarned: text("tokens_earned"), // base units (provisional, then final)
   result: text("result"),
   synthetic: integer("synthetic").notNull().default(0)
@@ -103,6 +105,7 @@ CREATE TABLE IF NOT EXISTS wallets (
   total TEXT NOT NULL DEFAULT '0',
   pending TEXT NOT NULL DEFAULT '0',
   bounties_won INTEGER NOT NULL DEFAULT 0,
+  best_score REAL NOT NULL DEFAULT 0,
   compute_units INTEGER NOT NULL DEFAULT 0,
   synthetic INTEGER NOT NULL DEFAULT 0,
   created_at INTEGER NOT NULL
@@ -163,6 +166,7 @@ CREATE TABLE IF NOT EXISTS sessions (
   duration_min INTEGER NOT NULL,
   progress REAL NOT NULL DEFAULT 0,
   sim_ms INTEGER NOT NULL,
+  score REAL,
   tokens_earned TEXT,
   result TEXT,
   synthetic INTEGER NOT NULL DEFAULT 0

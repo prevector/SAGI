@@ -113,11 +113,14 @@ export function buildTokenSummary(db: Db, username: string): Domain.TokenSummary
 
 export function buildLeaderboard(db: Db, currentUsername: string, limit?: number): Domain.LeaderboardEntry[] {
   const ranked = db.select().from(wallets).all()
-    .sort((a, b) => Number(BigInt(b.total) - BigInt(a.total)))
+    // Rank by best learning score; tie-break by tokens (the economic aggregate).
+    .sort((a, b) => b.bestScore - a.bestScore || Number(BigInt(b.total) - BigInt(a.total)))
     .map((w, i): Domain.LeaderboardEntry => ({
       rank: i + 1,
       userId: w.username,
       username: w.username,
+      score: w.bestScore,
+      bountiesWon: w.bountiesWon,
       tokens: toSagiNumber(BigInt(w.total)),
       computePower: computePowerFor(w.username, w.computeUnits),
       delta: toSagiNumber(BigInt(w.pending)), // recent (this-epoch provisional) movement

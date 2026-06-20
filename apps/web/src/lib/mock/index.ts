@@ -1,5 +1,5 @@
 import type { Api } from "../api";
-import type { NetworkSnapshot } from "../types";
+import type { LeaderboardEntry, NetworkSnapshot } from "../types";
 import {
   buildBounties,
   buildLeaderboard,
@@ -9,6 +9,7 @@ import {
   buildTokenSummary,
   createSession,
   listSessions,
+  stepLeaderboard,
   stepNetwork
 } from "./generators";
 
@@ -37,6 +38,16 @@ export const mockApi: Api = {
   async getLeaderboard(opts) {
     await delay(160);
     return buildLeaderboard(currentUser, opts?.limit);
+  },
+  subscribeLeaderboard(cb) {
+    // Singleton standings so getLeaderboard and the stream agree; emit a live
+    // top-10 tick on the same cadence as the network simulator.
+    let current: LeaderboardEntry[] = buildLeaderboard(currentUser, 10);
+    const handle = setInterval(() => {
+      current = stepLeaderboard(current);
+      cb(current);
+    }, 2000);
+    return () => clearInterval(handle);
   },
   async getBounties(status) {
     await delay(160);

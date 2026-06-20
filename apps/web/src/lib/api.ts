@@ -30,6 +30,8 @@ export interface Api {
   getProfile(userId: ID): Promise<Profile>;
   getTokens(userId: ID): Promise<TokenSummary>;
   getLeaderboard(opts?: { limit?: number }): Promise<LeaderboardEntry[]>;
+  /** Subscribe to live top-N leaderboard standings. Returns an unsubscribe function. */
+  subscribeLeaderboard(cb: (rows: LeaderboardEntry[]) => void): () => void;
   getBounties(status?: BountyStatus): Promise<Bounty[]>;
   getBounty(id: ID): Promise<Bounty>;
   getProgress(): Promise<ProgressOverview>;

@@ -29,12 +29,13 @@ export interface LedgerDeps {
   handle: DbHandle;
   cfg: LedgerConfig;
   hub: SseHub;
+  lbHub: SseHub;
   env: AppEnv;
   driver?: DemoDriver | null;
 }
 
 export function createLedgerRouter(deps: LedgerDeps): Router {
-  const { service, handle, cfg, hub, env, driver } = deps;
+  const { service, handle, cfg, hub, lbHub, env, driver } = deps;
   const db = handle.db;
   const router = Router();
 
@@ -54,6 +55,18 @@ export function createLedgerRouter(deps: LedgerDeps): Router {
     const limit = req.query.limit ? Number(req.query.limit) : undefined;
     const me = getAuthenticatedUsername(req, env) ?? "";
     res.json(buildLeaderboard(db, me, limit));
+  });
+
+  router.get("/api/leaderboard/stream", (req, res) => {
+    if (!isAuthenticated(req, env)) {
+      res.status(401).json({ error: "Authentication required." });
+      return;
+    }
+    lbHub.add(res);
+    // Push current standings immediately so the client paints without waiting.
+    // The shared stream omits "you" highlighting; the client re-marks it by name.
+    res.write(`data: ${JSON.stringify(service.leaderboardSnapshot())}\n\n`);
+    req.on("close", () => lbHub.remove(res));
   });
 
   router.get("/api/network", (req, res) => {

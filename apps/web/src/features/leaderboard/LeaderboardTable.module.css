@@ -3,3 +3,19 @@
   align-items: center;
   gap: var(--s2);
 }
+
+.bounties,
+.bountiesZero {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--s1);
+}
+
+.bounties {
+  color: var(--accent-2); /* orange = reward/economy axis; paired with the trophy icon + count */
+}
+
+.bountiesZero {
+  color: var(--text-faint);
+}

@@ -25,6 +25,23 @@ export function openDb(dbPath: string): DbHandle {
   raw.pragma("journal_mode = WAL");
   raw.pragma("foreign_keys = ON");
   raw.exec(SCHEMA_DDL);
+  ensureColumns(raw);
   const db = drizzle(raw, { schema });
   return { db, raw };
+}
+
+/**
+ * Additive, idempotent column migrations for DBs created before a column was
+ * added (the prototype has no migration toolchain — CREATE TABLE IF NOT EXISTS
+ * never alters an existing table). Each entry is a no-op once the column exists.
+ */
+function ensureColumns(raw: Database.Database): void {
+  const additions: Array<{ table: string; column: string; ddl: string }> = [
+    { table: "wallets", column: "best_score", ddl: "ALTER TABLE wallets ADD COLUMN best_score REAL NOT NULL DEFAULT 0" },
+    { table: "sessions", column: "score", ddl: "ALTER TABLE sessions ADD COLUMN score REAL" }
+  ];
+  for (const { table, column, ddl } of additions) {
+    const cols = raw.prepare(`PRAGMA table_info(${table})`).all() as Array<{ name: string }>;
+    if (!cols.some((c) => c.name === column)) raw.exec(ddl);
+  }
 }

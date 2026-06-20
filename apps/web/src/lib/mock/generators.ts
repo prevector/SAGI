@@ -175,6 +175,20 @@ function noteFor(reason: TokenReason): string {
 
 /* ------------------------------ leaderboard -------------------------------- */
 
+/** Deterministic best learning score (0..1) for a username — loosely tied to
+ *  tokens (more earned ≈ stronger organism) with stable jitter. */
+function scoreFor(username: string, tokens: number): number {
+  const rng = rngFor(`score:${username}`);
+  const base = 0.45 + Math.min(0.4, tokens / 320_000); // bigger earners trend higher
+  return Math.max(0, Math.min(1, Math.round((base + (rng() - 0.5) * 0.1) * 1000) / 1000));
+}
+
+/** Deterministic bounties-won count, weighted toward higher-scoring organisms. */
+function bountiesWonFor(username: string, score: number): number {
+  const rng = rngFor(`bounties:${username}`);
+  return Math.round(rng() * score * 5);
+}
+
 export function buildLeaderboard(currentUsername: string, limit?: number): LeaderboardEntry[] {
   const pool = [...contributors];
   if (!pool.some((c) => c.username === currentUsername)) {
@@ -189,13 +203,20 @@ export function buildLeaderboard(currentUsername: string, limit?: number): Leade
   }
 
   const ranked = pool
-    .sort((a, b) => b.tokens - a.tokens)
+    .map((c) => {
+      const score = scoreFor(c.username, c.tokens);
+      return { ...c, score, bountiesWon: bountiesWonFor(c.username, score) };
+    })
+    // Rank by learning score; tie-break by tokens (mirrors the backend).
+    .sort((a, b) => b.score - a.score || b.tokens - a.tokens)
     .map((c, i): LeaderboardEntry => {
       const rng = rngFor(`lb:${c.username}`);
       return {
         rank: i + 1,
         userId: c.username,
         username: c.username,
+        score: c.score,
+        bountiesWon: c.bountiesWon,
         tokens: c.tokens,
         computePower: c.computePower,
         delta: Math.round((rng() - 0.4) * 3200),
@@ -204,6 +225,26 @@ export function buildLeaderboard(currentUsername: string, limit?: number): Leade
     });
 
   return limit ? ranked.slice(0, limit) : ranked;
+}
+
+/** Mutate the previous leaderboard for a live tick: nudge scores up, jitter
+ *  movement, occasionally award a bounty, then re-rank. */
+export function stepLeaderboard(prev: LeaderboardEntry[]): LeaderboardEntry[] {
+  const r = Math.random;
+  const moved = prev.map((e) => {
+    const gain = r() < 0.3 ? r() * 0.01 : 0; // a few organisms improve each tick
+    const wonBounty = r() < 0.04;
+    return {
+      ...e,
+      score: Math.min(0.999, Math.round((e.score + gain) * 1000) / 1000),
+      bountiesWon: e.bountiesWon + (wonBounty ? 1 : 0),
+      tokens: e.tokens + (wonBounty ? 20_000 + Math.round(r() * 30_000) : Math.round(r() * 600)),
+      delta: Math.round((r() - 0.35) * 3600)
+    };
+  });
+  return moved
+    .sort((a, b) => b.score - a.score || b.tokens - a.tokens)
+    .map((e, i) => ({ ...e, rank: i + 1 }));
 }
 
 /* -------------------------------- bounties --------------------------------- */

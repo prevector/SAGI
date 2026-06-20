@@ -18,6 +18,7 @@ export interface GenesisWallet {
   username: string;
   total: Base; // base units
   computeUnits: number;
+  bestScore: number; // best normalized GA transfer score (0..1)
   createdAt: number;
 }
 
@@ -88,7 +89,10 @@ export function buildGenesis(seed: number, opts: { users: number; days: number; 
       });
     }
 
-    wallets.push({ address, username, total, computeUnits, createdAt });
+    // Best learning score: earlier (bootstrap) contributors trend higher, with
+    // jitter, in a believable 0.45..0.95 band. Deterministic via faker.seed.
+    const bestScore = Math.round((0.45 + bootstrap * 0.4 + faker.number.float({ min: -0.05, max: 0.1 })) * 1000) / 1000;
+    wallets.push({ address, username, total, computeUnits, bestScore: Math.max(0, Math.min(1, bestScore)), createdAt });
   });
 
   // Stable chronological order for the backlog.
