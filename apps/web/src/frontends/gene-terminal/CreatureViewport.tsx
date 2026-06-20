@@ -35,7 +35,7 @@ interface PointMeta {
   radius: number;
   color: string;
   pinned?: boolean;
-  role: "body" | "neck" | "head" | "knee" | "foot" | "tail" | "arm" | "hand";
+  role: "body" | "neck" | "head" | "knee" | "ankle" | "foot" | "tail" | "arm" | "hand";
   anchor?: number;
   wobble?: number;
 }
@@ -70,6 +70,7 @@ interface BoneSpec {
 interface LegSpec {
   hip: number;
   knee: number;
+  ankle?: number;
   foot: number;
   restOffset: Vector3;
   desiredPosition: Vector3;
@@ -294,6 +295,12 @@ function createCreatureSpec(gene: EvolutionGene, phenotype: CreaturePhenotype): 
   const spineGrowth: number[] = [];
   const spineDepth: number[] = [];
   const spineHeight: number[] = [];
+  const spineSlope = (sampleMorph(gene, 43, 1.4) - 0.5) * (0.16 + params.uprightness * 0.46);
+  const spineArch = (sampleMorph(gene, 44, 1.6) - 0.5) * (0.32 + params.uprightness * 0.42);
+  const spineWave = (sampleMorph(gene, 45, 1.6) - 0.5) * (0.16 + params.uprightness * 0.18);
+  const spineWaveFrequency = 1 + Math.floor(sampleMorph(gene, 46, 1.4) * 2.999);
+  const spineWavePhase = sampleMorph(gene, 48, 1.5) * Math.PI * 2;
+  const spineArchCenter = 0.26 + sampleMorph(gene, 49, 1.4) * 0.48;
   let previousGrowth = 0.82 + sampleMorph(gene, 100, 1.4) * 0.18;
   for (let index = 0; index < bodyCount; index += 1) {
     const bud = sampleMorph(gene, 100 + index * 3, 1.8);
@@ -313,10 +320,15 @@ function createCreatureSpec(gene: EvolutionGene, phenotype: CreaturePhenotype): 
       advance += params.bodySpacing * (0.08 + segmentGrowth * 1.08);
     }
     const horizontal = advance * (1 - params.uprightness * 0.84);
+    const centeredT = t - 0.5;
+    const archProfile = 1 - Math.min(1, Math.abs(t - spineArchCenter) / 0.5);
+    const waveProfile = Math.sin(t * Math.PI * spineWaveFrequency + spineWavePhase);
     const vertical =
-      advance * (0.04 + params.uprightness * 0.74) +
+      advance * spineSlope +
+      archProfile * spineArch +
+      waveProfile * spineWave +
       (spineHeight[index] - 0.5) * (0.08 + params.uprightness * 0.42) +
-      Math.pow(t, 1.4) * params.uprightness * 0.68;
+      centeredT * params.uprightness * 0.18;
     spineRest.push(new Vector3(horizontal, vertical, spineDepth[index]));
   }
   const firstX = spineRest[0]?.x ?? 0;
@@ -481,6 +493,8 @@ function createCreatureSpec(gene: EvolutionGene, phenotype: CreaturePhenotype): 
       const lateralReach = params.footSpread * (0.38 + growth * 0.82);
       const kneeSpread = params.kneeSpread * (0.22 + growth * 0.92);
       const kneeLift = Math.max(0.08, legLength * (0.22 + growth * 0.12));
+      const extraJointChance = sampleMorph(gene, 222 + pairIndex * 4 + sideIndex * 2, 1.7);
+      const hasAnkle = growth > 0.34 && extraJointChance > 0.54;
       const footRest = points[attach].rest.clone().add(
         new Vector3(forwardReach, floorY - points[attach].rest.y, side * lateralReach)
       );
@@ -497,6 +511,23 @@ function createCreatureSpec(gene: EvolutionGene, phenotype: CreaturePhenotype): 
         color: blendColors(params.limbColor, params.bodyAccentColor, 0.22 + thicknessBud * 0.25),
         role: "knee"
       });
+      let ankle: number | undefined;
+      if (hasAnkle) {
+        const ankleRadius = Math.max(footRadius * 0.9, kneeRadius * 0.58);
+        const ankleRest = kneeRest.clone().lerp(footRest, 0.62).add(
+          new Vector3(
+            forwardReach * 0.02,
+            -kneeLift * 0.18,
+            side * kneeSpread * 0.2
+          )
+        );
+        ankle = addPoint({
+          rest: ankleRest,
+          radius: ankleRadius,
+          color: blendColors(params.limbColor, points[knee].color, 0.4),
+          role: "ankle"
+        });
+      }
       const foot = addPoint({
         rest: footRest,
         radius: footRadius,
@@ -506,11 +537,17 @@ function createCreatureSpec(gene: EvolutionGene, phenotype: CreaturePhenotype): 
       });
 
       addBone(attach, knee, Math.max(points[attach].radius * 0.3, hipRadius), points[knee].radius * 0.98, points[knee].color);
-      addBone(knee, foot, points[knee].radius * 1.04, points[foot].radius * 0.92, points[foot].color);
+      if (ankle !== undefined) {
+        addBone(knee, ankle, points[knee].radius * 1.02, points[ankle].radius * 0.98, points[ankle].color);
+        addBone(ankle, foot, points[ankle].radius * 1.04, points[foot].radius * 0.92, points[foot].color);
+      } else {
+        addBone(knee, foot, points[knee].radius * 1.04, points[foot].radius * 0.92, points[foot].color);
+      }
 
       legs.push({
         hip: attach,
         knee,
+        ankle,
         foot,
         restOffset: footRest.clone().sub(points[attach].rest),
         desiredPosition: footRest.clone(),
@@ -859,6 +896,12 @@ function CreatureWalker({
         points[index].acceleration.addScaledVector(lateral, side * 0.95 + strideDifferential * side * 0.4);
         points[index].acceleration.y += 5.2 + Math.max(0, -armSwing) * 0.8;
       }
+
+      if (meta.role === "ankle") {
+        points[index].acceleration.addScaledVector(forward, 0.45 + walkStrength * 0.25);
+        points[index].acceleration.y += 4.6;
+        points[index].acceleration.addScaledVector(lateral, (meta.rest.z < 0 ? -1 : 1) * 0.45);
+      }
     });
 
     applyGravity(points);
@@ -904,6 +947,12 @@ function CreatureWalker({
       knee.acceleration.addScaledVector(forward, 0.6 + walkStrength * 0.55);
       knee.acceleration.y += 6.4;
       knee.acceleration.addScaledVector(lateral, leg.side * 1.15);
+      if (leg.ankle !== undefined) {
+        const ankle = points[leg.ankle];
+        ankle.acceleration.addScaledVector(forward, 0.42 + walkStrength * 0.28);
+        ankle.acceleration.y += 4.8;
+        ankle.acceleration.addScaledVector(lateral, leg.side * 0.62);
+      }
     }
 
     for (let index = 0; index < points.length; index += 1) {
@@ -916,6 +965,7 @@ function CreatureWalker({
         role === "arm" ? 0.74 :
         role === "hand" ? 0.72 :
         role === "knee" ? 0.73 :
+        role === "ankle" ? 0.72 :
         0.78;
       integratePoint(points[index], dt, damping);
     }
