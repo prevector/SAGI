@@ -8,6 +8,8 @@ import {
   type ReactNode
 } from "react";
 import type { SessionInfo } from "@sagi/shared";
+import { config } from "../lib/config";
+import { setCurrentUser } from "../lib/mock";
 import { fetchJson } from "../lib/request";
 
 // Username-only auth, backed by the engine's existing signed-cookie session
@@ -33,7 +35,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const applySession = useCallback((session: SessionInfo) => {
     setMode(session.mode);
-    setUsername(session.authenticated && session.user ? session.user.name : null);
+    const name = session.authenticated && session.user ? session.user.name : null;
+    setUsername(name);
+    if (config.useMock && name) {
+      setCurrentUser(name);
+    }
   }, []);
 
   const refresh = useCallback(async () => {
