@@ -44,3 +44,7 @@ export function glow(intensity = 1.6): number {
 
 /** Fog color for the stage — slightly lifted from pure bg so depth reads. */
 export const FOG_COLOR = PALETTE.bg;
+
+/** Light "studio" stage background + fog (clean white look). */
+export const STAGE_BG = "#FFFFFF";
+export const STAGE_FOG = "#EEF3F3";

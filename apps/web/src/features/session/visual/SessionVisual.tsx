@@ -6,7 +6,8 @@
 // Accessibility/perf: honours prefers-reduced-motion (static solved frame),
 // shrinks on mobile, and pauses off-screen / when backgrounded (see Stage).
 
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
+import * as THREE from "three";
 import { VISUAL_CONFIG } from "./config";
 import { subRng } from "./rng";
 import { Maze } from "./maze/Maze";
@@ -20,10 +21,12 @@ import { createRemoteSource } from "./learning/remoteSource";
 import { PALETTE } from "./palette";
 import { GhostTrails } from "./scene/GhostTrails";
 import { PathLine } from "./scene/PathLine";
+import { Footprints } from "./scene/Footprints";
 import { Stage } from "./scene/Stage";
 import { usePerf } from "./scene/usePerf";
 import { useReducedMotion } from "./scene/useReducedMotion";
 import { useIsMobile } from "./scene/useIsMobile";
+import { useQuality } from "./scene/useQuality";
 import styles from "./SessionVisual.module.css";
 
 export type SessionVisualStatus = "queued" | "running" | "completed" | "failed";
@@ -64,12 +67,21 @@ export default function SessionVisual({ seed, status }: SessionVisualProps) {
 
   // Creature morphology is fixed per session.
   const rig = useMemo(() => assemble(genomeFromSeed(subRng(seed, "morph"))), [seed]);
-  const creatureScale = cellSize * 0.42;
+  // Sized to sit comfortably inside a 1-cell corridor (avoids wall clipping).
+  const creatureScale = cellSize * 0.5;
+
+  // Live ground position of the champion, written by CreatureRunner each frame
+  // and read by the footprint trail.
+  const creaturePos = useRef(new THREE.Vector3());
 
   // Evolve (animate) only when the session is active and motion is allowed.
   const evolve = !reducedMotion && !remote && (status === "running" || status === "completed");
 
   const frameloop = evolve ? "always" : "demand";
+
+  // Resolve the live fidelity tier (device base + one-way perf governor). Every
+  // heavy effect in the scene/creature/maze reads this — never isMobile directly.
+  const quality = useQuality({ mobile: isMobile, reducedMotion, perf, active: evolve });
 
   const startPos = useMemo(
     () => cellWorld(grid.start, grid, cellSize),
@@ -78,8 +90,6 @@ export default function SessionVisual({ seed, status }: SessionVisualProps) {
   const exitPos = useMemo(() => cellWorld(grid.exit, grid, cellSize), [grid, cellSize]);
   // Reduced-motion: park the creature at the exit of its solved route.
   const staticPos = reducedMotion && snap.solved ? exitPos : startPos;
-
-  const showSolvedPath = snap.solved && (evolve || reducedMotion);
 
   const phaseLabel = useMemo(() => {
     if (remote) return "Waiting for engine telemetry…";
@@ -90,18 +100,42 @@ export default function SessionVisual({ seed, status }: SessionVisualProps) {
 
   return (
     <div className={styles.root} aria-hidden="true">
-      <Stage frameloop={frameloop} lowPower={reducedMotion} mobile={isMobile} perf={perf}>
-        <Maze grid={grid} cellSize={cellSize} wallHeight={wallHeight} celebrate={snap.solved} />
+      <Stage
+        frameloop={frameloop}
+        lowPower={reducedMotion}
+        mobile={isMobile}
+        perf={perf}
+        quality={quality}
+      >
+        <Maze
+          grid={grid}
+          cellSize={cellSize}
+          wallHeight={wallHeight}
+          celebrate={snap.solved}
+          quality={quality}
+        />
 
         {/* Exploration attempts (dim dashed) while still searching (desktop). */}
         {evolve && !snap.solved && !isMobile ? (
           <GhostTrails grid={grid} cellSize={cellSize} attempts={snap.attempts} />
         ) : null}
 
-        {/* Solved route ignites as a solid bright line (colorblind cue). */}
-        {showSolvedPath ? (
-          <PathLine grid={grid} cellSize={cellSize} path={snap.path} color={PALETTE.teal} y={0.06} lineWidth={3} />
+        {/* The champion's route, always drawn while it moves — solid teal when
+            solved, a quieter line while still evolving (its visible trail). */}
+        {(evolve || reducedMotion) && snap.path.length >= 2 ? (
+          <PathLine
+            grid={grid}
+            cellSize={cellSize}
+            path={snap.path}
+            color={PALETTE.teal}
+            y={0.05}
+            lineWidth={snap.solved ? 5 : 3.5}
+            opacity={snap.solved ? 1 : 0.7}
+          />
         ) : null}
+
+        {/* Fading footprints the creature stamps as it walks. */}
+        {evolve ? <Footprints posRef={creaturePos} color={PALETTE.teal} cellSize={cellSize} /> : null}
 
         {/* The champion creature: follows the path when evolving, else static. */}
         {evolve ? (
@@ -115,10 +149,13 @@ export default function SessionVisual({ seed, status }: SessionVisualProps) {
             evolve={evolve}
             onArrive={run.advance}
             scale={creatureScale}
+            quality={quality}
+            fitness={Math.min(1, snap.bestFitness / 100)}
+            posRef={creaturePos}
           />
         ) : (
           <group position={staticPos} scale={creatureScale}>
-            <Creature rig={rig} walk={false} />
+            <Creature rig={rig} walk={false} quality={quality} fitness={snap.solved ? 1 : 0.3} />
           </group>
         )}
       </Stage>

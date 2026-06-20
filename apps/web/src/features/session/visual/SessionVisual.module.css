@@ -5,7 +5,9 @@
 .root {
   position: relative;
   width: 100%;
-  height: 340px;
+  /* Hero stage — large so the creature/maze detail reads (≈3× the old 340px,
+     capped to the viewport so it never overflows the page). */
+  height: min(1020px, 86vh);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   overflow: hidden;
@@ -75,6 +77,6 @@
 
 @media (max-width: 720px) {
   .root {
-    height: 240px;
+    height: min(680px, 80vh);
   }
 }
