@@ -72,7 +72,7 @@ export function Stage({
         frameloop={effectiveLoop}
         dpr={dpr}
         gl={{ antialias: !mobile, powerPreference: "high-performance" }}
-        camera={{ position: [6, 7, 9], fov: 42, near: 0.1, far: 100 }}
+        camera={{ position: [9, 11, 13], fov: 42, near: 0.1, far: 100 }}
         onCreated={({ gl }) => gl.setClearColor(new THREE.Color(PALETTE.bg), 1)}
       >
         <SceneFog />
@@ -85,8 +85,8 @@ export function Stage({
         <OrbitControls
           enablePan={false}
           enableDamping
-          minDistance={5}
-          maxDistance={20}
+          minDistance={6}
+          maxDistance={30}
           maxPolarAngle={Math.PI / 2.1}
           autoRotate={!lowPower && frameloop === "always"}
           autoRotateSpeed={0.4}

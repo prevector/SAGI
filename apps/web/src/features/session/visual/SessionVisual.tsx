@@ -7,6 +7,10 @@ import { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import type { Mesh } from "three";
 import { PALETTE, glow } from "./palette";
+import { VISUAL_CONFIG } from "./config";
+import { subRng } from "./rng";
+import { generateMaze, worldPos } from "./maze/generate";
+import { Maze } from "./maze/Maze";
 import { Stage } from "./scene/Stage";
 import { usePerf } from "./scene/usePerf";
 import { useReducedMotion } from "./scene/useReducedMotion";
@@ -22,18 +26,24 @@ export interface SessionVisualProps {
   progress: number;
 }
 
-/** Placeholder hero mesh — a slowly turning glowing icosahedron. */
-function Placeholder({ animate }: { animate: boolean }) {
+/** Placeholder creature — a glowing icosahedron at the start cell (stand-in
+ * until C3/C4 add the procedural creature). */
+function Placeholder({
+  animate,
+  position,
+}: {
+  animate: boolean;
+  position: [number, number, number];
+}) {
   const ref = useRef<Mesh>(null);
   useFrame((_, dt) => {
     if (animate && ref.current) {
-      ref.current.rotation.y += dt * 0.4;
-      ref.current.rotation.x += dt * 0.15;
+      ref.current.rotation.y += dt * 0.6;
     }
   });
   return (
-    <mesh ref={ref} position={[0, 1.5, 0]}>
-      <icosahedronGeometry args={[1.4, 1]} />
+    <mesh ref={ref} position={position}>
+      <icosahedronGeometry args={[0.32, 1]} />
       <meshStandardMaterial
         color={PALETTE.teal}
         emissive={PALETTE.teal}
@@ -46,19 +56,23 @@ function Placeholder({ animate }: { animate: boolean }) {
   );
 }
 
-/** Matte ground plane so the stage reads as a 3D space. */
-function Ground() {
-  return (
-    <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} receiveShadow>
-      <planeGeometry args={[40, 40]} />
-      <meshStandardMaterial color={PALETTE.surface} roughness={1} metalness={0} />
-    </mesh>
-  );
-}
-
-export default function SessionVisual({ status, progress }: SessionVisualProps) {
+export default function SessionVisual({ seed, status, progress }: SessionVisualProps) {
   const reducedMotion = useReducedMotion();
   const perf = usePerf();
+
+  const { cols, rows, cellSize, wallHeight } = VISUAL_CONFIG.maze;
+
+  // The maze is fixed per session: derive it once from the seed.
+  const grid = useMemo(
+    () => generateMaze(subRng(seed, "maze"), cols, rows),
+    [seed, cols, rows]
+  );
+
+  // Placeholder creature sits on the start cell until C3/C4 replace it.
+  const startWorld = useMemo(() => {
+    const [wx, wz] = worldPos(grid, grid.start[0], grid.start[1], cellSize);
+    return [wx, wallHeight + 0.4, wz] as [number, number, number];
+  }, [grid, cellSize, wallHeight]);
 
   const isDev = import.meta.env.DEV;
   const animate = !reducedMotion && status === "running";
@@ -80,8 +94,8 @@ export default function SessionVisual({ status, progress }: SessionVisualProps) 
   return (
     <div className={styles.root} aria-hidden="true">
       <Stage frameloop={frameloop} lowPower={reducedMotion} perf={perf}>
-        <Ground />
-        <Placeholder animate={animate} />
+        <Maze grid={grid} cellSize={cellSize} wallHeight={wallHeight} />
+        <Placeholder animate={animate} position={startWorld} />
       </Stage>
 
       {/* DOM HUD overlay — inherits Geist from the page (colorblind-safe text). */}
