@@ -3,6 +3,11 @@
 // behaviour, the performance budget, and LOD thresholds here.
 
 export const VISUAL_CONFIG = {
+  /** Where training comes from: in-browser GA now ("local"), engine telemetry
+   *  later ("remote"). The remote source is a typed stub until the engine
+   *  streams training (RESEARCH-3D.md §3). */
+  trainingSource: "local" as "local" | "remote",
+
   /** Genetic algorithm (the placeholder "brain" being trained). */
   ga: {
     populationSize: 80,

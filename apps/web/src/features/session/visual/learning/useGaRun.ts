@@ -24,8 +24,33 @@ export interface GaRun {
   runKey: number;
 }
 
-export function useGaRun(seed: string): GaRun {
-  const source = useMemo(() => createLocalSource(seed), [seed]);
+export interface UseGaRunOptions {
+  cols?: number;
+  rows?: number;
+  /** Step synchronously to a solved state on init (reduced-motion static view). */
+  autoSolve?: boolean;
+}
+
+export function useGaRun(seed: string, opts: UseGaRunOptions = {}): GaRun {
+  const {
+    cols = VISUAL_CONFIG.maze.cols,
+    rows = VISUAL_CONFIG.maze.rows,
+    autoSolve = false,
+  } = opts;
+
+  const source = useMemo(() => {
+    const src = createLocalSource(seed, cols, rows);
+    if (autoSolve) {
+      const t = src.trainer;
+      let g = 0;
+      while (!t.stats().solved && g < VISUAL_CONFIG.ga.maxGenerations) {
+        t.step();
+        g++;
+      }
+    }
+    return src;
+  }, [seed, cols, rows, autoSolve]);
+
   const [snap, setSnap] = useState<CellPathSnapshot>(() => snapshot(source.trainer));
   const [runKey, setRunKey] = useState(0);
   const lastStep = useRef(0);

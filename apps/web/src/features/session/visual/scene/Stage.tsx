@@ -48,19 +48,30 @@ export function Stage({
   perf,
 }: StageProps) {
   const hostRef = useRef<HTMLDivElement>(null);
-  const [visible, setVisible] = useState(true);
+  const [onScreen, setOnScreen] = useState(true);
+  const [tabVisible, setTabVisible] = useState(true);
 
   // Pause rendering when the canvas scrolls off-screen (perf budget).
   useEffect(() => {
     const el = hostRef.current;
     if (!el || typeof IntersectionObserver === "undefined") return;
     const io = new IntersectionObserver(
-      ([entry]) => setVisible(entry.isIntersecting),
+      ([entry]) => setOnScreen(entry.isIntersecting),
       { threshold: 0.01 }
     );
     io.observe(el);
     return () => io.disconnect();
   }, []);
+
+  // Pause when the tab is backgrounded.
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const onVis = () => setTabVisible(document.visibilityState === "visible");
+    document.addEventListener("visibilitychange", onVis);
+    return () => document.removeEventListener("visibilitychange", onVis);
+  }, []);
+
+  const visible = onScreen && tabVisible;
 
   const dpr = mobile ? VISUAL_CONFIG.perf.dprMobile : VISUAL_CONFIG.perf.dprDesktop;
   // Off-screen → force demand so nothing renders until visible again.

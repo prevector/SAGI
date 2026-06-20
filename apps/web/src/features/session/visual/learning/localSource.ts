@@ -12,8 +12,8 @@ export interface LocalSource extends Extract<TrainingSource, { kind: "local" }> 
 
 export function createLocalSource(
   seed: Seed,
-  cols = VISUAL_CONFIG.maze.cols,
-  rows = VISUAL_CONFIG.maze.rows
+  cols: number = VISUAL_CONFIG.maze.cols,
+  rows: number = VISUAL_CONFIG.maze.rows
 ): LocalSource {
   const trainer = new GaTrainer({ cols, rows });
   trainer.reset(seed);

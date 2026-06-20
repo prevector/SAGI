@@ -5,7 +5,7 @@
 // The creature is the hero "intelligence" element, so its materials glow
 // (emissive pushed past 1 -> Bloom picks it out).
 
-import { useLayoutEffect, useMemo, useRef } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { glow } from "../palette";
@@ -133,6 +133,18 @@ export function Creature({ rig, walk = false, speed = 1 }: CreatureProps) {
     applyPose(0, false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rig, walk]);
+
+  // Dispose the manually-created materials/geometries on unmount (no leaks).
+  useEffect(
+    () => () => {
+      bodyMat.dispose();
+      limbMat.dispose();
+      eyeMat.dispose();
+      upperGeo.dispose();
+      lowerGeo.dispose();
+    },
+    [bodyMat, limbMat, eyeMat, upperGeo, lowerGeo]
+  );
 
   useFrame((state) => {
     applyPose(state.clock.elapsedTime, walk);
