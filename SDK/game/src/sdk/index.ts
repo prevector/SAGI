@@ -12,11 +12,14 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return res.json() as Promise<T>;
 }
 
+// The visible "genome" of a candidate — what the network is checking. Each stat is
+// an integer 1..50. Deliberately excludes how well the candidate performs.
 export interface CandidateParams {
-  layers: number;
-  width: number;
-  connections: number;
-  efficiency: number;
+  neuronParams: number;        // parameters per neuron
+  synapseStateParams: number;  // parameters describing a synapse's state
+  layers: number;              // number of layers
+  neuronTypes: number;         // distinct neuron types
+  updateComplexity: number;    // complexity of the update rule
   seed: string;
 }
 

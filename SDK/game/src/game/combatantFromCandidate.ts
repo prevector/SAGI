@@ -53,24 +53,31 @@ function mulberry32(a: number): () => number {
   };
 }
 
+// Normalize a 1..50 genome stat to 0..1.
+const n = (v: number) => Math.max(0, Math.min(1, (v - 1) / 49));
+
 export function combatantFromCandidate(params: CandidateParams, side: "a" | "b"): CombatantVisual {
   const rng = mulberry32(hashSeed(params.seed));
-  const orbiterCount = Math.max(3, Math.round(params.layers + params.connections * 4));
+  // More neuron types → more orbiting nodes; more layers → wider orbits.
+  const orbiterCount = Math.max(3, Math.min(14, Math.round(2 + n(params.neuronTypes) * 12)));
+  const spread = 0.5 + n(params.layers) * 0.5;
 
   const orbiters: Orbiter[] = Array.from({ length: orbiterCount }, (_, i) => ({
     angle: (i / orbiterCount) * Math.PI * 2 + rng() * 0.6,
-    radius: 0.55 + rng() * 0.5,
-    size: 0.07 + rng() * 0.06,
+    radius: spread + rng() * 0.4,
+    // Synapse-state params nudge node size.
+    size: 0.06 + n(params.synapseStateParams) * 0.06 + rng() * 0.03,
     speed: 0.4 + rng() * 0.8,
   }));
 
   return {
     color: side === "a" ? TEAL : ORANGE,
-    coreScale: 0.45 + params.width * 0.18,
+    // Params-per-neuron drives core size.
+    coreScale: 0.42 + n(params.neuronParams) * 0.4,
     orbiters,
-    // Note: keep glow subtle — do NOT leak the hidden trueScore. efficiency is public
-    // anyway, but the duel pairs adjacent scores so both sides read as comparable.
-    glow: 1.2 + params.efficiency * 0.4,
+    // Update-rule complexity drives the base glow. Note: NONE of these leak the
+    // hidden trueScore — the genome is independent of performance by design.
+    glow: 1.15 + n(params.updateComplexity) * 0.5,
     seed: params.seed,
   };
 }

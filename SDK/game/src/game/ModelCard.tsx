@@ -4,12 +4,15 @@ import { EffectComposer, Bloom, Vignette } from "@react-three/postprocessing";
 import * as THREE from "three";
 import { Combatant, type Outcome } from "./Combatant";
 import type { CombatantVisual } from "./combatantFromCandidate";
+import { ParamBars } from "./ParamBars";
+import type { CandidateParams } from "../sdk";
 
 const BG = "#041414";
 const mono = '"Geist Mono Variable", ui-monospace, monospace';
 
 interface ModelCardProps {
   visual: CombatantVisual;
+  params: CandidateParams;
   label: "A" | "B";
   outcome: Outcome;
   /** clickable (only during the choosing phase) */
@@ -21,7 +24,7 @@ interface ModelCardProps {
   onPick: () => void;
 }
 
-export function ModelCard({ visual, label, outcome, selectable, picked, dimmed, onPick }: ModelCardProps) {
+export function ModelCard({ visual, params, label, outcome, selectable, picked, dimmed, onPick }: ModelCardProps) {
   const accent = visual.color;
   const border = picked ? accent : "rgba(23,196,196,0.14)";
 
@@ -60,6 +63,8 @@ export function ModelCard({ visual, label, outcome, selectable, picked, dimmed, 
         {selectable && <span style={styles.hint}>tap to pick</span>}
         {picked && !selectable && <span style={{ ...styles.hint, color: accent }}>your pick</span>}
       </div>
+
+      <ParamBars params={params} accent={accent} />
     </button>
   );
 }
@@ -78,7 +83,7 @@ const styles: Record<string, CSSProperties> = {
     transition: "opacity 0.4s ease, box-shadow 0.3s ease, border-color 0.3s ease",
     WebkitTapHighlightColor: "transparent",
   },
-  canvasWrap: { width: "100%", aspectRatio: "1 / 1", minHeight: 0 },
+  canvasWrap: { width: "100%", aspectRatio: "4 / 3", minHeight: 0 },
   footer: {
     display: "flex",
     justifyContent: "space-between",

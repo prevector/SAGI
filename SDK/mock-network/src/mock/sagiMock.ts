@@ -13,12 +13,17 @@ const rangeInt = (rng: RNG, min: number, max: number) => Math.floor(range(rng, m
 
 // ─── Domain types ─────────────────────────────────────────────────────────────
 
+// The visible "genome" of a candidate — what the network is actually checking.
+// Each stat is an integer 1..50 and varies per candidate. Crucially this does NOT
+// include how well the candidate performs: true quality is kept out of the params
+// on purpose (it's the hidden signal the human judgment is for).
 export interface CandidateParams {
-  layers: number;       // 2..6
-  width: number;        // 0.5..1.5 (body scale)
-  connections: number;  // 0..1 (connectivity density)
-  efficiency: number;   // 0..1 (determines color + true quality)
-  seed: string;         // deterministic seed for the creature renderer
+  neuronParams: number;        // parameters per neuron
+  synapseStateParams: number;  // parameters describing a synapse's state
+  layers: number;              // number of layers
+  neuronTypes: number;         // distinct neuron types
+  updateComplexity: number;    // complexity of the update rule
+  seed: string;                // deterministic seed for the creature renderer
 }
 
 export interface PublicCandidate {
@@ -106,22 +111,21 @@ function spherePoint(rng: RNG, radius: number): [number, number, number] {
   ];
 }
 
-const candidateRng = makeRng("sagi-candidates-v1");
+const candidateRng = makeRng("sagi-candidates-v2");
 const candidates: Candidate[] = Array.from({ length: 50 }, (_, i) => {
-  const efficiency = range(candidateRng, 0.05, 0.98);
-  const noise = range(candidateRng, -0.12, 0.12);
-  const trueScore = Math.max(0, Math.min(1, efficiency * 0.85 + noise));
-  return {
-    id: `c-${i.toString().padStart(3, "0")}`,
-    params: {
-      layers: rangeInt(candidateRng, 2, 6),
-      width: range(candidateRng, 0.5, 1.5),
-      connections: range(candidateRng, 0, 1),
-      efficiency,
-      seed: `s${i}-${Math.floor(candidateRng() * 99999)}`,
-    },
-    trueScore,
+  // Visible genome: each stat 1..50, independently drawn so candidates differ.
+  const params: CandidateParams = {
+    neuronParams: rangeInt(candidateRng, 1, 50),
+    synapseStateParams: rangeInt(candidateRng, 1, 50),
+    layers: rangeInt(candidateRng, 1, 50),
+    neuronTypes: rangeInt(candidateRng, 1, 50),
+    updateComplexity: rangeInt(candidateRng, 1, 50),
+    seed: `s${i}-${Math.floor(candidateRng() * 99999)}`,
   };
+  // Hidden true performance is deliberately INDEPENDENT of the visible genome —
+  // "how good it is" is exactly what we keep out of the parameters.
+  const trueScore = range(candidateRng, 0.02, 0.98);
+  return { id: `c-${i.toString().padStart(3, "0")}`, params, trueScore };
 });
 
 const nodeRng = makeRng("sagi-nodes-v1");

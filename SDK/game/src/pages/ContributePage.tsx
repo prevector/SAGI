@@ -60,10 +60,11 @@ export default function ContributePage() {
 
       {/* ── The two models ──────────────────────────────────────── */}
       <main style={styles.cards}>
-        {s.visuals ? (
+        {s.visuals && s.task ? (
           <>
             <ModelCard
               visual={s.visuals.a}
+              params={s.task.a.params}
               label="A"
               outcome={outcomeFor("a")}
               selectable={s.phase === "choosing"}
@@ -73,6 +74,7 @@ export default function ContributePage() {
             />
             <ModelCard
               visual={s.visuals.b}
+              params={s.task.b.params}
               label="B"
               outcome={outcomeFor("b")}
               selectable={s.phase === "choosing"}
