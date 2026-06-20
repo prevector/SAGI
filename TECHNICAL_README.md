@@ -40,7 +40,7 @@ This is the part worth preserving.
 
 ## ENU Structure
 
-From the paper, the ENU is a gated recurrent unit with:
+From the paper, the ENU is a GRU-like recurrent unit with:
 
 - update gate
 - reset gate
@@ -62,6 +62,26 @@ For the TypeScript implementation, the practical interpretation is:
 - each ENU update consumes an `input: Float32Array`
 - the shared rule parameters define how that state is updated
 - the ENU emits an `output: Float32Array`
+
+The reproduction target should start from the paper's stated update, without bias terms unless later evidence in the paper or supplement shows otherwise:
+
+```text
+z_t = sigmoid(W_z [h_{t-1}, o_{t-1}, x_t])
+r_t = sigmoid(W_r [h_{t-1}, o_{t-1}, x_t])
+h~_t = tanh(W_c [r_t ⊙ h_{t-1}, o_{t-1}, x_t])
+h_t = (1 - z_t) ⊙ h_{t-1} + z_t ⊙ h~_t
+o_t = clip(W_o h_t, 0, 1)
+```
+
+Two details matter and should not be “cleaned up” away:
+
+- `o_{t-1}` is fed back into the unit
+- the output is hard-clipped to `[0, 1]`
+
+The immediate reproduction defaults from the paper note are:
+
+- memory state size: `32`
+- output channels: `16`
 
 ## Network Structure
 
@@ -193,7 +213,7 @@ Later upgrades:
 Build the minimum paper-shaped core:
 
 - genome spec for shared neuron and synapse parameters
-- explicit ENU cell with gated memory
+- explicit GRU-like ENU cell with `W_z`, `W_r`, `W_c`, `W_o`
 - sparse neuron/synapse network rollout
 - deterministic reset semantics
 - ES loop with antithetic perturbations
@@ -240,6 +260,104 @@ Recommended shapes:
 - connectivity: sparse edge list, not dense adjacency, unless profiling proves otherwise
 
 Do not hide these behind a heavy tensor abstraction at the start.
+
+## Reproduction Order
+
+The safest order is:
+
+1. implement one exact ENU
+2. validate it on integrate-and-fire
+3. validate a synapse ENU on neuromodulated STDP
+4. build the sparse neuron/synapse graph
+5. run the T-maze benchmark
+
+Only simplify after matching the original structure and basic benchmark behavior.
+
+## Benchmark Notes
+
+### Single ENU: Integrate-and-Fire
+
+This is the first local benchmark to reproduce.
+
+Target behavior:
+
+- input is a random graded scalar
+- membrane potential accumulates
+- when threshold is crossed, emit a spike and reset
+
+The paper-oriented benchmark note is:
+
+- sequence length: `100`
+- environments per mutant: `32`
+- generations: `3000`
+- optimize interval structure and spike intensity rather than naive timestep MSE
+
+This repo now includes a local smoke-scale TypeScript experiment at:
+
+- [experiments/enu_iaf_benchmark.ts](/Users/tim/Code/SAGI/experiments/enu_iaf_benchmark.ts:1)
+
+Run it with:
+
+```bash
+npm run experiment:iaf
+```
+
+That script is intentionally smaller than the paper-scale benchmark by default so it can run locally during development. It preserves:
+
+- the GRU-like ENU update
+- previous-output feedback
+- hard output clipping
+- ES optimization of shared parameters
+
+It does not yet claim paper-level reproduction.
+
+### Single Synapse ENU: Neuromodulated STDP
+
+The next benchmark after IAF should give the synapse ENU four channels:
+
+- graded input
+- presynaptic spike
+- neuromodulatory signal
+- back-propagated postsynaptic spike
+
+The target is a local plastic synapse whose effective output is approximately:
+
+```text
+y_t ≈ w_t x_t
+```
+
+with STDP-style weight updates gated by neuromodulation.
+
+This benchmark matters because it tests whether the architecture can evolve local learning dynamics before the full agent benchmark.
+
+### Full ENU Network
+
+The benchmark-oriented reproduction target should preserve:
+
+- `6` ordinary ENU neurons
+- `3` motor-output neurons
+- `3` sensory sources
+- `1` reward source
+- `8` incoming synapse ENUs per ordinary neuron
+
+Each neuron's incoming categories should match the note:
+
+- `2` from sensory neurons
+- `2` from hidden or ordinary neurons
+- `2` from output neurons
+- `1` from reward
+- `1` self-connection
+
+The step order should remain:
+
+1. read neuron outputs
+2. broadcast presynaptic outputs
+3. broadcast postsynaptic feedback
+4. update all synapse ENUs
+5. sum incoming synapse outputs per channel
+6. update all neuron ENUs
+
+That backward postsynaptic signal is one of the important biological priors in the architecture.
 
 ## Non-Negotiable Technical Requirements
 

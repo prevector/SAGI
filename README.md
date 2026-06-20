@@ -29,6 +29,16 @@ Local development runs in developer mode automatically, so auth is bypassed.
 npm run build
 ```
 
+## Local experiments
+
+First paper-shaped smoke test:
+
+```bash
+npm run experiment:iaf
+```
+
+This runs a local TypeScript Evolution Strategies benchmark for a single GRU-like ENU on an integrate-and-fire target. It is a development-scale benchmark, not the full paper-scale reproduction.
+
 ## Production
 
 Create a `.env` file from `.env.example`:
