@@ -72,6 +72,7 @@ interface LegSpec {
   knee: number;
   foot: number;
   restOffset: Vector3;
+  desiredPosition: Vector3;
   plantedPosition: Vector3;
   planted: boolean;
   phase: number;
@@ -512,12 +513,13 @@ function createCreatureSpec(gene: EvolutionGene, phenotype: CreaturePhenotype): 
         knee,
         foot,
         restOffset: footRest.clone().sub(points[attach].rest),
+        desiredPosition: footRest.clone(),
         plantedPosition: footRest.clone(),
         planted: true,
         phase: pairIndex * 0.92 + sideIndex * Math.PI + (pairIndex % 2 === 0 ? 0 : Math.PI * 0.45),
-        stepHeight: 0,
-        stepSpeed: 2,
-        maximumDistance: 0.22,
+        stepHeight: 0.08 + growth * 0.18,
+        stepSpeed: 3.4,
+        maximumDistance: 0.48 + growth * 0.32,
         stepStart: footRest.clone(),
         stepTarget: footRest.clone(),
         stepProgress: 1,
@@ -585,6 +587,7 @@ function cloneSimulation(spec: CreatureSpec) {
     legs: spec.legs.map((leg) => ({
       ...leg,
       restOffset: leg.restOffset.clone(),
+      desiredPosition: leg.desiredPosition.clone(),
       plantedPosition: leg.plantedPosition.clone(),
       stepStart: leg.stepStart.clone(),
       stepTarget: leg.stepTarget.clone()
@@ -684,11 +687,11 @@ function CreatureWalker({
   const simulationRef = useRef(cloneSimulation(spec));
   const motionRef = useRef({
     position: new Vector3(0, -0.05, 0),
-    velocity: new Vector3(0.55, 0, 0.12),
+    velocity: new Vector3(0.9, 0, 0.22),
     heading: 0.24,
     orbitAngle: 0.24,
-    orbitRadiusX: 3.8,
-    orbitRadiusZ: 2.6
+    orbitRadiusX: 2.6,
+    orbitRadiusZ: 2.1
   });
   const boneGeometries = useMemo(
     () => spec.bones.map((bone) => createTaperedCapsuleGeometry(bone.length, bone.radiusA, bone.radiusB)),
@@ -707,11 +710,11 @@ function CreatureWalker({
   useEffect(() => {
     motionRef.current = {
       position: new Vector3(0, -0.05, 0),
-      velocity: new Vector3(0.55, 0, 0.12),
+      velocity: new Vector3(0.9, 0, 0.22),
       heading: 0.24,
       orbitAngle: 0.24,
-      orbitRadiusX: 3.8,
-      orbitRadiusZ: 2.6
+      orbitRadiusX: 2.6,
+      orbitRadiusZ: 2.1
     };
 
     simulationRef.current = cloneSimulation(spec);
@@ -723,6 +726,9 @@ function CreatureWalker({
       point.previous.copy(point.position);
     }
     for (const leg of simulation.legs) {
+      leg.desiredPosition.x += motionRef.current.position.x;
+      leg.desiredPosition.y += motionRef.current.position.y;
+      leg.desiredPosition.z += motionRef.current.position.z;
       leg.plantedPosition.x += motionRef.current.position.x;
       leg.plantedPosition.y += motionRef.current.position.y;
       leg.plantedPosition.z += motionRef.current.position.z;
@@ -746,13 +752,24 @@ function CreatureWalker({
     const locomotion = status === "running" ? 1 : 0.4;
     const cycle = time * (1.1 + locomotion * 0.95);
     const dt = Math.min(delta, 1 / 30);
-    motion.position.set(0, -0.05, 0);
-    motion.velocity.set(1, 0, 0);
-    motion.heading = 0;
+    const trackSpeed = status === "running" ? 0.95 : 0.28;
+    motion.orbitAngle += dt * trackSpeed;
+    const orbitX = Math.cos(motion.orbitAngle) * motion.orbitRadiusX;
+    const orbitZ = Math.sin(motion.orbitAngle) * motion.orbitRadiusZ;
+    const velocityX = -Math.sin(motion.orbitAngle) * motion.orbitRadiusX * trackSpeed;
+    const velocityZ = Math.cos(motion.orbitAngle) * motion.orbitRadiusZ * trackSpeed;
+    motion.position.set(orbitX, -0.05, orbitZ);
+    motion.velocity.set(velocityX, 0, velocityZ);
+    motion.heading = Math.atan2(motion.velocity.z, motion.velocity.x);
 
     const walkStrength = status === "running" ? 0.96 : 0.48;
-    const forward = TEMP_B.set(1, 0, 0);
-    const lateral = TEMP_C.set(0, 0, 1);
+    const forward = TEMP_B.set(motion.velocity.x, 0, motion.velocity.z);
+    if (forward.lengthSq() < 1e-6) {
+      forward.set(1, 0, 0);
+    } else {
+      forward.normalize();
+    }
+    const lateral = TEMP_C.set(-forward.z, 0, forward.x).normalize();
     const torsoDrive = Math.sin(cycle);
     const torsoLift = Math.cos(cycle * 2.1);
     const torsoSway = Math.sin(cycle + Math.PI / 2);
@@ -802,17 +819,23 @@ function CreatureWalker({
       }
 
       if (meta.role === "neck") {
-        points[index].acceleration.addScaledVector(forward, 1.2 + torsoDrive * 0.28);
-        points[index].acceleration.addScaledVector(lateral, torsoSway * 0.45 + strideDifferential * 0.42);
-        points[index].acceleration.y += 12.2 + Math.max(0, torsoLift) * 0.9;
-        points[index].position.y = Math.max(points[index].position.y, motion.position.y + meta.rest.y + 0.02);
+        const anchor = points[meta.anchor ?? spec.bodyIndices[spec.bodyIndices.length - 1]].position;
+        const target = TEMP_A.copy(anchor)
+          .addScaledVector(forward, meta.rest.x)
+          .addScaledVector(WORLD_UP, meta.rest.y)
+          .addScaledVector(lateral, meta.rest.z);
+        points[index].acceleration.addScaledVector(TEMP_B.subVectors(target, points[index].position), 18);
+        points[index].acceleration.y += 8.5;
       }
 
       if (meta.role === "head") {
-        points[index].acceleration.addScaledVector(forward, 1.35 + torsoDrive * 0.36);
-        points[index].acceleration.addScaledVector(lateral, torsoSway * 0.62 + strideDifferential * 0.55);
-        points[index].acceleration.y += Math.sin(cycle * 1.35) * 0.24 + 15.2;
-        points[index].position.y = Math.max(points[index].position.y, motion.position.y + meta.rest.y + 0.06);
+        const anchor = points[meta.anchor ?? spec.neckIndex].position;
+        const target = TEMP_A.copy(anchor)
+          .addScaledVector(forward, meta.rest.x)
+          .addScaledVector(WORLD_UP, meta.rest.y)
+          .addScaledVector(lateral, meta.rest.z);
+        points[index].acceleration.addScaledVector(TEMP_B.subVectors(target, points[index].position), 22);
+        points[index].acceleration.y += 9.5;
       }
 
       if (meta.role === "tail") {
@@ -843,20 +866,44 @@ function CreatureWalker({
     for (const leg of legs) {
       const knee = points[leg.knee];
       const hip = points[leg.hip].position;
-      const foot = points[leg.foot].position;
-      const gait = Math.sin(cycle * (0.84 + leg.lane * 0.045) + leg.phase);
-      const lift = Math.max(0, gait);
-      const midpoint = TEMP_D.copy(hip).lerp(foot, 0.5);
-      const kneeHeight = Math.max(0.08, Math.abs(foot.y - hip.y) * 0.2 + 0.08);
-      const kneeWidth = Math.max(0.08, Math.abs(leg.restOffset.z) * 0.25);
-      const desiredKnee = TEMP_E.copy(midpoint).add(
-        TEMP_A.set(leg.restOffset.x * 0.1, kneeHeight + lift * 0.12, leg.side * kneeWidth)
-      );
+      const foot = points[leg.foot];
+      const hipRadius = spec.points[leg.hip].radius;
+      const forwardReach = Math.max(hipRadius * 1.15, leg.stride * 1.2);
+      const sideReach = Math.max(Math.abs(leg.restOffset.z), hipRadius * 1.15);
+      const desiredFoot = TEMP_D.copy(hip)
+        .addScaledVector(forward, forwardReach)
+        .addScaledVector(lateral, leg.side * sideReach);
+      desiredFoot.y = spec.floorY;
+      leg.desiredPosition.copy(desiredFoot);
+      const footError = leg.plantedPosition.distanceToSquared(desiredFoot);
 
-      knee.acceleration.addScaledVector(forward, gait * (1.05 + walkStrength * 0.4));
-      knee.acceleration.y += 4.9 + lift * (3.3 + leg.liftBias);
-      knee.acceleration.addScaledVector(lateral, leg.side * (0.84 + walkStrength * 0.34 - lift * 0.18));
-      knee.acceleration.addScaledVector(TEMP_B.copy(desiredKnee).sub(knee.position), 18);
+      if (footError > leg.maximumDistance * leg.maximumDistance) {
+        leg.planted = false;
+        leg.stepStart.copy(leg.plantedPosition);
+        leg.plantedPosition.copy(desiredFoot);
+        leg.stepTarget.copy(desiredFoot);
+        leg.stepProgress = 0;
+      }
+
+      if (!leg.planted) {
+        leg.stepProgress = Math.min(1, leg.stepProgress + dt * 6.5);
+        const t = smoothstep(leg.stepProgress);
+        foot.position.lerpVectors(leg.stepStart, leg.stepTarget, t);
+        foot.position.y += Math.sin(t * Math.PI) * Math.max(0.05, leg.stepHeight * 0.7);
+        foot.previous.copy(foot.position);
+        if (leg.stepProgress >= 1) {
+          leg.planted = true;
+          foot.position.copy(leg.plantedPosition);
+          foot.previous.copy(foot.position);
+        }
+      } else {
+        foot.position.copy(leg.plantedPosition);
+        foot.previous.copy(foot.position);
+      }
+
+      knee.acceleration.addScaledVector(forward, 0.6 + walkStrength * 0.55);
+      knee.acceleration.y += 6.4;
+      knee.acceleration.addScaledVector(lateral, leg.side * 1.15);
     }
 
     for (let index = 0; index < points.length; index += 1) {
@@ -931,25 +978,35 @@ function CreatureWalker({
       mesh.scale.set(plate.radius, plate.height, plate.radius * 0.72);
     }
 
-    const pupilDirection = forward.clone().normalize();
     for (let index = 0; index < spec.eyes.length; index += 1) {
       const eyeMesh = eyeRefs.current[index];
       const pupilMesh = pupilRefs.current[index];
       const eye = spec.eyes[index];
       if (!eyeMesh || !pupilMesh || !eye) continue;
-      const anchor = points[eye.anchor].position;
-      const eyeDirection = TEMP_A.copy(eye.offset).normalize();
-      const eyePosition = TEMP_B.copy(anchor).addScaledVector(
-        eyeDirection,
-        spec.points[eye.anchor].radius + eye.radius * 0.2
-      );
+      const headCenter = points[eye.anchor].position;
+      const headRadius = spec.points[eye.anchor].radius;
       const side = Math.sign(eye.offset.z) || 1;
-      const pupilDirection = TEMP_C.copy(forward)
-        .addScaledVector(lateral, side * 0.14)
-        .normalize();
+      const heading = motion.heading;
+      const forwardX = Math.cos(heading);
+      const forwardZ = Math.sin(heading);
+      const sideX = -forwardZ;
+      const sideZ = forwardX;
+      const eyeAngle = 0.68;
+      const eyeDistance = Math.max(headRadius - eye.radius * 0.2, eye.radius * 1.1);
+      const eyeDirX = forwardX * Math.cos(eyeAngle) + side * sideX * Math.sin(eyeAngle);
+      const eyeDirZ = forwardZ * Math.cos(eyeAngle) + side * sideZ * Math.sin(eyeAngle);
+      const eyePosition = TEMP_B.set(
+        headCenter.x + eyeDirX * eyeDistance,
+        headCenter.y,
+        headCenter.z + eyeDirZ * eyeDistance
+      );
       eyeMesh.position.copy(eyePosition);
       eyeMesh.scale.setScalar(eye.radius);
-      pupilMesh.position.copy(eyePosition).addScaledVector(pupilDirection, eye.radius * 0.94);
+      pupilMesh.position.set(
+        eyePosition.x + forwardX * eye.radius * 0.94,
+        eyePosition.y,
+        eyePosition.z + forwardZ * eye.radius * 0.94
+      );
       pupilMesh.scale.setScalar(eye.pupilRadius);
     }
   });

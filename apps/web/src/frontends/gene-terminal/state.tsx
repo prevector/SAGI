@@ -10,13 +10,17 @@ import {
 } from "@sagi/evolution";
 import { createSeedGene } from "../../features/genes/geneStorage";
 import {
+  clonePhenotype,
   createCreaturePhenotype,
   createSeedCreature,
   loadCreatures,
   makeCreatureName,
+  mutatePhenotype,
   sanitizeCreatureName,
   saveCreatures,
   summarizeCreatureGene,
+  type CreatureMorphologySummary,
+  type CreaturePhenotype,
   type StoredCreature,
   upsertCreature
 } from "./creatureLibrary";
@@ -32,6 +36,7 @@ export interface MockPoint {
 export interface GeneTerminalState {
   creatures: StoredCreature[];
   selectedCreature: StoredCreature;
+  selectedMorphology: CreatureMorphologySummary;
   genes: EvolutionGene[];
   selectedGene: EvolutionGene;
   selectedId: string;
@@ -50,6 +55,7 @@ export interface GeneTerminalState {
   generateCreature: () => void;
   mutateGene: () => void;
   duplicateGene: () => void;
+  deleteAllCreatures: () => void;
   updateArchitecture: (key: keyof EvolutionGene["architecture"], value: number) => void;
   updateEs: (key: keyof EsHyperparams, value: number) => void;
   start: () => void;
@@ -115,11 +121,12 @@ function nextMockPoint(previous: MockPoint, gene: EvolutionGene): MockPoint {
   return { generation, sampledLoss, selectedLoss };
 }
 
-function createPaperGene(index: number, existingNames: string[]): EvolutionGene {
-  const phenotype = createCreaturePhenotype(`paper-gene:${Date.now()}:${index}`);
-  return createRandomGene(makeRng(`paper-gene:${Date.now()}:${index}`), {
+function createPaperGene(index: number, existingNames: string[]): { gene: EvolutionGene; phenotype: CreaturePhenotype } {
+  const seed = `paper-gene:${Date.now()}:${index}`;
+  const phenotype = createCreaturePhenotype(seed);
+  const gene = createRandomGene(makeRng(seed), {
     id: makeGeneId("gene"),
-    name: makeCreatureName(phenotype, existingNames, `paper-gene:${Date.now()}:${index}`),
+    name: makeCreatureName(phenotype, existingNames, seed),
     notes: "Mock client gene. Real ES execution is intentionally not wired into this redesign yet.",
     architecture: {
       neuronStateSize: 32,
@@ -127,12 +134,13 @@ function createPaperGene(index: number, existingNames: string[]): EvolutionGene 
       outputGain: 1000
     }
   });
+  return { gene, phenotype };
 }
 
-function createCreatureGene(source: EvolutionGene, index: number, existingNames: string[]): EvolutionGene {
+function createCreatureGene(source: EvolutionGene, index: number, existingNames: string[]): { gene: EvolutionGene; phenotype: CreaturePhenotype } {
   const seed = `creature-gene:${Date.now()}:${index}`;
   const phenotype = createCreaturePhenotype(seed);
-  return createRandomGene(makeRng(seed), {
+  const gene = createRandomGene(makeRng(seed), {
     id: makeGeneId("creature"),
     name: makeCreatureName(phenotype, existingNames, seed),
     notes: "Morphology test gene for the local creature viewport.",
@@ -142,12 +150,18 @@ function createCreatureGene(source: EvolutionGene, index: number, existingNames:
       outputGain: source.architecture.outputGain
     }
   });
+  return { gene, phenotype };
 }
 
-function mutateCreatureGene(source: EvolutionGene, index: number, existingNames: string[]): EvolutionGene {
+function mutateCreatureGene(
+  source: EvolutionGene,
+  parentPhenotype: CreaturePhenotype,
+  index: number,
+  existingNames: string[]
+): { gene: EvolutionGene; phenotype: CreaturePhenotype } {
   const seed = `mutate-creature:${source.id}:${Date.now()}:${index}`;
   const rng = makeRng(seed);
-  const phenotype = createCreaturePhenotype(seed);
+  const phenotype = mutatePhenotype(parentPhenotype, seed);
   const now = new Date().toISOString();
   const weights = source.weights.map((weight, weightIndex) => {
     const influence =
@@ -163,7 +177,7 @@ function mutateCreatureGene(source: EvolutionGene, index: number, existingNames:
     return weight + delta;
   });
 
-  return {
+  const gene = {
     ...source,
     id: makeGeneId("creature"),
     name: makeCreatureName(phenotype, existingNames, seed),
@@ -172,11 +186,11 @@ function mutateCreatureGene(source: EvolutionGene, index: number, existingNames:
     notes: "Local morphology mutation derived from the current creature gene.",
     weights
   };
+  return { gene, phenotype };
 }
 
-function geneToCreature(gene: EvolutionGene, existingNames: string[]): StoredCreature {
+function geneToCreature(gene: EvolutionGene, phenotype: CreaturePhenotype, existingNames: string[]): StoredCreature {
   const id = `creature-${gene.id}`;
-  const phenotype = createCreaturePhenotype(id);
   const name = sanitizeCreatureName(gene.name || makeCreatureName(phenotype, existingNames, id), gene.name || "Creature");
   return {
     id,
@@ -235,6 +249,7 @@ export function GeneTerminalProvider({ children }: { children: ReactNode }) {
   const value = useMemo<GeneTerminalState>(() => ({
     creatures,
     selectedCreature,
+    selectedMorphology: summarizeCreatureGene(selectedGene),
     genes: creatures.map((item) => item.gene),
     selectedGene,
     selectedId,
@@ -264,33 +279,48 @@ export function GeneTerminalProvider({ children }: { children: ReactNode }) {
       setCreatures((items) => upsertCreature(items, saved));
     },
     createGene: () => {
-      const gene = createPaperGene(creatures.length + 1, creatures.map((item) => item.name));
-      const creature = geneToCreature(gene, creatures.map((item) => item.name));
+      const existingNames = creatures.map((item) => item.name);
+      const { gene, phenotype } = createPaperGene(creatures.length + 1, existingNames);
+      const creature = geneToCreature(gene, phenotype, existingNames);
       setCreatures((items) => [creature, ...items]);
       setSelectedId(creature.id);
     },
     generateCreature: () => {
-      const gene = createCreatureGene(selectedGene, creatures.length + 1, creatures.map((item) => item.name));
-      const creature = geneToCreature(gene, creatures.map((item) => item.name));
+      const existingNames = creatures.map((item) => item.name);
+      const { gene, phenotype } = createCreatureGene(selectedGene, creatures.length + 1, existingNames);
+      const creature = geneToCreature(gene, phenotype, existingNames);
       setCreatures((items) => [creature, ...items]);
       setSelectedId(creature.id);
     },
     mutateGene: () => {
-      const gene = mutateCreatureGene(selectedGene, creatures.length + 1, creatures.map((item) => item.name));
-      const creature = geneToCreature(gene, creatures.map((item) => item.name));
+      const existingNames = creatures.map((item) => item.name);
+      const { gene, phenotype } = mutateCreatureGene(
+        selectedGene,
+        selectedCreature.phenotype,
+        creatures.length + 1,
+        existingNames
+      );
+      const creature = geneToCreature(gene, phenotype, existingNames);
       setCreatures((items) => [creature, ...items]);
       setSelectedId(creature.id);
     },
     duplicateGene: () => {
+      const existingNames = creatures.map((item) => item.name);
       const copiedGene = {
         ...selectedGene,
         id: makeGeneId("gene"),
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
-      const creature = geneToCreature(copiedGene, creatures.map((item) => item.name));
+      const phenotype = clonePhenotype(selectedCreature.phenotype, `duplicate:${copiedGene.id}`);
+      const creature = geneToCreature(copiedGene, phenotype, existingNames);
       setCreatures((items) => [creature, ...items]);
       setSelectedId(creature.id);
+    },
+    deleteAllCreatures: () => {
+      const seed = createSeedCreature();
+      setCreatures([seed]);
+      setSelectedId(seed.id);
     },
     updateArchitecture: (key, value) => {
       const resized = resizeGeneArchitecture(

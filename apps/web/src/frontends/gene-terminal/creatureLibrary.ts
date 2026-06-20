@@ -116,6 +116,32 @@ function pickRange(seed: number, [from, to]: [number, number], shift: number): n
   return from + (to - from) * fraction;
 }
 
+function hexToHsl(hex: string): [number, number, number] {
+  const normalized = hex.replace("#", "");
+  const r = parseInt(normalized.slice(0, 2), 16) / 255;
+  const g = parseInt(normalized.slice(2, 4), 16) / 255;
+  const b = parseInt(normalized.slice(4, 6), 16) / 255;
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const delta = max - min;
+  let h = 0;
+  if (delta !== 0) {
+    if (max === r) h = ((g - b) / delta) % 6;
+    else if (max === g) h = (b - r) / delta + 2;
+    else h = (r - g) / delta + 4;
+    h *= 60;
+    if (h < 0) h += 360;
+  }
+  const l = (max + min) / 2;
+  const s = delta === 0 ? 0 : delta / (1 - Math.abs(2 * l - 1));
+  return [h, s, l];
+}
+
+function shiftHexHue(hex: string, degrees: number): string {
+  const [h, s, l] = hexToHsl(hex);
+  return hslToHex(h + degrees, s, l);
+}
+
 function hslToHex(h: number, s: number, l: number): string {
   const c = (1 - Math.abs(2 * l - 1)) * s;
   const hp = (((h % 360) + 360) % 360) / 60;
@@ -168,11 +194,17 @@ export function summarizeCreatureGene(gene: EvolutionGene): CreatureMorphologySu
   return { archetype, legPairs, armPairs, spineSegments };
 }
 
-export function createCreaturePhenotype(seed: string): CreaturePhenotype {
+function buildPhenotype(
+  seed: string,
+  palette: PaletteSpec,
+  hueFrom: number,
+  hueTo: number,
+  accent: string,
+  limb: string,
+  crest: string,
+  cool: string
+): CreaturePhenotype {
   const hash = hashSeed(seed);
-  const palette = PALETTES[hash % PALETTES.length];
-  const hueFrom = pickRange(hash, palette.hueFrom, 0);
-  const hueTo = pickRange(hash, palette.hueTo, 10);
   return {
     id: `ph-${seed.slice(0, 8)}-${hash.toString(36).slice(0, 4)}`,
     paletteKey: palette.key,
@@ -181,12 +213,63 @@ export function createCreaturePhenotype(seed: string): CreaturePhenotype {
     hueTo,
     bodyFrom: hslToHex(hueFrom, 0.58, 0.58),
     bodyTo: hslToHex(hueTo, 0.62, 0.5),
-    accent: hslToHex(...palette.accent),
-    limb: hslToHex(...palette.limb),
-    crest: hslToHex(...palette.crest),
-    cool: hslToHex(...palette.cool),
+    accent,
+    limb,
+    crest,
+    cool,
     eye: "#f7f0e6"
   };
+}
+
+export function createCreaturePhenotype(seed: string): CreaturePhenotype {
+  const hash = hashSeed(seed);
+  const palette = PALETTES[hash % PALETTES.length];
+  const hueFrom = pickRange(hash, palette.hueFrom, 0);
+  const hueTo = pickRange(hash, palette.hueTo, 10);
+  return buildPhenotype(
+    seed,
+    palette,
+    hueFrom,
+    hueTo,
+    hslToHex(...palette.accent),
+    hslToHex(...palette.limb),
+    hslToHex(...palette.crest),
+    hslToHex(...palette.cool)
+  );
+}
+
+export function mutatePhenotype(parent: CreaturePhenotype, seed: string): CreaturePhenotype {
+  const hash = hashSeed(seed);
+  const palette = PALETTES.find((item) => item.key === parent.paletteKey) ?? PALETTES[0];
+  const hueShift = ((hash & 1023) / 1023) * 18 - 9;
+  const hueFrom = parent.hueFrom + hueShift;
+  const hueTo = parent.hueTo + hueShift * 0.72;
+  const accentShift = ((hash >> 10) & 255) / 255 * 8 - 4;
+  const detailShift = ((hash >> 18) & 255) / 255 * 6 - 3;
+  return buildPhenotype(
+    seed,
+    palette,
+    hueFrom,
+    hueTo,
+    shiftHexHue(parent.accent, accentShift),
+    shiftHexHue(parent.limb, detailShift),
+    shiftHexHue(parent.crest, detailShift * 0.8),
+    shiftHexHue(parent.cool, accentShift * 0.6)
+  );
+}
+
+export function clonePhenotype(parent: CreaturePhenotype, seed: string): CreaturePhenotype {
+  const palette = PALETTES.find((item) => item.key === parent.paletteKey) ?? PALETTES[0];
+  return buildPhenotype(
+    seed,
+    palette,
+    parent.hueFrom,
+    parent.hueTo,
+    parent.accent,
+    parent.limb,
+    parent.crest,
+    parent.cool
+  );
 }
 
 export function sanitizeCreatureName(name: string, fallback = "Creature"): string {
@@ -209,7 +292,11 @@ export function makeCreatureName(
     const candidate = `${base} ${suffix}`.slice(0, MAX_NAME_LENGTH);
     if (!taken.has(candidate.toLowerCase())) return candidate;
   }
-  return `${adjectives[(hash >> 6) % adjectives.length]} ${NOUNS[(hash >> 9) % NOUNS.length]}`.slice(0, MAX_NAME_LENGTH);
+  for (let attempt = 0; attempt < 12; attempt += 1) {
+    const candidate = `${adjectives[(hash >> (6 + attempt)) % adjectives.length]} ${NOUNS[(hash >> (9 + attempt * 2)) % NOUNS.length]}`.slice(0, MAX_NAME_LENGTH);
+    if (!taken.has(candidate.toLowerCase())) return candidate;
+  }
+  return `${base} ${hash.toString(36).slice(0, 4)}`.slice(0, MAX_NAME_LENGTH);
 }
 
 function normalizeCreature(raw: StoredCreature): StoredCreature {

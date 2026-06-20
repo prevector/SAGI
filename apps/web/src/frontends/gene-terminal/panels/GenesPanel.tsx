@@ -47,32 +47,6 @@ export function GenesPanel(_: IDockviewPanelProps) {
         </div>
       </div>
 
-      <div className={styles.sectionLabel}>creature library</div>
-      <div className={styles.geneList}>
-        {terminal.creatures.map((item) => {
-          const itemSummary = summarizeCreatureGene(item.gene);
-          return (
-          <button
-            key={item.id}
-            className={item.id === terminal.selectedId ? styles.selectedGene : ""}
-            onClick={() => terminal.selectGene(item.id)}
-          >
-            <span className={styles.creatureListTitle}>
-              <i
-                className={styles.creatureDot}
-                style={{
-                  background: `linear-gradient(135deg, ${item.phenotype.bodyFrom}, ${item.phenotype.bodyTo})`
-                }}
-              />
-              {item.name}
-            </span>
-            <small>
-              {itemSummary.legPairs * 2} legs · {itemSummary.archetype} · {item.phenotype.paletteName}
-            </small>
-          </button>
-        );})}
-      </div>
-
       <div className={styles.sectionLabel}>current parameters</div>
       <div className={styles.matrix}>
         <Readout label="creature id" value={shortId(creature.id)} />

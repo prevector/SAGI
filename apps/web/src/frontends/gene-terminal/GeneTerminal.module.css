@@ -22,11 +22,11 @@
   background-size: auto, auto, 100% 32px, auto;
 }
 
-.workspaceStrip {
+.menuBar {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0;
+  justify-content: space-between;
   align-items: center;
+  gap: 16px;
   padding: 5px 10px;
   border-bottom: 1px solid var(--terminal-line-strong);
   background: rgba(239, 234, 226, 0.98);
@@ -37,18 +37,96 @@
   text-transform: uppercase;
 }
 
-.workspaceStrip span {
+.menuCluster,
+.infoCluster {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.menuCluster {
+  gap: 4px;
+}
+
+.infoCluster {
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 0;
+}
+
+.infoCluster span {
   padding: 0 10px;
   color: var(--terminal-text-muted);
 }
 
-.workspaceStrip span + span {
+.infoCluster span + span {
   border-left: 1px solid rgba(54, 47, 40, 0.12);
 }
 
 .workspaceMark {
   color: var(--terminal-text) !important;
   background: linear-gradient(90deg, rgba(110, 140, 166, 0.12), rgba(154, 104, 65, 0.08));
+}
+
+.menuWrap {
+  position: relative;
+}
+
+.menuButton,
+.menuItem {
+  font: inherit;
+}
+
+.menuButton {
+  padding: 5px 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--terminal-text);
+  cursor: pointer;
+}
+
+.menuButton:hover,
+.menuButton:focus-visible {
+  border-color: var(--terminal-line);
+  background: rgba(255, 255, 255, 0.24);
+  outline: none;
+}
+
+.menuPopover {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 30;
+  min-width: 180px;
+  padding: 4px;
+  border: 1px solid var(--terminal-line-strong);
+  background: rgba(242, 238, 230, 0.98);
+  box-shadow: 0 10px 24px rgba(54, 47, 40, 0.12);
+}
+
+.menuItem {
+  display: flex;
+  width: 100%;
+  gap: 8px;
+  align-items: center;
+  padding: 7px 8px;
+  border: 0;
+  background: transparent;
+  color: var(--terminal-text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.menuItem:hover,
+.menuItem:focus-visible {
+  background: rgba(110, 140, 166, 0.1);
+  outline: none;
+}
+
+.menuCheck {
+  width: 12px;
+  color: var(--terminal-accent-3);
+  text-align: center;
 }
 
 .dockShell {
@@ -118,6 +196,17 @@
   background:
     linear-gradient(180deg, rgba(110, 140, 166, 0.07), transparent 18%),
     linear-gradient(180deg, #f1ece3, #eee8de);
+}
+
+.panelLibrary {
+  background:
+    linear-gradient(180deg, rgba(110, 140, 166, 0.05), transparent 16%),
+    linear-gradient(180deg, #f0ebe1, #ece6dc);
+}
+
+.panelLibrary .geneList {
+  flex: 1;
+  min-height: 0;
 }
 
 .panelTraining {
@@ -498,7 +587,7 @@
 
 @media (max-width: 900px) {
   .trainingHeader,
-  .workspaceStrip {
+  .menuBar {
     display: grid;
   }
 
