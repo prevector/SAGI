@@ -45,6 +45,11 @@ function numberInput(value: number, fallback: number): number {
   return Number.isFinite(value) ? value : fallback;
 }
 
+function diagnosticGain(gain: number, task: IafTask): number {
+  if (task !== "potential") return gain;
+  return gain > 20 ? 2 : gain;
+}
+
 type TrainingState = "idle" | "running" | "paused" | "complete";
 
 export default function GeneLabPage() {
@@ -122,6 +127,7 @@ export default function GeneLabPage() {
   const progress = Math.min(1, generation / Math.max(es.generations, 1));
   const isTraining = trainingState === "running";
   const hasActiveTraining = trainingState === "running" || trainingState === "paused";
+  const gainIsSaturated = runConfig.task === "potential" && draft.architecture.outputGain > 20;
 
   function persist(gene: EvolutionGene = draft) {
     const saved = { ...gene, updatedAt: new Date().toISOString() };
@@ -136,7 +142,8 @@ export default function GeneLabPage() {
       name: `Gene ${genes.length + 1}`,
       architecture: {
         neuronStateSize: draft.architecture.neuronStateSize,
-        synapseStateSize: draft.architecture.synapseStateSize
+        synapseStateSize: draft.architecture.synapseStateSize,
+        outputGain: diagnosticGain(draft.architecture.outputGain, runConfig.task)
       }
     });
     setGenes((items) => [gene, ...items]);
@@ -313,7 +320,7 @@ export default function GeneLabPage() {
                   max={2000}
                   step={0.1}
                   value={draft.architecture.outputGain}
-                  onChange={(event) => updateArchitecture("outputGain", numberInput(Number(event.target.value), 1000))}
+                  onChange={(event) => updateArchitecture("outputGain", numberInput(Number(event.target.value), 2))}
                   disabled={isTraining}
                 />
               </label>
@@ -358,6 +365,20 @@ export default function GeneLabPage() {
               </div>
               <small>Current ES params are applied to the next generation, so you can pause or tune while training.</small>
             </div>
+
+            {gainIsSaturated ? (
+              <div className={styles.warning}>
+                <span>Potential training is saturated at output gain {draft.architecture.outputGain}. Use a small gain to see continuous learning.</span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => updateArchitecture("outputGain", 2)}
+                  disabled={hasActiveTraining}
+                >
+                  Set gain 2
+                </Button>
+              </div>
+            ) : null}
 
             <div className={styles.grid4}>
               <label className={styles.field}>

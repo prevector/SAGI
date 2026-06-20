@@ -80,7 +80,7 @@ const DEFAULT_ARCHITECTURE: EnuArchitectureGene = {
   synapseStateSize: 0,
   inputChannels: 1,
   outputChannels: 1,
-  outputGain: 1000
+  outputGain: 2
 };
 
 export const DEFAULT_IAF_RUN_CONFIG: IafRunConfig = {

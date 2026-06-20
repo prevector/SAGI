@@ -139,6 +139,19 @@
   color: var(--text-muted);
 }
 
+.warning {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s3);
+  padding: var(--s3);
+  color: var(--text);
+  background: rgba(255, 118, 50, 0.1);
+  border: 1px solid rgba(255, 118, 50, 0.32);
+  border-radius: var(--radius);
+  font-size: var(--fs-sm);
+}
+
 .progressTrack {
   height: 9px;
   overflow: hidden;
@@ -285,6 +298,10 @@
   }
 
   .sectionHead {
+    display: grid;
+  }
+
+  .warning {
     display: grid;
   }
 }

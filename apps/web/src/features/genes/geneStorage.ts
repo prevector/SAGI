@@ -30,7 +30,10 @@ export function saveGenes(genes: EvolutionGene[]): void {
 export function createSeedGene(): EvolutionGene {
   return createRandomGene(makeRng("initial-gene"), {
     name: "IAF seed gene",
-    notes: "Local starter gene for the IAF spike task."
+    notes: "Local starter gene for the potential diagnostic. Raise output gain later for hard spike tests.",
+    architecture: {
+      outputGain: 2
+    }
   });
 }
 

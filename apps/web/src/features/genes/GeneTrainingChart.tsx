@@ -41,13 +41,15 @@ export function GeneTrainingChart({ history }: GeneTrainingChartProps) {
   const max = Math.max(...losses, ...bestLosses);
   const latest = history[history.length - 1];
   const bestNow = bestLosses[bestLosses.length - 1];
+  const delta = losses[0] - bestNow;
+  const isFlat = Math.abs(delta) < 1e-6 || new Set(losses.map((loss) => loss.toFixed(6))).size <= 2;
 
   return (
     <div className={styles.wrap}>
       <div className={styles.head}>
         <div>
           <b>Training loss</b>
-          <span>{history.length - 1} generations</span>
+          <span>{history.length - 1} generations · improvement {delta.toFixed(6)}{isFlat ? " · flat" : ""}</span>
         </div>
         <div className={styles.legend}>
           <span><i className={styles.lossMark} /> current {latest.loss.toFixed(4)}</span>
