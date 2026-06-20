@@ -3,6 +3,20 @@
   gap: var(--s3);
 }
 
+.head {
+  display: grid;
+  gap: var(--s1);
+}
+
+.head b {
+  font-size: var(--fs-base);
+}
+
+.head span {
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+}
+
 .legend {
   display: flex;
   flex-wrap: wrap;
@@ -83,8 +97,8 @@
 
 .inputLine {
   stroke: var(--text-faint);
-  stroke-width: 1.2;
-  opacity: 0.7;
+  stroke-width: 0.9;
+  opacity: 0.38;
 }
 
 .spike {

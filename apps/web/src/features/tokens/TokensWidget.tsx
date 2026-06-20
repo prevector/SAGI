@@ -10,7 +10,7 @@ export function TokensWidget() {
   const state = useAsync(() => api.getTokens(username ?? ""), [username]);
 
   return (
-    <Widget title="Tokens earned" eyebrow="Economy" to="/tokens" state={state}>
+    <Widget title="Tokens earned" eyebrow="Economy" to="/app/tokens" state={state}>
       {(t) => (
         <div style={{ display: "grid", gap: "var(--s4)" }}>
           <Stat

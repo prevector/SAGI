@@ -1,5 +1,6 @@
 import { BrowserRouter } from "react-router-dom";
 import { AuthProvider } from "./auth/AuthContext";
+import { NetworkPresenceProvider } from "./features/network/NetworkPresenceProvider";
 import AppRoutes from "./routes";
 
 // Router basename mirrors the Vite `base` so the app works mounted under a
@@ -8,9 +9,17 @@ const basename = import.meta.env.BASE_URL.replace(/\/$/, "") || "/";
 
 export default function App() {
   return (
-    <BrowserRouter basename={basename}>
+    <BrowserRouter
+      basename={basename}
+      future={{
+        v7_startTransition: true,
+        v7_relativeSplatPath: true
+      }}
+    >
       <AuthProvider>
-        <AppRoutes />
+        <NetworkPresenceProvider>
+          <AppRoutes />
+        </NetworkPresenceProvider>
       </AuthProvider>
     </BrowserRouter>
   );

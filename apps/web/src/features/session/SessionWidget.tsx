@@ -13,7 +13,7 @@ export function SessionWidget() {
   const state = useAsync(() => api.getSessions(username ?? ""), [username]);
 
   return (
-    <Widget title="Sessions" eyebrow="Run the search" to="/session" state={state} isEmpty={(s) => s.length === 0}>
+    <Widget title="Sessions" eyebrow="Run the search" to="/app/session" state={state} isEmpty={(s) => s.length === 0}>
       {(sessions) => {
         const latest = sessions[0];
         return (
@@ -33,7 +33,7 @@ export function SessionWidget() {
             ) : (
               <p style={{ fontSize: "var(--fs-sm)", color: "var(--text-muted)" }}>{latest.result ?? "—"}</p>
             )}
-            <Link to="/session">
+            <Link to="/app/session">
               <Button size="sm" variant="primary" icon={<Zap size={15} />}>Start a session</Button>
             </Link>
           </div>

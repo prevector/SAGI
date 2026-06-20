@@ -10,7 +10,7 @@ export function BountiesWidget() {
     <Widget
       title="Current bounties"
       eyebrow="Direct the search"
-      to="/bounties"
+      to="/app/bounties"
       state={state}
       isEmpty={(all) => all.filter((b) => b.status !== "closed").length === 0}
       emptyMessage="No open bounties right now."

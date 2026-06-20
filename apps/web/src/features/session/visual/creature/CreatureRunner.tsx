@@ -4,22 +4,17 @@
 // (which advances a generation) — unless the maze is solved, in which case it
 // loops the winning route.
 
-import { useEffect, useRef } from "react";
+import { type RefObject, useEffect, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { type Grid, worldPos } from "../maze/generate";
+import { clamp, dampAngle } from "../scene/anim";
+import type { QualitySettings } from "../config";
 import type { CellPath } from "../scene/PathLine";
 import type { CreatureRig } from "./assemble";
 import { Creature } from "./Creature";
 
 const CELLS_PER_SEC = 4.5;
-
-/** Shortest-arc angular lerp. */
-function lerpAngle(a: number, b: number, t: number): number {
-  let d = ((b - a + Math.PI) % (Math.PI * 2)) - Math.PI;
-  if (d < -Math.PI) d += Math.PI * 2;
-  return a + d * t;
-}
 
 interface CreatureRunnerProps {
   rig: CreatureRig;
@@ -34,6 +29,11 @@ interface CreatureRunnerProps {
   /** Called each frame once the creature reaches the path end (parent throttles). */
   onArrive: () => void;
   scale: number;
+  quality: QualitySettings;
+  /** 0..1 GA progress — forwarded to the creature's energy glow. */
+  fitness: number;
+  /** Written each frame with the creature's ground position (for the footprints). */
+  posRef?: RefObject<THREE.Vector3>;
 }
 
 export function CreatureRunner({
@@ -46,8 +46,12 @@ export function CreatureRunner({
   evolve,
   onArrive,
   scale,
+  quality,
+  fitness,
+  posRef,
 }: CreatureRunnerProps) {
   const group = useRef<THREE.Group>(null);
+  const inner = useRef<THREE.Group>(null); // banks (rolls) into turns
   const prog = useRef(0); // progress in cell-units along the path
 
   // Restart traversal on a new champion path.
@@ -81,12 +85,24 @@ export function CreatureRunner({
     const x = ax + (bx - ax) * f;
     const z = az + (bz - az) * f;
     g.position.set(x, 0, z);
+    posRef?.current?.set(x, 0, z);
 
     const dx = bx - ax;
     const dz = bz - az;
     if (dx !== 0 || dz !== 0) {
       const yaw = Math.atan2(dx, dz); // creature faces +Z
-      g.rotation.y = lerpAngle(g.rotation.y, yaw, 0.18);
+      const next = dampAngle(g.rotation.y, yaw, 9, dt);
+      // Bank: lean into the turn proportionally to angular velocity.
+      const turnRate = (next - g.rotation.y) / Math.max(dt, 1e-3);
+      if (inner.current) {
+        inner.current.rotation.z = dampAngle(
+          inner.current.rotation.z,
+          clamp(-turnRate * 0.12, -0.5, 0.5),
+          8,
+          dt
+        );
+      }
+      g.rotation.y = next;
     }
 
     if (evolve && prog.current >= maxU - 1e-3) {
@@ -97,7 +113,9 @@ export function CreatureRunner({
 
   return (
     <group ref={group} scale={scale}>
-      <Creature rig={rig} walk={evolve && path.length >= 2} />
+      <group ref={inner}>
+        <Creature rig={rig} walk={evolve && path.length >= 2} quality={quality} fitness={fitness} />
+      </group>
     </group>
   );
 }

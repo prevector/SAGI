@@ -1,0 +1,113 @@
+.section {
+  background: var(--sagi-white);
+}
+
+.head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s5);
+  max-width: 760px;
+  margin-bottom: var(--s8);
+}
+
+.title {
+  color: var(--sagi-dark);
+}
+
+.intro {
+  color: rgba(43, 42, 41, 0.64);
+}
+
+.steps {
+  list-style: none;
+  margin: 0 0 var(--s9);
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--s6);
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s3);
+  padding-top: var(--s4);
+  border-top: 1px solid rgba(43, 42, 41, 0.12);
+}
+
+.stepTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--accent-hover);
+}
+
+.num {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  letter-spacing: 0.06em;
+  color: rgba(43, 42, 41, 0.5);
+}
+
+.stepIcon {
+  color: var(--sagi-dark);
+}
+
+.stepTitle {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 24px;
+  line-height: 1.2;
+  color: var(--sagi-dark);
+}
+
+.stepBody {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.55;
+  color: rgba(43, 42, 41, 0.64);
+}
+
+/* TokenResolution module */
+.module {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s4);
+  padding: var(--s6);
+  border: 1px solid rgba(43, 42, 41, 0.12);
+  border-radius: var(--radius-lg);
+  background: var(--sagi-light-muted);
+}
+
+.moduleHeads {
+  display: flex;
+  gap: 32px;
+}
+
+.moduleHead {
+  flex: 1;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: rgba(43, 42, 41, 0.64);
+}
+
+.caption {
+  margin: 0;
+  font-size: 14px;
+  color: rgba(43, 42, 41, 0.64);
+}
+
+@media (max-width: 900px) {
+  .steps {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 520px) {
+  .steps {
+    grid-template-columns: 1fr;
+  }
+}

@@ -166,9 +166,15 @@ export function buildBounties(db: Db, status?: Domain.BountyStatus): Domain.Boun
     }));
 }
 
-export function buildNetworkSnapshot(db: Db, cfg: LedgerConfig, epoch: number): Domain.NetworkSnapshot {
+export function buildNetworkSnapshot(
+  db: Db,
+  cfg: LedgerConfig,
+  epoch: number,
+  connectedUsers: Domain.ConnectedUser[] = []
+): Domain.NetworkSnapshot {
   const ws = db.select().from(wallets).all();
   const now = Date.now();
+  const online = new Set(connectedUsers.map((user) => user.username));
   const runningByAddr = new Set(
     db.select().from(sessions).all().filter((s) => s.status === "running").map((s) => s.address)
   );
@@ -181,10 +187,25 @@ export function buildNetworkSnapshot(db: Db, cfg: LedgerConfig, epoch: number): 
       computePower: computePowerFor(w.username, w.computeUnits),
       device: deviceFor(w.username),
       region: regionFor(w.username),
-      joinedAt: iso(w.createdAt)
+      joinedAt: iso(w.createdAt),
+      online: online.has(w.username)
     }))
     .sort((a, b) => b.computePower - a.computePower)
     .slice(0, 60);
+
+  for (const user of connectedUsers) {
+    if (nodes.some((node) => node.username === user.username)) continue;
+    nodes.unshift({
+      id: `n-${user.username}`,
+      username: user.username,
+      status: "idle",
+      computePower: computePowerFor(user.username, 0),
+      device: deviceFor(user.username),
+      region: regionFor(user.username),
+      joinedAt: user.connectedAt,
+      online: true
+    });
+  }
 
   const supplyBase = ws.reduce((acc, w) => acc + BigInt(w.total), 0n);
   const txs = db.select().from(transactions).all();
@@ -197,13 +218,14 @@ export function buildNetworkSnapshot(db: Db, cfg: LedgerConfig, epoch: number): 
     totalCompute: nodes.reduce((acc, n) => acc + n.computePower, 0) * 1000,
     runningSessions: runningByAddr.size,
     tokensEmitted24h: toSagiNumber(emitted24hBase),
+    onlineUsers: connectedUsers.length,
     supplyTotal: toSagiNumber(supplyBase),
     emissionThisEpoch: toSagiNumber(emission(epoch, cfg.emission)),
     epoch,
     height: txs.length
   };
 
-  return { stats, nodes, at: iso(now) };
+  return { stats, nodes, connectedUsers, at: iso(now) };
 }
 
 /* ------------------------------- progress ---------------------------------- */

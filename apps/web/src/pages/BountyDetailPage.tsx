@@ -12,7 +12,7 @@ export default function BountyDetailPage() {
 
   return (
     <div>
-      <Link to="/bounties" style={{ display: "inline-flex", alignItems: "center", gap: "var(--s2)", color: "var(--text-muted)", marginBottom: "var(--s4)" }}>
+      <Link to="/app/bounties" style={{ display: "inline-flex", alignItems: "center", gap: "var(--s2)", color: "var(--text-muted)", marginBottom: "var(--s4)" }}>
         <ArrowLeft size={16} aria-hidden /> All bounties
       </Link>
 

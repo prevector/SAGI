@@ -1,0 +1,88 @@
+import type { MockPoint, TrainingStatus } from "./state";
+import styles from "./GeneTerminal.module.css";
+
+export function shortId(id: string): string {
+  return id.slice(0, 10);
+}
+
+export function numberInput(value: number, fallback: number): number {
+  return Number.isFinite(value) ? value : fallback;
+}
+
+export function Readout({
+  label,
+  value,
+  tone
+}: {
+  label: string;
+  value: string;
+  tone?: "good" | "warn";
+}) {
+  return (
+    <div className={styles.readoutCell}>
+      <b className={tone ? styles[tone] : ""}>{value}</b>
+      <span>{label}</span>
+    </div>
+  );
+}
+
+export function NumberField({
+  label,
+  value,
+  min,
+  max,
+  step = 1,
+  onChange
+}: {
+  label: string;
+  value: number;
+  min: number;
+  max: number;
+  step?: number;
+  onChange: (value: number) => void;
+}) {
+  return (
+    <label className={styles.field}>
+      <span>{label}</span>
+      <input
+        type="number"
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        onChange={(event) => onChange(numberInput(Number(event.target.value), value))}
+      />
+    </label>
+  );
+}
+
+export function MockChart({ history }: { history: MockPoint[] }) {
+  const width = 620;
+  const height = 220;
+  const pad = 20;
+  const values = history.flatMap((item) => [item.selectedLoss, item.sampledLoss]);
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const span = Math.max(max - min, 1e-6);
+
+  function line(key: "selectedLoss" | "sampledLoss") {
+    return history
+      .map((item, index) => {
+        const x = pad + (index / Math.max(history.length - 1, 1)) * (width - pad * 2);
+        const y = height - pad - ((item[key] - min) / span) * (height - pad * 2);
+        return `${index === 0 ? "M" : "L"} ${x.toFixed(1)} ${y.toFixed(1)}`;
+      })
+      .join(" ");
+  }
+
+  return (
+    <svg className={styles.mockChart} viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Mock training chart">
+      {[0.25, 0.5, 0.75, 1].map((level) => {
+        const y = height - pad - level * (height - pad * 2);
+        return <line key={level} x1={pad} x2={width - pad} y1={y} y2={y} className={styles.gridLine} />;
+      })}
+      <path d={line("sampledLoss")} className={styles.sampledLine} />
+      <path d={line("selectedLoss")} className={styles.selectedLine} />
+    </svg>
+  );
+}

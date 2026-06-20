@@ -8,7 +8,7 @@ export function NetworkWidget() {
   const state = useNetwork();
 
   return (
-    <Widget title="Network" eyebrow={<LivePulse />} to="/network" state={state}>
+    <Widget title="Network" eyebrow={<LivePulse />} to="/app/network" state={state}>
       {(snap) => (
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "var(--s5)" }}>
           <Stat label="Active contributors" value={formatInt(snap.stats.activeContributors)} />

@@ -8,7 +8,7 @@ export function ProgressWidget() {
   const state = useAsync(() => api.getProgress(), []);
 
   return (
-    <Widget title="Progress to AGI" eyebrow="The search" to="/progress" state={state}>
+    <Widget title="Progress to AGI" eyebrow="The search" to="/app/progress" state={state}>
       {(p) => {
         const reached = p.milestones.filter((m) => m.reachedAt).length;
         return (

@@ -17,7 +17,17 @@ export const config = {
     // 3D session visual (creature evolving to solve a maze). Lazy-loaded, so
     // three.js only enters the bundle when this is on and the page is opened.
     session3dVisual: true,
+    // Compute/train session visual (genome strings evolving). Canvas-2D, lazy-
+    // loaded; the hero glyph-noise → highlight technique on a dedicated route.
+    sessionTrainVisual: true,
     // Mini chain explorer on the network page (C3).
     ledgerExplorer: true
+  },
+  // Top-bar compute HUD (CPU/GPU specs + fabricated realtime %). Behind a
+  // swappable ComputeMetricsSource seam — only `mock` is implemented; the
+  // browser/agent tiers (real %) are deferred. See
+  // SAGI-compute-metrics-feasibility.md.
+  computeMetrics: {
+    source: "mock" as "mock" | "browser" | "agent"
   }
 } as const;

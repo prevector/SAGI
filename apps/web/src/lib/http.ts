@@ -23,12 +23,9 @@ export const httpApi: Api = {
   getBounty: (id: ID) => fetchJson(`/api/bounties/${encodeURIComponent(id)}`),
   getProgress: () => fetchJson(`/api/progress`),
   getNetwork: () => fetchJson(`/api/network`),
-  subscribeNetwork: (cb: (snap: NetworkSnapshot) => void) => {
-    // SSE: the server pushes a NetworkSnapshot on every sealed epoch / change.
-    // EventSource auto-reconnects on transient errors; we just close on unmount.
-    // Bursts (driver tick + epoch close close together) are coalesced to one
-    // update per animation frame so the store never re-render-storms.
-    const es = new EventSource(apiUrl("/api/network/stream"), { withCredentials: true });
+  subscribeNetwork: (cb: (snap: NetworkSnapshot) => void, opts?: { surface?: "app" | "terminal" }) => {
+    const query = opts?.surface ? `?surface=${encodeURIComponent(opts.surface)}` : "";
+    const es = new EventSource(apiUrl(`/api/network/stream${query}`), { withCredentials: true });
     let latest: NetworkSnapshot | null = null;
     let scheduled = false;
     const schedule =

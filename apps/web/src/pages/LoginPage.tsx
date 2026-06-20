@@ -12,9 +12,9 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  // Already authenticated (incl. dev auto-auth) → straight to the dashboard.
+  // Already authenticated (incl. dev auto-auth) → straight to the terminal.
   if (!loading && username) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/app" replace />;
   }
 
   async function onSubmit(event: FormEvent) {
@@ -28,7 +28,7 @@ export default function LoginPage() {
     setError(null);
     try {
       await login(value);
-      navigate("/", { replace: true });
+      navigate("/app", { replace: true });
     } catch {
       setError("Could not sign in. Enter a name and try again.");
     } finally {

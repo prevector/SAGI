@@ -1,4 +1,4 @@
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
 import { Outlet } from "react-router-dom";
 import { SkeletonLines } from "../ui";
 import { DemoControls } from "../../features/demo/DemoControls";
@@ -7,6 +7,10 @@ import { TopBar } from "./TopBar";
 import styles from "./AppShell.module.css";
 
 export function AppShell() {
+  useEffect(() => {
+    document.title = "SAGI Workspace";
+  }, []);
+
   return (
     <div className={styles.shell}>
       <aside className={styles.aside}>

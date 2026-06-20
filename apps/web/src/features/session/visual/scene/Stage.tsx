@@ -1,25 +1,29 @@
-// The R3F <Canvas> stage: dark background, exponential fog, low-key lighting,
-// OrbitControls, and the post-processing stack. Owns the performance levers
-// (capped DPR, demand frameloop, off-screen pause) from PLAN-3D.md §6.
+// The R3F <Canvas> stage. Light "studio" look: a clean white background, bright
+// simple lighting with soft real-time shadows, and OrbitControls — no fragile
+// environment map or post-processing chain (a dark-on-dark selective-bloom
+// stage made the matte geometry invisible). Owns the performance levers (capped
+// DPR, demand frameloop, off-screen pause) from PLAN-3D.md §6, gated through the
+// resolved QualitySettings.
 
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { AdaptiveDpr, OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
-import { FOG_COLOR, PALETTE } from "../palette";
-import { VISUAL_CONFIG } from "../config";
-import { Effects } from "./Effects";
+import { STAGE_BG, STAGE_FOG, PALETTE } from "../palette";
+import { VISUAL_CONFIG, type QualitySettings } from "../config";
 import type { PerfMeter } from "./usePerf";
 
 interface StageProps {
   children: ReactNode;
   /** "always" while actively animating; "demand" when idle to save battery. */
   frameloop?: "always" | "demand";
-  /** Reduced-motion / low-power: drop post FX and pin DPR low. */
+  /** Reduced-motion / low-power: pin DPR low + no auto-rotate. */
   lowPower?: boolean;
   mobile?: boolean;
   /** Optional per-frame perf sampler (dev HUD). */
   perf?: PerfMeter;
+  /** Resolved fidelity tier — drives shadows / soft shadows. */
+  quality: QualitySettings;
 }
 
 /** Feeds the FPS sampler once per frame from inside the Canvas. */
@@ -28,11 +32,11 @@ function PerfSampler({ perf }: { perf: PerfMeter }) {
   return null;
 }
 
-/** Applies scene-level fog once the scene exists. */
+/** Applies a soft scene-level fog once the scene exists (depth on the white). */
 function SceneFog() {
   const scene = useThree((s) => s.scene);
   useEffect(() => {
-    scene.fog = new THREE.FogExp2(new THREE.Color(FOG_COLOR).getHex(), 0.06);
+    scene.fog = new THREE.Fog(new THREE.Color(STAGE_FOG).getHex(), 18, 46);
     return () => {
       scene.fog = null;
     };
@@ -46,6 +50,7 @@ export function Stage({
   lowPower = false,
   mobile = false,
   perf,
+  quality,
 }: StageProps) {
   const hostRef = useRef<HTMLDivElement>(null);
   const [onScreen, setOnScreen] = useState(true);
@@ -73,37 +78,60 @@ export function Stage({
 
   const visible = onScreen && tabVisible;
 
-  const dpr = mobile ? VISUAL_CONFIG.perf.dprMobile : VISUAL_CONFIG.perf.dprDesktop;
-  // Off-screen → force demand so nothing renders until visible again.
+  const dprBase = mobile ? VISUAL_CONFIG.perf.dprMobile : VISUAL_CONFIG.perf.dprDesktop;
+  const dpr: [number, number] = [dprBase[0], Math.min(dprBase[1], quality.dprCap)];
   const effectiveLoop = !visible ? "demand" : frameloop;
+
+  const shadowMap = quality.shadows ? quality.shadowMapSize : false;
 
   return (
     <div ref={hostRef} style={{ width: "100%", height: "100%" }}>
       <Canvas
         frameloop={effectiveLoop}
         dpr={dpr}
-        gl={{ antialias: !mobile, powerPreference: "high-performance" }}
-        camera={{ position: [9, 11, 13], fov: 42, near: 0.1, far: 100 }}
-        onCreated={({ gl }) => gl.setClearColor(new THREE.Color(PALETTE.bg), 1)}
+        shadows={shadowMap ? { type: THREE.PCFShadowMap } : false}
+        gl={{ antialias: true, powerPreference: "high-performance" }}
+        camera={{ position: [7, 9, 10.5], fov: 42, near: 0.1, far: 100 }}
+        onCreated={({ gl }) => gl.setClearColor(new THREE.Color(STAGE_BG), 1)}
       >
         <SceneFog />
-        <ambientLight intensity={0.25} color={PALETTE.tealPale} />
-        <directionalLight position={[5, 10, 6]} intensity={0.7} color={PALETTE.paper} />
-        <hemisphereLight args={[PALETTE.tealPale, PALETTE.bgDeep, 0.15]} />
+
+        {/* Bright, simple studio lighting. */}
+        <ambientLight intensity={0.85} />
+        <hemisphereLight args={["#ffffff", "#d4dede", 0.7]} />
+        <directionalLight
+          position={[7, 13, 8]}
+          intensity={1.6}
+          color="#ffffff"
+          castShadow={!!shadowMap}
+          shadow-mapSize-width={shadowMap || 1024}
+          shadow-mapSize-height={shadowMap || 1024}
+          shadow-camera-near={1}
+          shadow-camera-far={45}
+          shadow-camera-left={-10}
+          shadow-camera-right={10}
+          shadow-camera-top={10}
+          shadow-camera-bottom={-10}
+          shadow-bias={-0.0004}
+          shadow-normalBias={0.02}
+        />
+        {/* Cool fill from the opposite side so shadowed faces don't go muddy. */}
+        <directionalLight position={[-8, 6, -7]} intensity={0.5} color={PALETTE.tealPale} />
 
         {children}
 
         <OrbitControls
+          makeDefault
           enablePan={false}
           enableDamping
           minDistance={6}
           maxDistance={30}
           maxPolarAngle={Math.PI / 2.1}
           autoRotate={!lowPower && frameloop === "always"}
-          autoRotateSpeed={0.4}
+          autoRotateSpeed={0.5}
+          target={[0, 0.4, 0]}
         />
         <AdaptiveDpr pixelated />
-        <Effects enabled={!lowPower} />
         {perf ? <PerfSampler perf={perf} /> : null}
       </Canvas>
     </div>

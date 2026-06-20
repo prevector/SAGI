@@ -11,7 +11,7 @@ export function ProfileWidget() {
   const state = useAsync(() => api.getProfile(username ?? ""), [username]);
 
   return (
-    <Widget title="Profile" eyebrow="You" to="/profile" state={state}>
+    <Widget title="Profile" eyebrow="You" to="/app/profile" state={state}>
       {(p) => (
         <div style={{ display: "grid", gap: "var(--s4)" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "var(--s3)" }}>

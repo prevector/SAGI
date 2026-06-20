@@ -5,6 +5,7 @@ import { defaultEmissionConfig } from "@sagi/ledger";
 import { openDb } from "./db/client.js";
 import { LedgerService } from "./service.js";
 import { SseHub } from "./sse.js";
+import { PresenceHub } from "./presence.js";
 import { buildLedgerStats, recentTx } from "./explorer.js";
 import type { LedgerConfig } from "./config.js";
 
@@ -18,7 +19,7 @@ function demoSvc() {
     genesisUsers: 5,
     genesisDays: 20
   };
-  const svc = new LedgerService(handle, cfg, new SseHub());
+  const svc = new LedgerService(handle, cfg, new SseHub(), new PresenceHub());
   svc.init({ startTimer: false });
   return { handle, svc, cfg };
 }

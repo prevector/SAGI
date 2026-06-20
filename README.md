@@ -2,9 +2,9 @@
 
 Minimal TypeScript monorepo for a hackathon MVP:
 
-- `apps/web`: Vite-powered vanilla TypeScript dashboard
+- `apps/web`: Vite-powered TypeScript client
 - `apps/api`: Express API
-- `packages/shared`: shared types and mock dashboard data
+- `packages/shared`: shared types
 
 The production build is intentionally simple:
 
@@ -84,12 +84,17 @@ See [experiments/IAF_REPRODUCTION.md](/Users/tim/Code/SAGI/experiments/IAF_REPRO
 
 ## Local gene lab
 
-Open `/genes` in the web app to inspect, edit, save, run, and continue training local genes. Genes are stored in browser `localStorage`.
+Open `/app` in the web app to inspect, edit, save, run, and continue training local genes. Genes are stored in browser `localStorage`. The current redesigned client is a full-screen Dockview terminal workspace with three panes, `GENES`, `TRAINING`, and `CREATURE`; real ES execution is intentionally not wired into this UI yet.
 
 Current local training tasks:
 
 - `potential`: smoother membrane-potential prediction, useful for seeing whether recurrent memory is learning
 - `iaf`: hard integrate-and-fire spike timing, closer to the paper benchmark
+
+The Gene Lab defaults to the paper-shaped IAF setup and has two presets:
+
+- `Fast diagnostic`: small browser-friendly potential task for quick visual feedback.
+- `Paper IAF`: single-ENU IAF shape from [implementation_paper](/Users/tim/Code/SAGI/implementation_paper), with 32 neuron dynamic states, 0 synapse states, 512 ES offspring (`256` mirrored pairs), 32 pseudo-environments, `sigma=0.01`, spike output gain `1000`, and 10,000 generations.
 
 The gene stores architecture and weights. The phenotype is decoded only when a run starts. The gene currently includes neuron state size and synapse state size; the IAF task uses the neuron state path, while synapse state size is carried for the next network/synapse experiments.
 

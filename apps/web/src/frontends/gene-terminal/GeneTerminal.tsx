@@ -1,0 +1,87 @@
+import { useEffect } from "react";
+import {
+  DockviewReact,
+  type DockviewReadyEvent
+} from "dockview";
+import "dockview/dist/styles/dockview.css";
+import { formatInt } from "../../lib/format";
+import { shortId } from "./components";
+import { GeneTerminalProvider, useGeneTerminal } from "./state";
+import { CreaturePanel } from "./panels/CreaturePanel";
+import { GenesPanel } from "./panels/GenesPanel";
+import { NetworkPanel } from "./panels/NetworkPanel";
+import { TrainingPanel } from "./panels/TrainingPanel";
+import styles from "./GeneTerminal.module.css";
+
+const dockComponents = {
+  creature: CreaturePanel,
+  genes: GenesPanel,
+  network: NetworkPanel,
+  training: TrainingPanel
+};
+
+function Workspace() {
+  const terminal = useGeneTerminal();
+
+  function onReady(event: DockviewReadyEvent) {
+    event.api.addPanel({
+      id: "genes",
+      component: "genes",
+      title: "GENES",
+      initialWidth: 420
+    });
+    event.api.addPanel({
+      id: "training",
+      component: "training",
+      title: "TRAINING",
+      position: { direction: "right" },
+      initialWidth: 860
+    });
+    event.api.addPanel({
+      id: "creature",
+      component: "creature",
+      title: "CREATURE",
+      position: { referencePanel: "training", direction: "below" }
+    });
+    event.api.addPanel({
+      id: "network",
+      component: "network",
+      title: "NETWORK",
+      position: { referencePanel: "creature", direction: "right" },
+      initialWidth: 520
+    });
+  }
+
+  return (
+    <div className={styles.terminal}>
+      <div className={styles.workspaceStrip}>
+        <span className={styles.workspaceMark}>SAGI TERMINAL</span>
+        <span>{terminal.selectedGene.name}</span>
+        <span>{shortId(terminal.selectedGene.id)}</span>
+        <span>{terminal.status.toUpperCase()}</span>
+        <span>GEN {formatInt(terminal.generation)}</span>
+      </div>
+      <div className={styles.dockShell}>
+        <DockviewReact
+          className="dockview-theme-abyss"
+          components={dockComponents}
+          onReady={onReady}
+          disableFloatingGroups
+          disableTabsOverflowList
+        />
+      </div>
+    </div>
+  );
+}
+
+export function GeneTerminal() {
+  useEffect(() => {
+    document.title = "SAGI Terminal";
+  }, []);
+
+  return (
+    <GeneTerminalProvider>
+      <Workspace />
+    </GeneTerminalProvider>
+  );
+}

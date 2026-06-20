@@ -14,5 +14,5 @@ export default function ProtectedRoute() {
     );
   }
 
-  return username ? <Outlet /> : <Navigate to="/login" replace />;
+  return username ? <Outlet /> : <Navigate to="/app/login" replace />;
 }

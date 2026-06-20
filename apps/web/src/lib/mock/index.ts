@@ -56,7 +56,7 @@ export const mockApi: Api = {
     await delay(160);
     return currentNetwork;
   },
-  subscribeNetwork(cb) {
+  subscribeNetwork(cb, _opts?) {
     const handle = setInterval(() => {
       currentNetwork = stepNetwork(currentNetwork);
       cb(currentNetwork);
