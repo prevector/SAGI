@@ -1,0 +1,16 @@
+[Unit]
+Description=SAGI MVP
+After=network.target
+
+[Service]
+Type=simple
+User=deploy
+WorkingDirectory=/var/www/sagi
+Environment=NODE_ENV=production
+EnvironmentFile=/var/www/sagi/.env
+ExecStart=/usr/bin/npm --prefix /var/www/sagi run start
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

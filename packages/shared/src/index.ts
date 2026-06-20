@@ -55,6 +55,14 @@ export interface DashboardSnapshot {
   activity: ActivityEvent[];
 }
 
+export interface SessionInfo {
+  authenticated: boolean;
+  mode: "development" | "production";
+  user: {
+    name: string;
+  } | null;
+}
+
 const dashboardSeed: Omit<DashboardSnapshot, "generatedAt"> = {
   headline: "A living search through possible minds",
   subheadline:

@@ -1,5 +1,12 @@
 import "./styles.css";
-import type { ActivityEvent, Bounty, DashboardSnapshot, LeaderboardEntry, OrganismCard } from "@sagi/shared";
+import type {
+  ActivityEvent,
+  Bounty,
+  DashboardSnapshot,
+  LeaderboardEntry,
+  OrganismCard,
+  SessionInfo
+} from "@sagi/shared";
 
 const root = document.querySelector<HTMLDivElement>("#app");
 
@@ -77,7 +84,7 @@ function renderDashboard(snapshot: DashboardSnapshot): void {
           <p class="hero__text">${snapshot.subheadline}</p>
           <div class="hero__actions">
             <button class="button button--primary">Join the network</button>
-            <button class="button button--secondary">Read the thesis</button>
+            <button class="button button--secondary" data-action="logout">Log out</button>
           </div>
         </div>
         <div class="hero__visual panel">
@@ -196,6 +203,15 @@ function renderDashboard(snapshot: DashboardSnapshot): void {
       </section>
     </main>
   `;
+
+  const logoutButton = app.querySelector<HTMLButtonElement>('[data-action="logout"]');
+  logoutButton?.addEventListener("click", async () => {
+    await fetch("/api/auth/logout", {
+      method: "POST"
+    });
+
+    await boot();
+  });
 }
 
 function renderError(message: string): void {
@@ -210,26 +226,109 @@ function renderError(message: string): void {
   `;
 }
 
-app.innerHTML = `
-  <main class="dashboard-shell">
-    <section class="panel loading-state">
-      <p class="eyebrow">Booting SAGI</p>
-      <h1>Loading mock dashboard</h1>
-      <p class="muted">Fetching the current search snapshot from the local API.</p>
-    </section>
-  </main>
-`;
+function renderLoading(title: string, detail: string): void {
+  app.innerHTML = `
+    <main class="dashboard-shell">
+      <section class="panel loading-state">
+        <p class="eyebrow">Booting SAGI</p>
+        <h1>${title}</h1>
+        <p class="muted">${detail}</p>
+      </section>
+    </main>
+  `;
+}
 
-fetch("/api/dashboard")
-  .then(async (response) => {
+function renderLogin(session: SessionInfo): void {
+  app.innerHTML = `
+    <main class="dashboard-shell">
+      <section class="auth-layout">
+        <article class="panel auth-copy">
+          <p class="eyebrow">SAGI Access</p>
+          <h1>Simple auth for the MVP.</h1>
+          <p class="hero__text">
+            Production asks only for a username and stores it in a simple signed session. Local development bypasses auth automatically.
+          </p>
+          <div class="auth-mode-chip">Mode: ${session.mode}</div>
+        </article>
+
+        <article class="panel auth-panel">
+          <form id="login-form" class="auth-form">
+            <label class="field">
+              <span class="field__label">Username</span>
+              <input
+                class="field__input"
+                type="text"
+                name="username"
+                autocomplete="username"
+                placeholder="tim"
+                required
+              />
+            </label>
+            <button class="button button--primary auth-submit" type="submit">Unlock dashboard</button>
+            <p class="muted auth-hint">For local development, just run <code>npm run dev</code>.</p>
+            <p class="auth-error" hidden></p>
+          </form>
+        </article>
+      </section>
+    </main>
+  `;
+
+  const form = app.querySelector<HTMLFormElement>("#login-form");
+  const errorNode = app.querySelector<HTMLParagraphElement>(".auth-error");
+
+  form?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const formData = new FormData(form);
+    const username = String(formData.get("username") ?? "");
+
+    const response = await fetch("/api/auth/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ username })
+    });
+
     if (!response.ok) {
-      throw new Error(`Request failed with status ${response.status}`);
+      if (errorNode) {
+        errorNode.hidden = false;
+        errorNode.textContent = "Enter any username to continue.";
+      }
+      return;
     }
 
-    return (await response.json()) as DashboardSnapshot;
-  })
-  .then(renderDashboard)
-  .catch((error: unknown) => {
+    await boot();
+  });
+}
+
+async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
+  const response = await fetch(url, init);
+
+  if (!response.ok) {
+    throw new Error(`Request failed with status ${response.status}`);
+  }
+
+  return (await response.json()) as T;
+}
+
+async function boot(): Promise<void> {
+  renderLoading("Loading mock dashboard", "Checking access and fetching the current search snapshot.");
+
+  try {
+    const session = await fetchJson<SessionInfo>("/api/session");
+
+    if (!session.authenticated) {
+      renderLogin(session);
+      return;
+    }
+
+    const snapshot = await fetchJson<DashboardSnapshot>("/api/dashboard");
+    renderDashboard(snapshot);
+  } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Unknown error";
     renderError(message);
-  });
+  }
+}
+
+void boot();

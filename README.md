@@ -6,6 +6,13 @@ Minimal TypeScript monorepo for a hackathon MVP:
 - `apps/api`: Express API
 - `packages/shared`: shared types and mock dashboard data
 
+The production build is intentionally simple:
+
+- one Node server
+- static frontend served by Express
+- username-only auth in production
+- automatic auth bypass in local development
+
 ## Commands
 
 ```bash
@@ -14,9 +21,56 @@ npm run dev
 ```
 
 The web app runs on `http://localhost:5173` and proxies API requests to `http://localhost:4000`.
+Local development runs in developer mode automatically, so auth is bypassed.
 
 ## Build
 
 ```bash
 npm run build
 ```
+
+## Production
+
+Create a `.env` file from `.env.example`:
+
+```bash
+PORT=4000
+SESSION_SECRET=replace-this
+SECURE_COOKIES=1
+```
+
+Then run:
+
+```bash
+npm ci
+npm run build
+npm run start
+```
+
+In production the frontend and API are both served from port `4000`.
+
+## Release to a VPS
+
+The simplest deploy path is:
+
+1. Install Node 22+, Caddy, and systemd on the VPS.
+2. Copy [deploy/sagi.service.example](/Users/tim/Code/SAGI/deploy/sagi.service.example:1) to `/etc/systemd/system/sagi.service` and adapt the user/path.
+3. Put your `.env` file on the server at `/var/www/sagi/.env`.
+4. Point Caddy at the app using [deploy/Caddyfile.example](/Users/tim/Code/SAGI/deploy/Caddyfile.example:1).
+5. Deploy with:
+
+```bash
+./scripts/release.sh user@your-vps /var/www/sagi sagi
+```
+
+That script syncs the repo, runs `npm ci`, builds, and restarts the service.
+
+## Authentication recommendation
+
+For this MVP, the absolute simplest app-level auth is the one now wired in:
+
+- local development: no auth
+- production: enter any username
+- session: signed HTTP-only cookie
+
+This is identity-only, not real security. If you want actual protection with less app code, put the whole site behind Cloudflare Access or Tailscale and remove app auth entirely.
