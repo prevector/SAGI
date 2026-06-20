@@ -43,11 +43,13 @@ export default function ProgressPage() {
             <div className={styles.metrics}>
               {p.metrics.map((series) => {
                 const latest = series.points[series.points.length - 1]?.v ?? 0;
+                // Score-like metrics (<10) keep decimals; counts use grouped ints.
+                const fmt = latest < 10 ? (n: number) => n.toFixed(2) : formatInt;
                 return (
                   <Card key={series.key}>
-                    <Stat label={series.label} value={<span className="mono">{formatInt(latest)}{series.unit ? ` ${series.unit}` : ""}</span>} />
+                    <Stat label={series.label} value={<span className="mono">{fmt(latest)}{series.unit ? ` ${series.unit}` : ""}</span>} />
                     <div style={{ marginTop: "var(--s3)" }}>
-                      <MetricChart series={[{ key: series.key, label: series.label, points: series.points, tone: series.unit ? "orange" : "teal" }]} valueFormat={formatInt} height={140} />
+                      <MetricChart series={[{ key: series.key, label: series.label, points: series.points, tone: series.unit ? "orange" : "teal" }]} valueFormat={fmt} height={140} />
                     </div>
                   </Card>
                 );

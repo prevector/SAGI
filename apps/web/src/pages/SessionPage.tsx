@@ -15,6 +15,7 @@ export default function SessionPage() {
   const [params] = useSearchParams();
 
   const [bounties, setBounties] = useState<Bounty[]>([]);
+  const [allBounties, setAllBounties] = useState<Bounty[]>([]);
   const [sessions, setSessions] = useState<Session[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -30,7 +31,10 @@ export default function SessionPage() {
   }, [userId]);
 
   useEffect(() => {
-    void api.getBounties().then((b) => setBounties(b.filter((x) => x.status !== "closed")));
+    void api.getBounties().then((b) => {
+      setAllBounties(b);
+      setBounties(b.filter((x) => x.status !== "closed"));
+    });
   }, []);
 
   useEffect(() => {
@@ -60,7 +64,7 @@ export default function SessionPage() {
     }
   }
 
-  const bountyTitle = (id?: string) => bounties.find((b) => b.id === id)?.title ?? id;
+  const bountyTitle = (id?: string) => allBounties.find((b) => b.id === id)?.title ?? id;
 
   return (
     <div>

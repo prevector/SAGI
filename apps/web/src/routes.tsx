@@ -1,18 +1,22 @@
+import { lazy } from "react";
 import { Route, Routes } from "react-router-dom";
 import ProtectedRoute from "./auth/ProtectedRoute";
 import { AppShell } from "./components/layout/AppShell";
-import BountiesPage from "./pages/BountiesPage";
-import BountyDetailPage from "./pages/BountyDetailPage";
-import DashboardPage from "./pages/DashboardPage";
-import LeaderboardPage from "./pages/LeaderboardPage";
 import LoginPage from "./pages/LoginPage";
-import NetworkPage from "./pages/NetworkPage";
 import NotFoundPage from "./pages/NotFoundPage";
-import ProfilePage from "./pages/ProfilePage";
-import ProgressPage from "./pages/ProgressPage";
-import SandboxPage from "./pages/SandboxPage";
-import SessionPage from "./pages/SessionPage";
-import TokensPage from "./pages/TokensPage";
+
+// Authenticated pages are code-split so the initial (login) bundle stays small
+// and recharts only loads with the pages that use it.
+const DashboardPage = lazy(() => import("./pages/DashboardPage"));
+const ProfilePage = lazy(() => import("./pages/ProfilePage"));
+const TokensPage = lazy(() => import("./pages/TokensPage"));
+const LeaderboardPage = lazy(() => import("./pages/LeaderboardPage"));
+const BountiesPage = lazy(() => import("./pages/BountiesPage"));
+const BountyDetailPage = lazy(() => import("./pages/BountyDetailPage"));
+const ProgressPage = lazy(() => import("./pages/ProgressPage"));
+const NetworkPage = lazy(() => import("./pages/NetworkPage"));
+const SessionPage = lazy(() => import("./pages/SessionPage"));
+const SandboxPage = lazy(() => import("./pages/SandboxPage"));
 
 export default function AppRoutes() {
   return (
