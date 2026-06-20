@@ -12,6 +12,9 @@ export const config = {
   apiBaseUrl: import.meta.env.VITE_API_URL ?? "",
   features: {
     realtimeNetwork: true,
-    sessions: true
+    sessions: true,
+    // 3D session visual (creature evolving to solve a maze). Lazy-loaded, so
+    // three.js only enters the bundle when this is on and the page is opened.
+    session3dVisual: true
   }
 } as const;

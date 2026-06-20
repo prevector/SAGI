@@ -1,13 +1,19 @@
-import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { Suspense, lazy, useCallback, useEffect, useState, type FormEvent } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Zap } from "lucide-react";
 import { useAuth } from "../auth/AuthContext";
 import { Button, Card, PageHeader, ProgressBar, Tag } from "../components/ui";
 import { api } from "../lib/api";
+import { config } from "../lib/config";
 import { formatDate, formatInt, formatTokens } from "../lib/format";
 import type { Bounty, Session } from "../lib/types";
 import { SessionStatusChip } from "../features/common/status";
+import { VisualErrorBoundary } from "../features/session/visual/ErrorBoundary";
 import styles from "./SessionPage.module.css";
+
+// The 3D visual (three.js) is code-split: this import only pulls the heavy
+// bundle when the feature flag is on and the page is opened.
+const SessionVisual = lazy(() => import("../features/session/visual"));
 
 export default function SessionPage() {
   const { username } = useAuth();
@@ -66,9 +72,28 @@ export default function SessionPage() {
 
   const bountyTitle = (id?: string) => allBounties.find((b) => b.id === id)?.title ?? id;
 
+  // Hero visual binds to the latest session: the running one if any, else the
+  // most recent (sessions are sorted newest-first).
+  const heroSession = sessions.find((s) => s.status === "running") ?? sessions[0];
+  const showVisual = config.features.session3dVisual && heroSession;
+
   return (
     <div>
       <PageHeader eyebrow="Run the search" title="Start a session" subtitle="Allocate compute against a bounty or an open exploration, then watch it run and credit tokens." />
+
+      {showVisual ? (
+        <div className={styles.hero}>
+          <VisualErrorBoundary fallback={null}>
+            <Suspense fallback={null}>
+              <SessionVisual
+                seed={heroSession.id}
+                status={heroSession.status}
+                progress={heroSession.progress}
+              />
+            </Suspense>
+          </VisualErrorBoundary>
+        </div>
+      ) : null}
 
       <div className={styles.layout}>
         <Card as="section" className={styles.form}>
