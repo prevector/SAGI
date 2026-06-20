@@ -97,7 +97,7 @@ export default function GeneLabPage() {
 
       const snapshot = session.step(esRef.current);
       const trainedGene = { ...snapshot.gene, name: draft.name, notes: draft.notes };
-      setEvaluation(snapshot.current);
+      setEvaluation(snapshot.best);
       setHistory(snapshot.history);
       setGeneration(snapshot.generation);
       setDraft(trainedGene);
@@ -195,7 +195,7 @@ export default function GeneLabPage() {
     const session = createIafTrainingSession(draft, runConfig, es);
     const snapshot = session.snapshot(es);
     trainingSession.current = session;
-    setEvaluation(snapshot.current);
+    setEvaluation(snapshot.best);
     setHistory(snapshot.history);
     setGeneration(snapshot.generation);
     setTrainingState("running");
@@ -221,7 +221,7 @@ export default function GeneLabPage() {
     trainingSession.current = session;
     const snapshot = session.step(es);
     const trainedGene = { ...snapshot.gene, name: draft.name, notes: draft.notes };
-    setEvaluation(snapshot.current);
+    setEvaluation(snapshot.best);
     setHistory(snapshot.history);
     setGeneration(snapshot.generation);
     setDraft(trainedGene);
@@ -428,8 +428,8 @@ export default function GeneLabPage() {
 
           <Card as="section" className={styles.visual}>
             <div className={styles.metrics}>
-              <span><b>{evaluation ? evaluation.loss.toFixed(4) : "—"}</b><small>loss</small></span>
-              <span><b>{evaluation ? evaluation.fitness.toFixed(4) : "—"}</b><small>fitness</small></span>
+              <span><b>{evaluation ? evaluation.loss.toFixed(4) : "—"}</b><small>selected loss</small></span>
+              <span><b>{evaluation ? evaluation.fitness.toFixed(4) : "—"}</b><small>selected fitness</small></span>
               <span><b>{evaluation ? formatInt(evaluation.predictedSpikes) : "—"}</b><small>predicted spikes</small></span>
               <span><b>{historyBest ? historyBest.loss.toFixed(4) : "—"}</b><small>best trained loss</small></span>
             </div>

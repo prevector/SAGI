@@ -48,12 +48,12 @@ export function GeneTrainingChart({ history }: GeneTrainingChartProps) {
     <div className={styles.wrap}>
       <div className={styles.head}>
         <div>
-          <b>Training loss</b>
+          <b>ES search loss</b>
           <span>{history.length - 1} generations · improvement {delta.toFixed(6)}{isFlat ? " · flat" : ""}</span>
         </div>
         <div className={styles.legend}>
-          <span><i className={styles.lossMark} /> current {latest.loss.toFixed(4)}</span>
-          <span><i className={styles.bestMark} /> best {bestNow.toFixed(4)}</span>
+          <span><i className={styles.lossMark} /> sampled center {latest.loss.toFixed(4)}</span>
+          <span><i className={styles.bestMark} /> selected best {bestNow.toFixed(4)}</span>
         </div>
       </div>
       <svg className={styles.chart} viewBox={`0 0 ${WIDTH} ${HEIGHT}`} role="img" aria-label="Training loss by generation">
@@ -63,8 +63,8 @@ export function GeneTrainingChart({ history }: GeneTrainingChartProps) {
           const y = HEIGHT - PAD - level * (HEIGHT - PAD * 2);
           return <line key={level} x1={PAD} y1={y} x2={WIDTH - PAD} y2={y} className={styles.grid} />;
         })}
-        <path d={pathFor(losses, min, max)} className={styles.lossLine} />
         <path d={pathFor(bestLosses, min, max)} className={styles.bestLine} />
+        <path d={pathFor(losses, min, max)} className={styles.lossLine} />
       </svg>
     </div>
   );

@@ -38,6 +38,14 @@ export function GeneTrace({ evaluation, task }: GeneTraceProps) {
 
   return (
     <div className={styles.wrap}>
+      <div className={styles.head}>
+        <b>Selected genome trace</b>
+        <span>
+          {task === "potential"
+            ? "Target is membrane potential: it ramps with input and resets after a spike."
+            : "Target lines mark spike times; output is the selected genome response."}
+        </span>
+      </div>
       <div className={styles.legend} aria-label="Trace legend">
         <span><i className={styles.targetMark} /> Target</span>
         <span><i className={styles.outputMark} /> Output</span>

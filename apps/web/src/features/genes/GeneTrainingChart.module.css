@@ -88,22 +88,27 @@
   stroke-width: 1;
 }
 
-.lossLine,
 .bestLine {
   fill: none;
   stroke-linecap: round;
   stroke-linejoin: round;
-  stroke-width: 3;
+  stroke-width: 4;
 }
 
 .lossLine {
+  fill: none;
   stroke: var(--accent-2);
-  filter: drop-shadow(0 0 8px rgba(255, 118, 50, 0.28));
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.7;
+  opacity: 0.72;
+  vector-effect: non-scaling-stroke;
 }
 
 .bestLine {
   stroke: var(--accent);
   filter: drop-shadow(0 0 8px rgba(41, 230, 161, 0.2));
+  vector-effect: non-scaling-stroke;
 }
 
 @media (max-width: 560px) {
