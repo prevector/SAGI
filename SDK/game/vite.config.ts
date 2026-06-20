@@ -33,7 +33,11 @@ export default defineConfig({
   ],
   server: {
     port: 5174,
+    host: true, // bind 0.0.0.0 so a phone on the same WiFi can reach it
+    // Accept the tunnel/LAN hostnames (Vite blocks unknown Host headers by default).
+    allowedHosts: [".trycloudflare.com", ".ngrok-free.app", ".ngrok.io"],
     proxy: {
+      // proxy runs server-side (on the Mac), so it still talks to the local mock
       "/api": "http://localhost:8000",
     },
   },
