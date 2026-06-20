@@ -71,6 +71,17 @@ npm run experiment:iaf
 
 This runs a local TypeScript Evolution Strategies benchmark for a single GRU-like ENU on an integrate-and-fire target. It is a development-scale benchmark, not the full paper-scale reproduction.
 
+Closer step-by-step reproduction:
+
+```bash
+npm run experiment:iaf:reproduce -- --mode diagnostics
+npm run experiment:iaf:reproduce -- --mode optimizer --generations 100
+npm run experiment:iaf:reproduce -- --mode train --task potential --output-gain 1
+npm run experiment:iaf:reproduce -- --mode train --task iaf
+```
+
+See [experiments/IAF_REPRODUCTION.md](/Users/tim/Code/SAGI/experiments/IAF_REPRODUCTION.md:1) for the Python mapping, staged checks, and current results.
+
 ## Python reference implementation
 
 The full paper implementation we are using as the reference is already in this repo at:

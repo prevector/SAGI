@@ -12,6 +12,7 @@
     "dev:api": "npm run dev -w @sagi/api",
     "dev:web": "npm run dev -w @sagi/web",
     "experiment:iaf": "tsx experiments/enu_iaf_benchmark.ts",
+    "experiment:iaf:reproduce": "tsx experiments/enu_iaf_reproduction.ts",
     "start": "NODE_ENV=production node apps/api/dist/server.js",
     "release": "bash ./scripts/release.sh"
   },
