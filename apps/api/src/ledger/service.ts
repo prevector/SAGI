@@ -58,7 +58,11 @@ export class LedgerService {
   // ---- lifecycle -----------------------------------------------------------
 
   init(opts: { startTimer?: boolean } = {}): void {
-    if (this.cfg.mode === "production") this.purgeSynthetic();
+    if (this.cfg.mode === "production") {
+      // Guarantee no synthetic data leaks into a live economy, even if this DB
+      // was previously a demo. Idempotent: a clean prod DB has nothing to drop.
+      this.purgeSynthetic();
+    }
     this.seedBounties();
     if (this.cfg.mode === "demo") this.seedGenesisIfEmpty();
     this.ensureOpenEpoch();
@@ -454,6 +458,27 @@ export class LedgerService {
       }).where(eq(bounties.id, bountyId)).run();
     })();
     this.broadcast();
+  }
+
+  // ---- sinks (STUB — typed hooks, no enforcement) --------------------------
+  //
+  // STAKE / SLASH / BURN are part of the TxKind contract but intentionally
+  // inert in the prototype: staking needs a submission market, slashing needs
+  // adversaries, and burn needs real sponsor revenue (see v2 §1, §12). These
+  // hooks exist so enabling the sinks is a switch (flip `sinksEnabled` and add
+  // enforcement + a tx write), not a refactor. They no-op while disabled.
+  readonly sinksEnabled = false;
+
+  stake(_address: string, _amount: bigint): void {
+    if (!this.sinksEnabled) return; // STUB: admission/lock not enforced
+  }
+
+  slash(_address: string, _amount: bigint): void {
+    if (!this.sinksEnabled) return; // STUB: no validity market to slash against
+  }
+
+  burn(_amount: bigint): void {
+    if (!this.sinksEnabled) return; // STUB: no sponsor-fee revenue to buy-and-burn
   }
 
   // ---- demo driver + control panel -----------------------------------------

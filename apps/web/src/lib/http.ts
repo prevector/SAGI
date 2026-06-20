@@ -26,12 +26,31 @@ export const httpApi: Api = {
   subscribeNetwork: (cb: (snap: NetworkSnapshot) => void) => {
     // SSE: the server pushes a NetworkSnapshot on every sealed epoch / change.
     // EventSource auto-reconnects on transient errors; we just close on unmount.
+    // Bursts (driver tick + epoch close close together) are coalesced to one
+    // update per animation frame so the store never re-render-storms.
     const es = new EventSource(apiUrl("/api/network/stream"), { withCredentials: true });
+    let latest: NetworkSnapshot | null = null;
+    let scheduled = false;
+    const schedule =
+      typeof requestAnimationFrame !== "undefined"
+        ? requestAnimationFrame
+        : (fn: () => void) => setTimeout(fn, 16);
+    const flush = () => {
+      scheduled = false;
+      if (latest) {
+        cb(latest);
+        latest = null;
+      }
+    };
     es.onmessage = (event: MessageEvent<string>) => {
       try {
-        cb(JSON.parse(event.data) as NetworkSnapshot);
+        latest = JSON.parse(event.data) as NetworkSnapshot;
       } catch {
-        // ignore malformed frames (keep-alive comments never reach onmessage)
+        return; // ignore malformed frames (keep-alive comments never reach onmessage)
+      }
+      if (!scheduled) {
+        scheduled = true;
+        schedule(flush);
       }
     };
     return () => es.close();

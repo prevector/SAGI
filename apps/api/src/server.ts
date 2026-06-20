@@ -30,6 +30,9 @@ ledger.init();
 const demoDriver = ledgerCfg.mode === "demo" ? new DemoDriver(ledger) : null;
 demoDriver?.start();
 app.use(createLedgerRouter({ service: ledger, handle: dbHandle, cfg: ledgerCfg, hub: sseHub, env, driver: demoDriver }));
+console.log(
+  `SAGI ledger: mode=${ledgerCfg.mode} db=${ledgerCfg.dbPath} epoch=${ledgerCfg.emission.epochMs}ms driver=${demoDriver ? "on" : "off"}`
+);
 
 app.get("/health", (_request, response) => {
   response.json({ ok: true, mode: env.devMode ? "development" : "production" });
