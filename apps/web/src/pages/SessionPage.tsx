@@ -2,7 +2,7 @@ import { Suspense, lazy, useCallback, useEffect, useState, type FormEvent } from
 import { useSearchParams } from "react-router-dom";
 import { Zap } from "lucide-react";
 import { useAuth } from "../auth/AuthContext";
-import { Button, Card, PageHeader, ProgressBar, Tag } from "../components/ui";
+import { Button, Card, PageHeader, ProgressBar, SkeletonLines, Tag } from "../components/ui";
 import { api } from "../lib/api";
 import { config } from "../lib/config";
 import { formatDate, formatInt, formatTokens } from "../lib/format";
@@ -130,7 +130,7 @@ export default function SessionPage() {
 
         <div className={styles.sessions}>
           {loading ? (
-            <Card><p style={{ color: "var(--text-muted)" }}>Loading sessions…</p></Card>
+            <Card><SkeletonLines count={3} /></Card>
           ) : sessions.length === 0 ? (
             <Card><p style={{ color: "var(--text-muted)" }}>No sessions yet — start your first run.</p></Card>
           ) : (

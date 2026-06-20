@@ -39,11 +39,18 @@
   border: 1px solid var(--border);
   border-radius: var(--radius);
   color: var(--text);
+  cursor: pointer;
+  transition: border-color var(--motion-fast) var(--ease-out);
+}
+
+.select:hover {
+  border-color: var(--border-strong);
 }
 
 .range {
   width: 100%;
   accent-color: var(--accent);
+  cursor: pointer;
 }
 
 .sessions {

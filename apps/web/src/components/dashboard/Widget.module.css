@@ -12,12 +12,13 @@
   gap: var(--s3);
 }
 
+/* Quiet category label, not the uppercase-tracked "kicker" reflex. One bold
+   eyebrow per page header is a deliberate system; eight at once on the
+   dashboard reads as templated — so widgets get a calm, lowercase label. */
 .eyebrow {
   font-family: var(--font-mono);
   font-size: var(--fs-mono);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--accent);
+  color: var(--text-faint);
   margin-bottom: var(--s1);
 }
 
@@ -33,10 +34,20 @@
   color: var(--text-muted);
   white-space: nowrap;
   flex-shrink: 0;
+  transition: color var(--motion-fast) var(--ease-out);
+}
+
+.viewAll svg {
+  transition: transform var(--motion-fast) var(--ease-out);
 }
 
 .viewAll:hover {
   color: var(--accent);
+}
+
+/* Directional micro-interaction: the arrow nudges toward where it leads. */
+.viewAll:hover svg {
+  transform: translateX(2px);
 }
 
 .body {
