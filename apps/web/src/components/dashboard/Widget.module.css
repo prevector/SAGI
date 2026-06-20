@@ -1,0 +1,45 @@
+.widget {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s4);
+  min-height: 220px;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--s3);
+}
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--fs-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: var(--s1);
+}
+
+.title {
+  font-size: var(--fs-h3);
+}
+
+.viewAll {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s1);
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.viewAll:hover {
+  color: var(--accent);
+}
+
+.body {
+  flex: 1;
+  min-width: 0;
+}

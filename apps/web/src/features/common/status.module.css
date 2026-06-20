@@ -1,0 +1,7 @@
+.userStatus {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s1);
+  font-size: var(--fs-sm);
+  font-weight: 500;
+}

@@ -1,0 +1,39 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: var(--s5);
+}
+
+/* Default span for a widget */
+.grid > * {
+  grid-column: span 6;
+}
+
+.wide {
+  grid-column: span 8;
+}
+
+.narrow {
+  grid-column: span 4;
+}
+
+.full {
+  grid-column: span 12;
+}
+
+@media (max-width: 1080px) {
+  .grid > *,
+  .wide,
+  .narrow {
+    grid-column: span 6;
+  }
+}
+
+@media (max-width: 720px) {
+  .grid > *,
+  .wide,
+  .narrow,
+  .full {
+    grid-column: span 12;
+  }
+}

@@ -1,0 +1,5 @@
+.name {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s2);
+}

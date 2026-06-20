@@ -1,0 +1,77 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s3);
+}
+
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s2);
+}
+
+.title {
+  font-size: var(--fs-h3);
+  line-height: 1.2;
+}
+
+.title a {
+  color: var(--text);
+}
+
+.title a:hover {
+  color: var(--accent);
+}
+
+.sponsor {
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+  margin-top: calc(-1 * var(--s2));
+}
+
+.desc {
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+}
+
+.reward {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s2);
+}
+
+.rewardValue {
+  font-family: var(--font-mono);
+  font-size: var(--fs-h2);
+  color: var(--accent-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.rewardUnit {
+  font-size: var(--fs-sm);
+  color: var(--text-faint);
+}
+
+.closedRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s4);
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s3);
+  margin-top: auto;
+  padding-top: var(--s2);
+}
+
+.meta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s1);
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+}
