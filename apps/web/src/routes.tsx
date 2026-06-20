@@ -17,6 +17,7 @@ const BountyDetailPage = lazy(() => import("./pages/BountyDetailPage"));
 const ProgressPage = lazy(() => import("./pages/ProgressPage"));
 const NetworkPage = lazy(() => import("./pages/NetworkPage"));
 const SessionPage = lazy(() => import("./pages/SessionPage"));
+const TrainSessionPage = lazy(() => import("./pages/TrainSessionPage"));
 const SandboxPage = lazy(() => import("./pages/SandboxPage"));
 const LedgerPage = lazy(() => import("./pages/LedgerPage"));
 const GeneLabPage = lazy(() => import("./pages/GeneLabPage"));
@@ -41,6 +42,9 @@ export default function AppRoutes() {
           <Route path="network" element={<NetworkPage />} />
           {config.features.ledgerExplorer ? <Route path="ledger" element={<LedgerPage />} /> : null}
           <Route path="session" element={<SessionPage />} />
+          {config.features.sessionTrainVisual ? (
+            <Route path="session/train" element={<TrainSessionPage />} />
+          ) : null}
           <Route path="sandbox" element={<SandboxPage />} />
         </Route>
       </Route>
