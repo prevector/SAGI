@@ -1,5 +1,6 @@
 import { LogOut } from "lucide-react";
 import { useAuth } from "../../auth/AuthContext";
+import { ComputeMetricsWidget } from "../../features/compute-metrics";
 import { Avatar, Button } from "../ui";
 import styles from "./TopBar.module.css";
 
@@ -11,6 +12,7 @@ export function TopBar() {
       <div className={styles.modeTag} title="Auth mode">
         {mode}
       </div>
+      <ComputeMetricsWidget />
       <div className={styles.user}>
         {username ? <Avatar seed={username} size={30} /> : null}
         <span className={styles.username}>{username}</span>
