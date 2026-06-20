@@ -5,7 +5,13 @@
       "path": "./packages/shared"
     },
     {
+      "path": "./packages/evolution"
+    },
+    {
       "path": "./apps/api"
+    },
+    {
+      "path": "./apps/web"
     }
   ]
 }

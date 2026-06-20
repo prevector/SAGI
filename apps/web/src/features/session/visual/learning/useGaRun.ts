@@ -7,7 +7,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { VISUAL_CONFIG } from "../config";
-import type { Grid } from "../maze/generate";
+import type { Grid } from "@sagi/evolution";
 import { createLocalSource } from "./localSource";
 import type { CellPathSnapshot } from "./snapshot";
 import { snapshot } from "./snapshot";

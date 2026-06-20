@@ -1,0 +1,21 @@
+metadata_version: 1
+name: Network of Evolvable Neural Units Implementation
+description: Although Deep Neural Networks have seen great success in recent years through various changes in overall architectures and optimization strategies, their fundamental underlying design remains largely unchanged. Computational neuroscience on the other hand provides more biologically realistic models of neural processing mechanisms, but they are still high level abstractions of the actual experimentally observed behaviour. Here a model is proposed that bridges Neuroscience, Machine Learning and Evolutionary Algorithms to evolve individual soma and synaptic compartment models of neurons in a scalable manner. Instead of attempting to manually derive models for all the observed complexity and diversity in neural processing, we propose an Evolvable Neural Unit (ENU) that can approximate the function of each individual neuron and synapse. We demonstrate that this type of unit can be evolved to mimic Integrate-And-Fire neurons and synaptic Spike-Timing-Dependent Plasticity. Additionally, by constructing a new type of neural network where each synapse and neuron is such an evolvable neural unit, we show it is possible to evolve an agent capable of learning to solve a T-maze environment task. This network independently discovers spiking dynamics and reinforcement type learning rules, opening up a new path towards biologically inspired artificial intelligence.
+tags:
+- Machine Learning
+- Evolutionary Computing
+- neuroscience
+- RNN
+- DNN
+- Evolution Strategies
+- AI
+authors:
+- name: Paul Bertens
+  affiliations:
+  - name: Korea University
+- name: Seong-Whan Lee
+  affiliations:
+  - name: Korea University
+corresponding_contributor:
+  name: Paul Bertens
+  email: paulbertens@korea.ac.kr

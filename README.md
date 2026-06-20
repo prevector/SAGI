@@ -12,6 +12,7 @@ The production build is intentionally simple:
 - static frontend served by Express
 - username-only auth in production
 - automatic auth bypass in local development
+- shared learning/runtime code in `packages/evolution`
 
 ## Commands
 
@@ -28,6 +29,23 @@ Local development runs in developer mode automatically, so auth is bypassed.
 ```bash
 npm run build
 ```
+
+Server-side verification is a single endpoint:
+
+```bash
+POST /api/verify
+```
+
+Body:
+
+```json
+{
+  "seed": "demo-seed",
+  "genome": [0, 0, 0]
+}
+```
+
+It replays the submitted genome on the server with the shared `@sagi/evolution` code and returns `solved`, `fitness`, `steps`, and the traversed `path`.
 
 ## Local experiments
 
@@ -89,3 +107,4 @@ This is identity-only, not real security. If you want actual protection with les
 
 - Technical implementation brief: [TECHNICAL_README.md](/Users/tim/Code/SAGI/TECHNICAL_README.md:1)
 - Visual direction: [VISUAL_STYLE.md](/Users/tim/Code/SAGI/VISUAL_STYLE.md:1)
+- Shared algorithm runtime: [packages/evolution](/Users/tim/Code/SAGI/packages/evolution)

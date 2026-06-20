@@ -2,8 +2,7 @@
 // separate so both the hook and any consumer share one shape.
 
 import type { CellPath } from "../scene/PathLine";
-import type { GaTrainer } from "./trainer";
-import type { TrainerStats } from "./types";
+import type { GaTrainer, TrainerStats } from "@sagi/evolution";
 
 export interface CellPathSnapshot extends TrainerStats {
   path: CellPath;

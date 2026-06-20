@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -ex
+# symbolic link for code ocean results folder  
+rm -rf ./results 
+ln -s ../results ./results
+
+# This is the master script for the capsule. When you click "Reproducible Run", the code in this file will execute.
+python -u "Evolver.py"

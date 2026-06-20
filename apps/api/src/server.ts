@@ -1,6 +1,7 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import express from "express";
+import { verifyGenome } from "@sagi/evolution";
 import { getDashboardSnapshot } from "@sagi/shared";
 import { clearSessionCookie, getSessionInfo, isAuthenticated, setSessionCookie } from "./auth.js";
 import { getAppEnv } from "./env.js";
@@ -48,6 +49,64 @@ app.post("/api/auth/login", (request, response) => {
 app.post("/api/auth/logout", (_request, response) => {
   clearSessionCookie(response, env);
   response.status(204).end();
+});
+
+app.post("/api/verify", (request, response) => {
+  if (!isAuthenticated(request, env)) {
+    response.status(401).json({ error: "Authentication required." });
+    return;
+  }
+
+  const seed = typeof request.body?.seed === "string" ? request.body.seed.trim() : "";
+  const genome = request.body?.genome;
+  const cols = request.body?.cols;
+  const rows = request.body?.rows;
+  const hiddenUnits = request.body?.hiddenUnits;
+
+  if (!seed) {
+    response.status(400).json({ error: "Seed is required." });
+    return;
+  }
+
+  if (!Array.isArray(genome) || genome.length === 0) {
+    response.status(400).json({ error: "Genome must be a non-empty number array." });
+    return;
+  }
+
+  if (!genome.every((value) => typeof value === "number" && Number.isFinite(value))) {
+    response.status(400).json({ error: "Genome must contain only finite numbers." });
+    return;
+  }
+
+  if (cols !== undefined && (!Number.isInteger(cols) || cols < 2 || cols > 64)) {
+    response.status(400).json({ error: "cols must be an integer between 2 and 64." });
+    return;
+  }
+
+  if (rows !== undefined && (!Number.isInteger(rows) || rows < 2 || rows > 64)) {
+    response.status(400).json({ error: "rows must be an integer between 2 and 64." });
+    return;
+  }
+
+  if (hiddenUnits !== undefined && (!Number.isInteger(hiddenUnits) || hiddenUnits < 1 || hiddenUnits > 512)) {
+    response.status(400).json({ error: "hiddenUnits must be an integer between 1 and 512." });
+    return;
+  }
+
+  try {
+    const result = verifyGenome({
+      seed,
+      genome: Float32Array.from(genome),
+      cols,
+      rows,
+      gaConfig: hiddenUnits === undefined ? undefined : { hiddenUnits }
+    });
+    response.json(result);
+  } catch (error) {
+    response.status(400).json({
+      error: error instanceof Error ? error.message : "Verification failed."
+    });
+  }
 });
 
 app.get("/api/dashboard", (request, response) => {

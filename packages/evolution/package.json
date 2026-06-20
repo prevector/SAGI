@@ -1,0 +1,23 @@
+{
+  "name": "@sagi/evolution",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "seedrandom": "^3.0.5"
+  },
+  "devDependencies": {
+    "@types/seedrandom": "^3.0.8"
+  }
+}

@@ -4,11 +4,12 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "npm run build -w @sagi/shared && tsc -p tsconfig.json",
+    "build": "npm run build -w @sagi/shared && npm run build -w @sagi/evolution && tsc -p tsconfig.json",
     "dev": "tsx watch src/server.ts",
     "start": "node dist/server.js"
   },
   "dependencies": {
+    "@sagi/evolution": "0.1.0",
     "@sagi/shared": "0.1.0",
     "cors": "^2.8.5",
     "express": "^5.1.0"

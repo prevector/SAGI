@@ -173,6 +173,14 @@ apps/
     api/
 ```
 
+For this repo, the critical rule is:
+
+- any algorithm the server must verify cannot live under `apps/web`
+
+The shared runtime for genomes, policies, training loops, maze tasks, and deterministic RNG should live in:
+
+- [packages/evolution](/Users/tim/Code/SAGI/packages/evolution)
+
 Suggested package roles:
 
 - `core/math`: tensor-free numeric helpers built on `Float32Array`
@@ -184,6 +192,35 @@ Suggested package roles:
 - `core/metrics`: episode fitness, transfer metrics, logging summaries
 - `viz`: all visual representations of state and learning
 - `apps/lab`: the interactive dashboard and experiment runner UI
+
+## Paper Implementation Audit
+
+The vendored reference implementation is in:
+
+- [implementation_paper/code](/Users/tim/Code/SAGI/implementation_paper/code)
+
+The key source files to mirror structurally are:
+
+- `EvolvableNeuralUnitStacked.py`: shared ENU cell implementation
+- `EnuGlobalNetwork.py`: sparse neuron/synapse network
+- `Evolver.py`: ES outer loop and experiment construction
+- `IAFEnv.py`: integrate-and-fire benchmark
+- `STDPEnv.py`: neuromodulated STDP benchmark
+
+The TypeScript mirror point for these concepts should be `packages/evolution`, not the frontend feature tree.
+
+For this repo specifically:
+
+- `packages/evolution` should own genomes, ENU rules, ES logic, maze/task definitions, deterministic RNG, and scoring
+- `apps/api` should import that package to verify submitted runs or candidate solutions on the server
+- `apps/web` should only render state, launch local demos, and call the API
+
+Current simple verification path:
+
+- `POST /api/verify`
+- input: `seed`, `genome`, optional `cols`, `rows`, `hiddenUnits`
+- execution: server replays the candidate with `@sagi/evolution`
+- output: solved flag, fitness, steps, path, and rollout stats
 
 ## Runtime Strategy
 

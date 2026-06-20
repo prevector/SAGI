@@ -7,7 +7,7 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "npm run build -w @sagi/shared && npm run build -w @sagi/api && npm run build -w @sagi/web",
+    "build": "npm run build -w @sagi/shared && npm run build -w @sagi/evolution && npm run build -w @sagi/api && npm run build -w @sagi/web",
     "dev": "npm-run-all --parallel dev:*",
     "dev:api": "npm run dev -w @sagi/api",
     "dev:web": "npm run dev -w @sagi/web",

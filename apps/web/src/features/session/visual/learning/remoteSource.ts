@@ -9,7 +9,7 @@
 // cleanup that closes the channel. No scene changes are required — select this
 // source via VISUAL_CONFIG.trainingSource.
 
-import type { Seed, TrainingSource, TrainingUpdate } from "./types";
+import type { Seed, TrainingSource, TrainingUpdate } from "@sagi/evolution";
 
 export function createRemoteSource(): Extract<TrainingSource, { kind: "remote" }> {
   return {
