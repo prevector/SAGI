@@ -4,6 +4,11 @@ import express from "express";
 import { getDashboardSnapshot } from "@sagi/shared";
 import { clearSessionCookie, getSessionInfo, isAuthenticated, setSessionCookie } from "./auth.js";
 import { getAppEnv } from "./env.js";
+import { buildLedgerConfig } from "./ledger/config.js";
+import { openDb } from "./ledger/db/client.js";
+import { LedgerService } from "./ledger/service.js";
+import { SseHub } from "./ledger/sse.js";
+import { createLedgerRouter } from "./ledger/routes.js";
 
 const app = express();
 const env = getAppEnv();
@@ -12,6 +17,15 @@ const currentDir = path.dirname(fileURLToPath(import.meta.url));
 const webDistDir = path.resolve(currentDir, "../../web/dist");
 
 app.use(express.json());
+
+// Token economy (PLAN-LEDGER.md): SQL-backed earn loop + SSE. The chain layer
+// is deferred behind a switch; this is the simple server-side ledger.
+const ledgerCfg = buildLedgerConfig(env);
+const dbHandle = openDb(ledgerCfg.dbPath);
+const sseHub = new SseHub();
+const ledger = new LedgerService(dbHandle, ledgerCfg, sseHub);
+ledger.init();
+app.use(createLedgerRouter({ service: ledger, handle: dbHandle, cfg: ledgerCfg, hub: sseHub, env }));
 
 app.get("/health", (_request, response) => {
   response.json({ ok: true, mode: env.devMode ? "development" : "production" });

@@ -52,3 +52,12 @@ export function sum(xs: Iterable<Base>): Base {
   for (const x of xs) total += x;
   return total;
 }
+
+/**
+ * DISPLAY ONLY: base units -> a SAGI float for the existing number-typed UI
+ * (formatTokens). Never use this for ledger math — the economic core stays
+ * BigInt. Exact-token amounts in the explorer travel as strings (toWire).
+ */
+export function toSagiNumber(x: Base): number {
+  return Number(x) / Number(ONE);
+}
