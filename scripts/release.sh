@@ -28,6 +28,9 @@ rsync \
 ssh "$REMOTE_HOST" "
   set -euo pipefail
   cd '$REMOTE_PATH'
+  set -a
+  [ -f ./.env ] && . ./.env
+  set +a
   npm ci
   npm run build
   sudo systemctl restart '$SERVICE_NAME'

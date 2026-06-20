@@ -206,7 +206,7 @@ function renderDashboard(snapshot: DashboardSnapshot): void {
 
   const logoutButton = app.querySelector<HTMLButtonElement>('[data-action="logout"]');
   logoutButton?.addEventListener("click", async () => {
-    await fetch("/api/auth/logout", {
+    await fetch("api/auth/logout", {
       method: "POST"
     });
 
@@ -282,7 +282,7 @@ function renderLogin(session: SessionInfo): void {
     const formData = new FormData(form);
     const username = String(formData.get("username") ?? "");
 
-    const response = await fetch("/api/auth/login", {
+    const response = await fetch("api/auth/login", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -316,14 +316,14 @@ async function boot(): Promise<void> {
   renderLoading("Loading mock dashboard", "Checking access and fetching the current search snapshot.");
 
   try {
-    const session = await fetchJson<SessionInfo>("/api/session");
+    const session = await fetchJson<SessionInfo>("api/session");
 
     if (!session.authenticated) {
       renderLogin(session);
       return;
     }
 
-    const snapshot = await fetchJson<DashboardSnapshot>("/api/dashboard");
+    const snapshot = await fetchJson<DashboardSnapshot>("api/dashboard");
     renderDashboard(snapshot);
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Unknown error";
