@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { Outlet } from "react-router-dom";
 import { SkeletonLines } from "../ui";
+import { DemoControls } from "../../features/demo/DemoControls";
 import { SideNav } from "./SideNav";
 import { TopBar } from "./TopBar";
 import styles from "./AppShell.module.css";
@@ -19,6 +20,8 @@ export function AppShell() {
           </Suspense>
         </main>
       </div>
+      {/* Self-hides unless the ledger reports demo mode. */}
+      <DemoControls />
     </div>
   );
 }

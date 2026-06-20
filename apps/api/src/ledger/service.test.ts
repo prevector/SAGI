@@ -76,6 +76,25 @@ describe("LedgerService earn loop", () => {
     expect(prodCount.c).toBe(0); // production never seeds synthetic
   });
 
+  it("triggerBreakthrough closes an open bounty and credits a winner", () => {
+    const { handle, svc } = makeService("demo");
+    const openBefore = svc.openBountyCount();
+    const r = svc.triggerBreakthrough();
+    expect(r?.bountyId).toBeTruthy();
+    expect(svc.openBountyCount()).toBe(openBefore - 1);
+    const closed = handle.raw.prepare("SELECT status, winner_addr FROM bounties WHERE id=?").get(r!.bountyId) as { status: string; winner_addr: string };
+    expect(closed.status).toBe("closed");
+    expect(closed.winner_addr).toBeTruthy();
+  });
+
+  it("addSyntheticWork raises the contributor's provisional pending", () => {
+    const { handle, svc } = makeService("demo");
+    const addr = svc.syntheticWallets()[0];
+    svc.addSyntheticWork(addr, 1000);
+    const w = handle.raw.prepare("SELECT pending FROM wallets WHERE address=?").get(addr) as { pending: string };
+    expect(BigInt(w.pending) > 0n).toBe(true);
+  });
+
   it("derives a stable address per username", () => {
     const { svc, handle } = makeService();
     svc.ensureWallet("carol");

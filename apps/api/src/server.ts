@@ -8,6 +8,7 @@ import { buildLedgerConfig } from "./ledger/config.js";
 import { openDb } from "./ledger/db/client.js";
 import { LedgerService } from "./ledger/service.js";
 import { SseHub } from "./ledger/sse.js";
+import { DemoDriver } from "./ledger/driver.js";
 import { createLedgerRouter } from "./ledger/routes.js";
 
 const app = express();
@@ -25,7 +26,10 @@ const dbHandle = openDb(ledgerCfg.dbPath);
 const sseHub = new SseHub();
 const ledger = new LedgerService(dbHandle, ledgerCfg, sseHub);
 ledger.init();
-app.use(createLedgerRouter({ service: ledger, handle: dbHandle, cfg: ledgerCfg, hub: sseHub, env }));
+// Live demo driver — only in demo mode; animates the synthetic population.
+const demoDriver = ledgerCfg.mode === "demo" ? new DemoDriver(ledger) : null;
+demoDriver?.start();
+app.use(createLedgerRouter({ service: ledger, handle: dbHandle, cfg: ledgerCfg, hub: sseHub, env, driver: demoDriver }));
 
 app.get("/health", (_request, response) => {
   response.json({ ok: true, mode: env.devMode ? "development" : "production" });

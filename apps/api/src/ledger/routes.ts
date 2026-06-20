@@ -11,6 +11,7 @@ import type { DbHandle } from "./db/client.js";
 import { bounties } from "./db/schema.js";
 import type { LedgerConfig } from "./config.js";
 import type { LedgerService } from "./service.js";
+import type { DemoDriver } from "./driver.js";
 import type { SseHub } from "./sse.js";
 import {
   buildBounties,
@@ -29,10 +30,11 @@ export interface LedgerDeps {
   cfg: LedgerConfig;
   hub: SseHub;
   env: AppEnv;
+  driver?: DemoDriver | null;
 }
 
 export function createLedgerRouter(deps: LedgerDeps): Router {
-  const { service, handle, cfg, hub, env } = deps;
+  const { service, handle, cfg, hub, env, driver } = deps;
   const db = handle.db;
   const router = Router();
 
@@ -155,6 +157,66 @@ export function createLedgerRouter(deps: LedgerDeps): Router {
   router.get("/api/ledger/blocks", (req, res) => {
     if (!requireAuth(req, res)) return;
     res.json(listBlocks());
+  });
+
+  // ---- demo control panel (demo mode only) ---------------------------------
+
+  const requireDemo = (req: Request, res: Response): boolean => {
+    if (!requireAuth(req, res)) return false;
+    if (cfg.mode !== "demo") {
+      res.status(404).json({ error: "Control panel is available in demo mode only." });
+      return false;
+    }
+    return true;
+  };
+
+  router.get("/api/demo/state", (req, res) => {
+    if (!requireAuth(req, res)) return;
+    if (cfg.mode !== "demo") {
+      res.json({ mode: cfg.mode, demo: false });
+      return;
+    }
+    res.json({
+      mode: "demo",
+      demo: true,
+      driverRunning: driver?.running ?? false,
+      openBounties: service.openBountyCount(),
+      epoch: service.currentEpoch()
+    });
+  });
+
+  router.post("/api/demo/advance-epoch", (req, res) => {
+    if (!requireDemo(req, res)) return;
+    res.json({ ok: true, epoch: service.advanceEpoch() });
+  });
+
+  router.post("/api/demo/breakthrough", (req, res) => {
+    if (!requireDemo(req, res)) return;
+    const result = service.triggerBreakthrough();
+    res.json(result ? { ok: true, ...result } : { ok: false, reason: "no open bounties" });
+  });
+
+  router.post("/api/demo/win", (req, res) => {
+    if (!requireDemo(req, res)) return;
+    const body = req.body ?? {};
+    let address: string | undefined = typeof body.address === "string" ? body.address : undefined;
+    if (!address) {
+      const username = getAuthenticatedUsername(req, env);
+      if (username) address = service.ensureWallet(username).address;
+    }
+    if (!address) {
+      res.status(400).json({ error: "No winner address." });
+      return;
+    }
+    const result = service.makeWin(address);
+    res.json(result ? { ok: true, ...result } : { ok: false, reason: "no open bounties" });
+  });
+
+  router.post("/api/demo/driver", (req, res) => {
+    if (!requireDemo(req, res)) return;
+    const running = Boolean(req.body?.running);
+    driver?.setRunning(running);
+    res.json({ ok: true, driverRunning: driver?.running ?? false });
   });
 
   return router;

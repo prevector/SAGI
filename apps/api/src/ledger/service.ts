@@ -45,6 +45,7 @@ export class LedgerService {
   private readonly hub: SseHub;
   private timer: ReturnType<typeof setInterval> | null = null;
   private sessionCounter = 0;
+  private driverCounter = 0;
 
   constructor(handle: DbHandle, cfg: LedgerConfig, hub: SseHub) {
     this.db = handle.db;
@@ -453,6 +454,64 @@ export class LedgerService {
       }).where(eq(bounties.id, bountyId)).run();
     })();
     this.broadcast();
+  }
+
+  // ---- demo driver + control panel -----------------------------------------
+
+  /** Synthetic wallet addresses (the demo population the driver animates). */
+  syntheticWallets(): string[] {
+    return this.db.select().from(wallets).all().filter((w) => w.synthetic === 1).map((w) => w.address);
+  }
+
+  /** A synthetic contributor "earns": adds a synthetic receipt to the open
+   *  epoch (live demo movement — not seeded, this is the live driver). */
+  addSyntheticWork(address: string, computeUnits: number): void {
+    this.driverCounter += 1;
+    this.submitReceipt({
+      sessionId: `drv-${this.driverCounter}-${address.slice(5, 13)}`,
+      address,
+      computeUnits,
+      usefulness: 0.7 + Math.random() * 0.8,
+      ts: Date.now(),
+      nonce: randomUUID(),
+      epoch: this.currentEpoch()
+    }, true);
+  }
+
+  private firstOpenBounty(): typeof bounties.$inferSelect | undefined {
+    return this.db.select().from(bounties).all().find((b) => b.status !== "closed");
+  }
+
+  /** Close the next open bounty to a winner (random synthetic if unspecified).
+   *  This is the "trigger a breakthrough" action; the real GA's `solved` event
+   *  is the production seam that would call this with the solving wallet. */
+  triggerBreakthrough(winnerAddr?: string): { bountyId: string; title: string; winner: string } | null {
+    const b = this.firstOpenBounty();
+    if (!b) return null;
+    let addr = winnerAddr;
+    if (!addr) {
+      const ws = this.syntheticWallets();
+      if (ws.length === 0) return null;
+      addr = ws[Math.floor(Math.random() * ws.length)];
+    }
+    this.payBounty(b.id, addr);
+    const w = this.db.select().from(wallets).where(eq(wallets.address, addr)).get();
+    return { bountyId: b.id, title: b.title, winner: w?.username ?? addr };
+  }
+
+  /** Make a specific wallet win the next bounty (e.g. the live presenter). */
+  makeWin(address: string): { bountyId: string; title: string; winner: string } | null {
+    return this.triggerBreakthrough(address);
+  }
+
+  /** Seal the current epoch immediately (control-panel "advance epoch"). */
+  advanceEpoch(): number {
+    this.closeEpoch();
+    return this.currentEpoch();
+  }
+
+  openBountyCount(): number {
+    return this.db.select().from(bounties).all().filter((b) => b.status !== "closed").length;
   }
 
   // ---- realtime ------------------------------------------------------------
