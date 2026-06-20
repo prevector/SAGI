@@ -18,6 +18,7 @@
     "@sagi/evolution": "0.1.0",
     "@sagi/ledger": "^0.1.0",
     "@sagi/shared": "0.1.0",
+    "dockview": "^6.6.1",
     "lucide-react": "^1.21.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",

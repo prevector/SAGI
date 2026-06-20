@@ -84,7 +84,7 @@ See [experiments/IAF_REPRODUCTION.md](/Users/tim/Code/SAGI/experiments/IAF_REPRO
 
 ## Local gene lab
 
-Open `/app/genes` in the web app to inspect, edit, save, run, and continue training local genes. Genes are stored in browser `localStorage`.
+Open `/app/genes` in the web app to inspect, edit, save, run, and continue training local genes. Genes are stored in browser `localStorage`. The current redesigned client is a Dockview mock terminal with two panes, `GENES` and `TRAINING`; real ES execution is intentionally not wired into this UI yet.
 
 Current local training tasks:
 
