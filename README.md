@@ -74,3 +74,8 @@ For this MVP, the absolute simplest app-level auth is the one now wired in:
 - session: signed HTTP-only cookie
 
 This is identity-only, not real security. If you want actual protection with less app code, put the whole site behind Cloudflare Access or Tailscale and remove app auth entirely.
+
+## Next docs
+
+- Technical implementation brief: [TECHNICAL_README.md](/Users/tim/Code/SAGI/TECHNICAL_README.md:1)
+- Visual direction: [VISUAL_STYLE.md](/Users/tim/Code/SAGI/VISUAL_STYLE.md:1)
