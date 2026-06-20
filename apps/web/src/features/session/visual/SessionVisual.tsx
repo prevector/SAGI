@@ -69,7 +69,7 @@ export default function SessionVisual({ seed, status, progress }: SessionVisualP
       <Stage frameloop={frameloop} lowPower={reducedMotion} perf={perf}>
         <Maze grid={grid} cellSize={cellSize} wallHeight={wallHeight} />
         <group position={creaturePos} scale={creatureScale}>
-          <Creature rig={rig} />
+          <Creature rig={rig} walk={animate} />
         </group>
       </Stage>
 
