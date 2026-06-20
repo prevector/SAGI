@@ -1,3 +1,8 @@
+// Structured domain model for the React dashboard (build plan §7). Exposed
+// under the `Domain` namespace so its `Bounty`/`LeaderboardEntry` do not clash
+// with the legacy presentational types below that feed the old /api/dashboard.
+export * as Domain from "./domain.js";
+
 export type Status = "verified" | "pending";
 
 export interface NetworkMetric {

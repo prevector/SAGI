@@ -6,6 +6,8 @@
       "DOM",
       "DOM.Iterable"
     ],
+    "jsx": "react-jsx",
+    "noEmit": true,
     "types": [
       "vite/client"
     ]

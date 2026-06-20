@@ -1,0 +1,28 @@
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s1);
+  font-family: var(--font-mono);
+  font-size: var(--fs-mono);
+  letter-spacing: 0.02em;
+  padding: 2px var(--s2);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  background: var(--surface-2);
+  white-space: nowrap;
+}
+
+.icon {
+  display: inline-flex;
+}
+
+.teal {
+  color: var(--accent);
+  border-color: rgba(23, 196, 196, 0.3);
+}
+
+.orange {
+  color: var(--accent-2);
+  border-color: rgba(240, 120, 61, 0.3);
+}
