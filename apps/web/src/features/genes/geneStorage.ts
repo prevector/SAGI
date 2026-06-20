@@ -17,7 +17,7 @@ export function loadGenes(): EvolutionGene[] {
     if (!Array.isArray(parsed)) {
       return [createSeedGene()];
     }
-    return parsed.map((gene) => normalizeGene(gene as EvolutionGene));
+    return ensurePaperSeed(parsed.map((gene) => normalizeGene(gene as EvolutionGene)));
   } catch {
     return [createSeedGene()];
   }
@@ -29,12 +29,23 @@ export function saveGenes(genes: EvolutionGene[]): void {
 
 export function createSeedGene(): EvolutionGene {
   return createRandomGene(makeRng("initial-gene"), {
-    name: "IAF seed gene",
-    notes: "Local starter gene for the potential diagnostic. Raise output gain later for hard spike tests.",
+    name: "Paper IAF seed gene",
+    notes: "Single-ENU IAF starter matching the paper preset: 32 neuron states, no synapse compartment, spike output gain 1000.",
     architecture: {
-      outputGain: 2
+      neuronStateSize: 32,
+      synapseStateSize: 0,
+      outputGain: 1000
     }
   });
+}
+
+function ensurePaperSeed(genes: EvolutionGene[]): EvolutionGene[] {
+  const hasPaperSeed = genes.some((gene) =>
+    gene.architecture.neuronStateSize === 32 &&
+    gene.architecture.synapseStateSize === 0 &&
+    gene.architecture.outputGain === 1000
+  );
+  return hasPaperSeed ? genes : [createSeedGene(), ...genes];
 }
 
 export function upsertGene(genes: EvolutionGene[], gene: EvolutionGene): EvolutionGene[] {

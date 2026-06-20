@@ -22,14 +22,14 @@ import { GeneTrace } from "../features/genes/GeneTrace";
 import { createSeedGene, loadGenes, saveGenes, upsertGene } from "../features/genes/geneStorage";
 import styles from "./GeneLabPage.module.css";
 
-const DEFAULT_RUN: IafRunConfig = {
+const FAST_DIAGNOSTIC_RUN: IafRunConfig = {
   seed: "local-lab",
   task: "potential",
   sequenceLength: 100,
   environments: 8
 };
 
-const DEFAULT_ES: EsHyperparams = {
+const FAST_DIAGNOSTIC_ES: EsHyperparams = {
   generations: 40,
   populationPairs: 24,
   sigma: 0.03,
@@ -63,6 +63,9 @@ const PAPER_IAF_ES: EsHyperparams = {
   learningRate: 1,
   momentum: 0.9
 };
+
+const DEFAULT_RUN = PAPER_IAF_RUN;
+const DEFAULT_ES = PAPER_IAF_ES;
 
 function shortId(id: string): string {
   return id.slice(0, 10);
@@ -438,8 +441,8 @@ export default function GeneLabPage() {
                   onClick={() =>
                     applyPreset(
                       FAST_DIAGNOSTIC_ARCHITECTURE,
-                      DEFAULT_RUN,
-                      DEFAULT_ES,
+                      FAST_DIAGNOSTIC_RUN,
+                      FAST_DIAGNOSTIC_ES,
                       "Fast diagnostic"
                     )
                   }
