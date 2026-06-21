@@ -11,10 +11,7 @@ export function TrainingPanel(_: IDockviewPanelProps) {
     <section className={`${styles.panel} ${styles.panelTraining}`}>
       <div className={styles.trainingScheduler}>
         <div className={styles.trainingTopbar}>
-          <div className={styles.trainingStatusBlock}>
-            <strong>{running ? "running" : terminal.status}</strong>
-            <span>current stage: {terminal.trainingMode === "football" ? "football" : "fake language"}</span>
-          </div>
+          <strong className={styles.trainingTopLabel}>{running ? "pause" : "run"}</strong>
           <div className={styles.trainingActions}>
             {running ? (
               <button className={styles.iconButton} onClick={terminal.pause} aria-label="Pause training" title="Pause training">
@@ -40,10 +37,7 @@ export function TrainingPanel(_: IDockviewPanelProps) {
           role="button"
           tabIndex={0}
         >
-          <div className={styles.trainingStageMeta}>
-            <strong>football</strong>
-            <span>{terminal.trainingMode === "football" ? "active stage" : "queued next or selectable"}</span>
-          </div>
+          <strong className={styles.trainingStageLabel}>football</strong>
           <NumberField
             label="iterations"
             min={1}
@@ -65,40 +59,13 @@ export function TrainingPanel(_: IDockviewPanelProps) {
           role="button"
           tabIndex={0}
         >
-          <div className={styles.trainingStageMeta}>
-            <strong>fake language</strong>
-            <span>{terminal.trainingMode === "language" ? "active stage" : "queued next or selectable"}</span>
-          </div>
+          <strong className={styles.trainingStageLabel}>fake language</strong>
           <NumberField
             label="iterations"
             min={1}
             max={10000}
             value={terminal.languageIterations}
             onChange={(value) => terminal.updateStageIterations("language", value)}
-          />
-        </div>
-
-        <div className={styles.trainingSubgrid}>
-          <NumberField
-            label="population pairs"
-            min={1}
-            max={512}
-            value={terminal.es.populationPairs}
-            onChange={(value) => terminal.updateEs("populationPairs", value)}
-          />
-          <NumberField
-            label="match seconds"
-            min={2}
-            max={120}
-            value={terminal.footballMatchTicks / 24}
-            onChange={(value) => terminal.updateFootball("matchSeconds", value)}
-          />
-          <NumberField
-            label="hidden size"
-            min={2}
-            max={64}
-            value={terminal.hiddenSize}
-            onChange={(value) => terminal.updateHiddenSize(value)}
           />
         </div>
       </div>

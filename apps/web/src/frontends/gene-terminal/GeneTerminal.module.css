@@ -346,43 +346,31 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid var(--terminal-line);
+  padding-bottom: 4px;
 }
 
-.trainingStatusBlock {
-  display: grid;
-  gap: 2px;
-}
-
-.trainingStatusBlock strong {
+.trainingTopLabel {
   font-size: 12px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-}
-
-.trainingStatusBlock span {
   color: var(--terminal-text-muted);
-  font-size: 11px;
 }
 
 .trainingStage,
 .trainingStageActive {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 120px;
-  gap: 12px;
+  display: flex;
   align-items: end;
-  padding: 10px;
-  border: 1px solid var(--terminal-line);
-  background: rgba(255, 255, 255, 0.26);
+  justify-content: space-between;
+  gap: 12px;
+  padding: 7px 0;
+  border-top: 1px solid var(--terminal-line);
+  background: transparent;
   cursor: pointer;
 }
 
 .trainingStageActive {
-  border-color: rgba(154, 104, 65, 0.34);
-  background:
-    linear-gradient(90deg, rgba(154, 104, 65, 0.12), rgba(110, 140, 166, 0.05)),
-    rgba(255, 255, 255, 0.36);
+  color: var(--terminal-text);
+  background: linear-gradient(90deg, rgba(154, 104, 65, 0.12), transparent 55%);
 }
 
 .trainingStage:focus,
@@ -391,28 +379,11 @@
   outline-offset: 1px;
 }
 
-.trainingStageMeta {
-  display: grid;
-  gap: 3px;
-  align-self: start;
-}
-
-.trainingStageMeta strong {
+.trainingStageLabel {
   font-size: 12px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-}
-
-.trainingStageMeta span {
-  color: var(--terminal-text-muted);
-  font-size: 11px;
-}
-
-.trainingSubgrid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-  padding-top: 2px;
+  color: inherit;
 }
 
 .trainingActions {
@@ -1026,7 +997,6 @@
   .trainingStageActive,
   .trainingToolbar,
   .trainingHeader,
-  .trainingSubgrid,
   .menuBar {
     display: grid;
   }
