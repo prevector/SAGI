@@ -244,7 +244,7 @@ function getMorphologyParams(gene: EvolutionGene, phenotype: CreaturePhenotype):
     eyeHeight: 0.1 + sampleMorph(gene, 10, 1.4) * 0.22,
     pupilRadius: 0.02 + sampleMorph(gene, 11, 1.5) * 0.022,
     tailLength: 0.24 + sampleMorph(gene, 12, 1.5) * 0.86,
-    stride: 0.12 + sampleMorph(gene, 14, 1.5) * 0.52,
+    stride: 0.22 + sampleMorph(gene, 14, 1.5) * 0.82,
     hipDrop: 0.28 + sampleMorph(gene, 15, 1.4) * 0.52,
     kneeSpread: 0.16 + sampleMorph(gene, 16, 1.4) * 0.42,
     footSpread: 0.18 + sampleMorph(gene, 17, 1.4) * 0.52,
@@ -1074,7 +1074,7 @@ function CreatureWalker({
       const hip = points[leg.hip].position;
       const foot = points[leg.foot];
       const hipRadius = spec.points[leg.hip].radius;
-      const forwardReach = Math.max(hipRadius * 0.18, leg.restOffset.x * 0.38);
+      const forwardReach = Math.max(hipRadius * 0.34, leg.restOffset.x * 0.82);
       const sideReach = Math.max(Math.abs(leg.restOffset.z), hipRadius * 1.05);
       const desiredFoot = TEMP_D.copy(hip)
         .addScaledVector(forward, forwardReach)

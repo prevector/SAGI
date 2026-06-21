@@ -281,6 +281,35 @@ function mutateCreatureGene(
   return { gene, phenotype };
 }
 
+function mutateCreatureGeneSlight(
+  source: EvolutionGene,
+  parentPhenotype: CreaturePhenotype,
+  seed: string
+): { gene: EvolutionGene; phenotype: CreaturePhenotype } {
+  const rng = makeRng(seed);
+  const now = new Date().toISOString();
+  const weights = source.weights.map((weight, weightIndex) => {
+    const influence =
+      weightIndex < 128 ? 0.028 :
+      weightIndex < 256 ? 0.018 :
+      0.008;
+    if (rng() > 0.22) {
+      return weight;
+    }
+    return weight + (rng() * 2 - 1) * influence;
+  });
+
+  return {
+    gene: {
+      ...source,
+      updatedAt: now,
+      notes: "Training-time morphology drift derived from the current creature gene.",
+      weights
+    },
+    phenotype: mutatePhenotypeSlight(parentPhenotype, seed)
+  };
+}
+
 function geneToCreature(gene: EvolutionGene, phenotype: CreaturePhenotype, existingNames: string[]): StoredCreature {
   const id = `creature-${gene.id}`;
   const name = sanitizeCreatureName(gene.name || makeCreatureName(phenotype, existingNames, id), gene.name || "Creature");
@@ -336,21 +365,28 @@ export function GeneTerminalProvider({ children }: { children: ReactNode }) {
   const footballBest = compatibleFootballBrain(selectedCreature, hiddenSize);
   const bestFootballCreature = useMemo(() => pickBestFootballCreature(creatures), [creatures]);
 
-  function evolveSelectedPhenotype(mode: TrainingMode, generation: number) {
+  function evolveSelectedCreature(mode: TrainingMode, generation: number) {
     setCreatures((items) => {
       const now = new Date().toISOString();
-      return items.map((creature) => (
-        creature.id === selectedId
-          ? {
-              ...creature,
-              phenotype: mutatePhenotypeSlight(
-                creature.phenotype,
-                `training-phenotype:${creature.id}:${mode}:${generation}`
-              ),
-              updatedAt: now
-            }
-          : creature
-      ));
+      return items.map((creature) => {
+        if (creature.id !== selectedId) {
+          return creature;
+        }
+        const mutation = mutateCreatureGeneSlight(
+          creature.gene,
+          creature.phenotype,
+          `training-creature:${creature.id}:${mode}:${generation}`
+        );
+        return {
+          ...creature,
+          gene: {
+            ...mutation.gene,
+            name: creature.name
+          },
+          phenotype: mutation.phenotype,
+          updatedAt: now
+        };
+      });
     });
   }
 
@@ -532,7 +568,7 @@ export function GeneTerminalProvider({ children }: { children: ReactNode }) {
       setTrainingGenome(next.genome);
       if (trainingMode === "language") {
         const languageStep = next as ReturnType<GruEsTrainingSession["step"]>;
-        evolveSelectedPhenotype("language", languageStep.iteration);
+        evolveSelectedCreature("language", languageStep.iteration);
         persistTokenBest(languageStep);
         setHistory((items) => [
           ...items,
@@ -548,7 +584,7 @@ export function GeneTerminalProvider({ children }: { children: ReactNode }) {
         ]);
       } else {
         const footballStep = next as ReturnType<FootballEsTrainingSession["step"]>;
-        evolveSelectedPhenotype("football", footballStep.iteration);
+        evolveSelectedCreature("football", footballStep.iteration);
         setFootballPreview(footballStep.preview);
         persistFootballBest(footballStep);
         setHistory((items) => [
@@ -751,7 +787,7 @@ export function GeneTerminalProvider({ children }: { children: ReactNode }) {
       setTrainingGenome(next.genome);
       if (trainingMode === "language") {
         const languageStep = next as ReturnType<GruEsTrainingSession["step"]>;
-        evolveSelectedPhenotype("language", languageStep.iteration);
+        evolveSelectedCreature("language", languageStep.iteration);
         persistTokenBest(languageStep);
         setHistory((items) => [
           ...items,
@@ -767,7 +803,7 @@ export function GeneTerminalProvider({ children }: { children: ReactNode }) {
         ]);
       } else {
         const footballStep = next as ReturnType<FootballEsTrainingSession["step"]>;
-        evolveSelectedPhenotype("football", footballStep.iteration);
+        evolveSelectedCreature("football", footballStep.iteration);
         setFootballPreview(footballStep.preview);
         persistFootballBest(footballStep);
         setHistory((items) => [
