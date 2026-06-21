@@ -77,6 +77,10 @@ export function createLedgerRouter(deps: LedgerDeps): Router {
 
   router.get("/api/network", (req, res) => {
     if (!requireAuth(req, res)) return;
+    const username = getAuthenticatedUsername(req, env);
+    if (username) {
+      service.ensureWallet(username);
+    }
     res.json(snapshot());
   });
 
@@ -90,6 +94,7 @@ export function createLedgerRouter(deps: LedgerDeps): Router {
       res.status(401).json({ error: "Authentication required." });
       return;
     }
+    service.ensureWallet(username);
     const surface = req.query.surface === "terminal" ? "terminal" : "app";
     const presenceId = presence.register(username, surface);
     hub.add(res);
