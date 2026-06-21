@@ -7,6 +7,7 @@ import { clearSessionCookie, getSessionInfo, isAuthenticated, setSessionCookie, 
 import { getAppEnv } from "./env.js";
 import { getFootballLeaderboard, simulateSubmittedFootballMatch, submitFootballTeam } from "./football.js";
 import { loadRun, saveRun } from "./runs.js";
+import { PaymentsService, parseBountyDraft } from "./payments.js";
 import { isValidPasswordHash, isValidUsername, registerUser, verifyStoredPasswordHash } from "./users.js";
 import { buildLedgerConfig } from "./ledger/config.js";
 import { openDb } from "./ledger/db/client.js";
@@ -17,9 +18,30 @@ import { DemoDriver } from "./ledger/driver.js";
 import { createLedgerRouter } from "./ledger/routes.js";
 
 const app = express();
+const currentDir = path.dirname(fileURLToPath(import.meta.url));
+
+// Load .env into process.env BEFORE reading any config. The repo has no env
+// loader otherwise, so a root .env (MOLLIE_API_KEY, APP_URL, PORT, …) would be
+// silently ignored. Node 20.12+/24 ships process.loadEnvFile; values already in
+// the environment win. Production typically sets env via the host, so a missing
+// file is a no-op. We try the repo root (works from src/ and dist/) then cwd.
+function loadEnvFiles(): void {
+  const loadEnvFile = (process as { loadEnvFile?: (path?: string) => void }).loadEnvFile;
+  if (!loadEnvFile) return;
+  const candidates = [path.resolve(currentDir, "../../../.env"), path.resolve(process.cwd(), ".env")];
+  for (const file of [...new Set(candidates)]) {
+    try {
+      loadEnvFile(file);
+      console.log(`SAGI env: loaded ${file}`);
+    } catch {
+      // No file at this path — fine; env may come from the host instead.
+    }
+  }
+}
+
+loadEnvFiles();
 const env = getAppEnv();
 const port = env.port;
-const currentDir = path.dirname(fileURLToPath(import.meta.url));
 const webDistDir = path.resolve(currentDir, "../../web/dist");
 
 app.use(express.json());
@@ -115,6 +137,11 @@ console.log(
   `SAGI ledger: mode=${ledgerCfg.mode} db=${ledgerCfg.dbPath} epoch=${ledgerCfg.emission.epochMs}ms driver=${demoDriver ? "on" : "off"}`
 );
 
+// Sponsor bounty funding via Mollie (test mode). Disabled-but-bootable when no
+// MOLLIE_API_KEY is set — the routes below return 503 instead of crashing boot.
+const payments = new PaymentsService(dbHandle.db, env, ledgerCfg.mode);
+console.log(`SAGI payments: ${payments.enabled ? "Mollie test mode ready" : `disabled (${payments.disabledReason})`}`);
+
 app.get("/health", (_request, response) => {
   response.json({ ok: true, mode: env.devMode ? "development" : "production" });
 });
@@ -204,6 +231,47 @@ app.post("/api/auth/login", async (request, response) => {
 app.post("/api/auth/logout", (_request, response) => {
   clearSessionCookie(response, env);
   response.status(204).end();
+});
+
+// Sponsor funds a bounty. The bounty is only created (status `open`) once the
+// EUR payment clears — this endpoint validates the draft and creates a Mollie
+// (test-mode) checkout. See apps/api/src/payments.ts for the seam.
+app.post("/api/bounties/checkout", async (request, response) => {
+  if (!requireAuth(request, response)) {
+    return;
+  }
+  if (!payments.enabled) {
+    response.status(503).json({ error: payments.disabledReason ?? "Payments unavailable." });
+    return;
+  }
+  const sponsor = getSessionInfo(request, env).user?.name?.trim();
+  if (!sponsor) {
+    response.status(401).json({ error: "Authenticated username missing." });
+    return;
+  }
+  const parsed = parseBountyDraft(request.body, sponsor);
+  if ("error" in parsed) {
+    response.status(400).json({ error: parsed.error });
+    return;
+  }
+  try {
+    response.status(201).json(await payments.createCheckout(parsed.draft));
+  } catch (error) {
+    response.status(502).json({ error: error instanceof Error ? error.message : "Could not start checkout." });
+  }
+});
+
+// Authoritative status read used by the return page's polling. Re-fetches the
+// real status from Mollie and, on first `paid`, materialises the open bounty.
+app.get("/api/bounties/contributions/:id/status", async (request, response) => {
+  if (!requireAuth(request, response)) {
+    return;
+  }
+  try {
+    response.json(await payments.getStatus(request.params.id));
+  } catch (error) {
+    response.status(404).json({ error: error instanceof Error ? error.message : "Unknown contribution." });
+  }
 });
 
 app.get("/api/football/leaderboard", async (request, response) => {

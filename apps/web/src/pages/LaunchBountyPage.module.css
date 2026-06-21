@@ -1,0 +1,354 @@
+/* Launch-a-bounty page — warm paper theme, consistent with the terminal. */
+
+.page {
+  min-height: 100vh;
+  padding: 32px 16px 64px;
+  background:
+    radial-gradient(circle at 12% 6%, rgba(110, 140, 166, 0.1), transparent 24%),
+    radial-gradient(circle at 86% 10%, rgba(182, 108, 63, 0.1), transparent 20%),
+    linear-gradient(180deg, #f6f2eb, #ece6dc);
+  color: #2a2622;
+  font-family: var(--font-sans);
+}
+
+.shell {
+  max-width: 720px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  padding: 6px 10px 6px 6px;
+  border: 1px solid rgba(54, 47, 40, 0.16);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.4);
+  color: #746c63;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.back:hover,
+.back:focus-visible {
+  color: #2a2622;
+  border-color: rgba(54, 47, 40, 0.3);
+  outline: none;
+}
+
+.head {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.title {
+  margin: 0;
+  font-size: 30px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+.lede {
+  margin: 0;
+  max-width: 60ch;
+  font-size: 15px;
+  line-height: 1.55;
+  color: #5f574e;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px;
+  border: 1px solid rgba(54, 47, 40, 0.14);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.42);
+}
+
+.sectionTitle {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #9a6841;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: #5f574e;
+}
+
+.grid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.input,
+.textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid rgba(54, 47, 40, 0.2);
+  border-radius: 9px;
+  background: #fbf8f2;
+  color: #2a2622;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  transition: border-color 140ms ease, box-shadow 140ms ease;
+}
+
+.textarea {
+  resize: vertical;
+  min-height: 92px;
+  line-height: 1.5;
+}
+
+.input:focus-visible,
+.textarea:focus-visible {
+  outline: none;
+  border-color: #9a6841;
+  box-shadow: 0 0 0 3px rgba(154, 104, 65, 0.16);
+}
+
+.readonly {
+  background: rgba(54, 47, 40, 0.05);
+  color: #5f574e;
+}
+
+.moneyField {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.prefix {
+  position: absolute;
+  left: 12px;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: #9a6841;
+  pointer-events: none;
+}
+
+.moneyField .input {
+  padding-left: 28px;
+}
+
+.rate {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: -2px 0 0;
+  font-size: 12.5px;
+  color: #746c63;
+}
+
+.note {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+  border: 1px solid rgba(110, 140, 166, 0.28);
+  border-radius: 10px;
+  background: rgba(110, 140, 166, 0.08);
+}
+
+.note p {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: #4a443d;
+}
+
+.note strong {
+  color: #2a2622;
+}
+
+.fine {
+  font-size: 12px !important;
+  line-height: 1.5 !important;
+  color: #6b6359 !important;
+}
+
+.error {
+  margin: 0;
+  padding: 10px 14px;
+  border: 1px solid rgba(180, 80, 47, 0.4);
+  border-radius: 9px;
+  background: rgba(180, 80, 47, 0.08);
+  color: #b4502f;
+  font-size: 13.5px;
+}
+
+.payButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 14px;
+  border: 0;
+  border-radius: 11px;
+  background: linear-gradient(135deg, #9a6841, #b4502f);
+  color: #f6f2eb;
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: filter 160ms ease, transform 160ms ease;
+}
+
+.payButton:hover:not(:disabled),
+.payButton:focus-visible:not(:disabled) {
+  filter: brightness(1.06);
+  transform: translateY(-1px);
+  outline: none;
+}
+
+.payButton:disabled {
+  opacity: 0.7;
+  cursor: progress;
+}
+
+.payHint {
+  margin: -6px 0 0;
+  text-align: center;
+  font-size: 12px;
+  color: #746c63;
+}
+
+.spin {
+  animation: spin 900ms linear infinite;
+}
+
+/* Success / pending confirmation */
+
+.success {
+  max-width: 520px;
+  margin: 8vh auto 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 36px 28px;
+  border: 1px solid rgba(54, 47, 40, 0.14);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.5);
+  text-align: center;
+}
+
+.successIcon {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: rgba(110, 140, 166, 0.16);
+  color: #4f7a52;
+}
+
+.failIcon {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: rgba(180, 80, 47, 0.14);
+  color: #b4502f;
+}
+
+.returnActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.secondaryButton {
+  padding: 11px 18px;
+  border: 1px solid rgba(54, 47, 40, 0.2);
+  border-radius: 10px;
+  background: transparent;
+  color: #5f574e;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.secondaryButton:hover,
+.secondaryButton:focus-visible {
+  border-color: rgba(54, 47, 40, 0.35);
+  color: #2a2622;
+  outline: none;
+}
+
+.successTitle {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 640;
+}
+
+.successText {
+  margin: 0;
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: #5f574e;
+}
+
+.successText code {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  padding: 1px 5px;
+  border-radius: 5px;
+  background: rgba(54, 47, 40, 0.08);
+}
+
+.primaryButton {
+  margin-top: 4px;
+  padding: 11px 18px;
+  border: 0;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #9a6841, #b4502f);
+  color: #f6f2eb;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.primaryButton:hover,
+.primaryButton:focus-visible {
+  filter: brightness(1.06);
+  outline: none;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 560px) {
+  .grid2 {
+    grid-template-columns: 1fr;
+  }
+}

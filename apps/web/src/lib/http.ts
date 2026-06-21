@@ -1,4 +1,4 @@
-import type { Api } from "./api";
+import type { Api, BountyDraftInput } from "./api";
 import type { BountyStatus, ID, LeaderboardEntry, NewSessionInput, NetworkSnapshot } from "./types";
 import { apiUrl, fetchJson } from "./request";
 
@@ -56,6 +56,10 @@ export const httpApi: Api = {
   subscribeLeaderboard: (cb: (rows: LeaderboardEntry[]) => void) => subscribeSse<LeaderboardEntry[]>("/api/leaderboard/stream", cb),
   getBounties: (status?: BountyStatus) => fetchJson(`/api/bounties${status ? `?status=${status}` : ""}`),
   getBounty: (id: ID) => fetchJson(`/api/bounties/${encodeURIComponent(id)}`),
+  createBountyDraft: (input: BountyDraftInput) =>
+    fetchJson(`/api/bounties/checkout`, { method: "POST", body: JSON.stringify(input) }),
+  getBountyContributionStatus: (id: ID) =>
+    fetchJson(`/api/bounties/contributions/${encodeURIComponent(id)}/status`),
   getProgress: () => fetchJson(`/api/progress`),
   getNetwork: () => fetchJson(`/api/network`),
   subscribeNetwork: (cb: (snap: NetworkSnapshot) => void, opts?: { surface?: "app" | "terminal" }) => {

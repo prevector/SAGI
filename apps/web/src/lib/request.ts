@@ -24,7 +24,16 @@ export async function fetchJson<T>(path: string, init?: RequestInit): Promise<T>
   });
 
   if (!response.ok) {
-    throw new Error(`Request failed (${response.status})`);
+    // Surface the server's `{ error }` body when present so callers can show a
+    // real message (e.g. "Mollie is not configured…") instead of a bare status.
+    let message = `Request failed (${response.status})`;
+    try {
+      const data = (await response.json()) as { error?: unknown };
+      if (data && typeof data.error === "string") message = data.error;
+    } catch {
+      // Non-JSON / empty error body — keep the status-based message.
+    }
+    throw new Error(message);
   }
 
   if (response.status === 204) {
