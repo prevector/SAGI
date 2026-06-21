@@ -1,6 +1,6 @@
 import EmergenceField from "../visuals/EmergenceField";
 import { CtaLink } from "../components/CtaLink";
-import { APP_LOGIN, THESIS_URL } from "../lib/content";
+import { APP_LOGIN } from "../lib/content";
 import shared from "../marketing.module.css";
 import styles from "./Hero.module.css";
 
@@ -24,13 +24,14 @@ export function Hero() {
             We don't know what AGI looks like. So let's search for it — together, and own what we find.
           </h1>
           <p className={`${shared.bodyL} ${styles.subhead}`}>
-            SAGI is a worldwide evolutionary laboratory where candidate minds are grown as living organisms and evolved on your hardware. Contribute compute, earn credits, and become a co-owner of every discovery the network makes.
+            SAGI is a worldwide evolutionary laboratory where candidate minds are grown as living organisms and evolved on your hardware.
+            Contribute compute, earn credits, and become a co-owner of every discovery the network makes.
           </p>
           <div className={styles.ctas}>
             <CtaLink to={APP_LOGIN} variant="primary">
               Join the network
             </CtaLink>
-            <CtaLink href={THESIS_URL} variant="ghost">
+            <CtaLink to="/thesis" variant="ghost">
               Read the thesis
             </CtaLink>
           </div>

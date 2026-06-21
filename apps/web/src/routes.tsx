@@ -7,6 +7,7 @@ import NotFoundPage from "./pages/NotFoundPage";
 
 // Public SDK docs — code-split so they never weigh on the marketing bundle.
 const DocsPage = lazy(() => import("./marketing/DocsPage"));
+const ThesisPage = lazy(() => import("./marketing/ThesisPage"));
 
 const GeneLabPage = lazy(() => import("./pages/GeneLabPage"));
 const LaunchBountyPage = lazy(() => import("./pages/LaunchBountyPage"));
@@ -18,6 +19,7 @@ export default function AppRoutes() {
     <Routes>
       <Route path="/" element={<LandingPage />} />
       <Route path="/docs" element={<Suspense fallback={null}><DocsPage /></Suspense>} />
+      <Route path="/thesis" element={<Suspense fallback={null}><ThesisPage /></Suspense>} />
       <Route path="/app/login" element={<LoginPage />} />
       <Route element={<ProtectedRoute />}>
         <Route path="/app" element={<GeneLabPage />} />
