@@ -18,7 +18,7 @@ export function TrainingPanel(_: IDockviewPanelProps) {
                 II
               </button>
             ) : (
-              <button className={styles.iconButton} onClick={terminal.start} aria-label="Start training" title="Start training">
+              <button className={`${styles.iconButton} ${styles.playButton}`} onClick={terminal.start} aria-label="Start training" title="Start training">
                 {"\u25B6"}
               </button>
             )}

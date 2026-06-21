@@ -136,23 +136,26 @@ function LaunchBountyForm() {
   return (
     <div className={styles.page}>
       <div className={styles.shell}>
-        <button className={styles.back} onClick={() => navigate("/app")}>
-          <ArrowLeft size={15} />
-          Back
-        </button>
+        <div className={styles.topbar}>
+          <button className={styles.back} type="button" onClick={() => navigate("/app")}>
+            <ArrowLeft size={15} />
+            Terminal
+          </button>
+          <span className={styles.route}>/app/launch-bounty</span>
+          <span className={styles.mode}>Mollie test mode</span>
+        </div>
 
         <header className={styles.head}>
-          <h1 className={styles.title}>Launch a bounty</h1>
+          <h1 className={styles.title}>Fund a bounty</h1>
           <p className={styles.lede}>
-            Bounties direct the network's collective search for AGI: you post a concrete, verifiable target and the
-            global population of organisms competes to solve it. Your EUR contribution flows into the network and,
-            through buy-back-and-burn, raises the value of every SAGI token in circulation.
+            Set a verifiable target, fund the reward, and route the network toward one measurable result. The bounty
+            opens only after the Mollie payment clears.
           </p>
         </header>
 
         <form className={styles.form} onSubmit={onSubmit}>
           <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>Bounty specification</h2>
+            <h2 className={styles.sectionTitle}>Bounty spec</h2>
 
             <Field label="Title" htmlFor="title">
               <input
@@ -268,7 +271,7 @@ function LaunchBountyForm() {
           </section>
 
           <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>Reward & contribution</h2>
+            <h2 className={styles.sectionTitle}>Funding</h2>
 
             <div className={styles.grid2}>
               <Field label="Your contribution (EUR)" htmlFor="amountEur">
@@ -298,21 +301,34 @@ function LaunchBountyForm() {
               commit.
             </p>
 
+            <div className={styles.checkoutSummary} aria-label="Checkout summary">
+              <span>
+                <strong>Amount</strong>
+                €{formatInt(amountEur)}
+              </span>
+              <span>
+                <strong>Reward</strong>
+                {formatInt(tokens)} tokens
+              </span>
+              <span>
+                <strong>Activation</strong>
+                After payment clears
+              </span>
+            </div>
+
             <div className={styles.note}>
               <p>
-                Your contribution moves real money into the network. A share of every sponsor fee is used to{" "}
-                <strong>buy back and burn</strong> SAGI tokens, so scarcity rises as revenue rises — directly
-                increasing the value of the network for every contributor.
+                Sponsor funds move through Mollie first. Once the payment is paid, SAGI creates the open bounty and
+                escrows the token reward for the winning organism.
               </p>
-              <p className={styles.fine}>
-                The SAGI token is a utility / work token: a stake in the network's activity, not a claim on company
-                equity or profit. It is earned for verified compute and bounty wins, and accrues value through two
-                mechanisms — contributors stake tokens to submit work (with slashing on bad submissions, a demand sink
-                that enforces quality), and a share of every sponsor fee buys back and burns tokens, reinforced by a
-                capped, decaying emission schedule. Token value therefore tracks real network usage and sponsor revenue
-                rather than speculation. No dividend, profit-share, or economic governance rights: by design a utility
-                token, not a security.
-              </p>
+              <details className={styles.legal}>
+                <summary>Token mechanics</summary>
+                <p>
+                  SAGI is a utility and work token, not a claim on company equity or profit. Contributors earn it for
+                  verified compute and bounty wins. Sponsor fees can support buyback and burn mechanics, while staking
+                  and slashing keep submitted work accountable.
+                </p>
+              </details>
             </div>
           </section>
 
@@ -322,7 +338,7 @@ function LaunchBountyForm() {
             {busy ? <Loader2 size={16} className={styles.spin} /> : <CreditCard size={16} />}
             {busy ? "Starting checkout…" : `Continue to payment · €${formatInt(amountEur)}`}
           </button>
-          <p className={styles.payHint}>You'll complete the €{formatInt(amountEur)} payment securely via Mollie. The bounty activates once payment clears.</p>
+          <p className={styles.payHint}>Secure Mollie checkout. The bounty activates only after server-side confirmation.</p>
         </form>
       </div>
     </div>
@@ -384,10 +400,10 @@ function ReturnView({ contributionId, canceled }: { contributionId: string | nul
     icon = <XCircle size={28} />;
     iconClass = styles.failIcon;
     title = canceled && !paid ? "Payment canceled" : `Payment ${status ?? "could not be confirmed"}`;
-    body = "No money moved and no bounty was created. You can adjust the details and try again.";
+    body = "No money moved and no bounty was created. Adjust the details and try again.";
   } else if (paid) {
     icon = <CheckCircle2 size={28} />;
-    title = "Bounty funded ✓";
+    title = "Bounty funded";
     body = (
       <>
         Your €{formatInt(result?.amountEur ?? 0)} contribution cleared and a{" "}
@@ -409,7 +425,7 @@ function ReturnView({ contributionId, canceled }: { contributionId: string | nul
           <div className={styles.returnActions}>
             {!paid ? (
               <button className={styles.secondaryButton} onClick={() => navigate("/app/launch-bounty")}>
-                Try again
+                Edit bounty
               </button>
             ) : null}
             <button className={styles.primaryButton} onClick={() => navigate("/app")}>

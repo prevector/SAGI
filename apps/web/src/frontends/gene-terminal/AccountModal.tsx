@@ -66,13 +66,14 @@ export function AccountModal({ username, onClose, onLogout }: AccountModalProps)
               {initials}
             </span>
             <div className={styles.identityText}>
+              <span className={styles.kicker}>Account</span>
               <span className={styles.username}>{username}</span>
               <span className={styles.subline}>
                 {profile ? `Rank #${formatInt(profile.rank)} · ${profile.status}` : "Sponsor account"}
               </span>
             </div>
           </div>
-          <button className={styles.iconButton} onClick={onClose} aria-label="Close">
+          <button className={styles.iconButton} type="button" onClick={onClose} aria-label="Close">
             <X size={16} />
           </button>
         </header>
@@ -90,7 +91,7 @@ export function AccountModal({ username, onClose, onLogout }: AccountModalProps)
               <Trophy size={15} />
             </span>
             <span className={styles.statValue}>{bountiesWon === null ? "—" : formatInt(bountiesWon)}</span>
-            <span className={styles.statLabel}>Bounties collected</span>
+            <span className={styles.statLabel}>Bounties won</span>
           </div>
         </section>
 
@@ -103,17 +104,18 @@ export function AccountModal({ username, onClose, onLogout }: AccountModalProps)
 
         <button
           className={styles.launchButton}
+          type="button"
           onClick={() => {
             onClose();
             navigate("/app/launch-bounty");
           }}
         >
           <Rocket size={16} />
-          Launch a bounty
+          Fund a bounty
         </button>
 
         <footer className={styles.footer}>
-          <button className={styles.logoutButton} onClick={onLogout}>
+          <button className={styles.logoutButton} type="button" onClick={onLogout}>
             <LogOut size={14} />
             Log out
           </button>
