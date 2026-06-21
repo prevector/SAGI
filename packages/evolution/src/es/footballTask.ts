@@ -6,6 +6,7 @@ export interface FootballTaskConfig {
   fieldWidth?: number;
   fieldHeight?: number;
   goalSize?: number;
+  goalDepth?: number;
   teamSize?: number;
   maxTicks?: number;
   playerRadius?: number;
@@ -118,6 +119,7 @@ export function defaultFootballConfig(seed: string): Required<FootballTaskConfig
     fieldWidth: 110,
     fieldHeight: 70,
     goalSize: 20,
+    goalDepth: 8,
     teamSize: 4,
     maxTicks: 720,
     playerRadius: 1,
@@ -221,6 +223,41 @@ function goalCenter(config: Required<FootballTaskConfig>, attackingSide: 0 | 1) 
     x: attackingSide === 0 ? config.fieldWidth : 0,
     y: config.fieldHeight / 2
   };
+}
+
+function getGoalBounds(config: Required<FootballTaskConfig>, side: 0 | 1) {
+  const halfGoal = config.goalSize / 2;
+  const centerY = config.fieldHeight / 2;
+  return {
+    left: side === 0 ? -config.goalDepth : config.fieldWidth,
+    right: side === 0 ? 0 : config.fieldWidth + config.goalDepth,
+    top: centerY - halfGoal,
+    bottom: centerY + halfGoal
+  };
+}
+
+function detectGoal(config: Required<FootballTaskConfig>, ball: BallRuntime): 0 | 1 | null {
+  const leftGoal = getGoalBounds(config, 0);
+  if (
+    ball.x - config.ballRadius <= leftGoal.right &&
+    ball.x + config.ballRadius >= leftGoal.left &&
+    ball.y + config.ballRadius >= leftGoal.top &&
+    ball.y - config.ballRadius <= leftGoal.bottom
+  ) {
+    return 1;
+  }
+
+  const rightGoal = getGoalBounds(config, 1);
+  if (
+    ball.x + config.ballRadius >= rightGoal.left &&
+    ball.x - config.ballRadius <= rightGoal.right &&
+    ball.y + config.ballRadius >= rightGoal.top &&
+    ball.y - config.ballRadius <= rightGoal.bottom
+  ) {
+    return 0;
+  }
+
+  return null;
 }
 
 function nearestFromTeam(
@@ -431,26 +468,25 @@ export class FootballMatchRuntime {
     ball.vx *= 0.992;
     ball.vy *= 0.992;
 
-    const goalTop = config.fieldHeight / 2 - config.goalSize / 2;
-    const goalBottom = config.fieldHeight / 2 + config.goalSize / 2;
+    const scorer = detectGoal(config, ball);
+    if (scorer !== null) {
+      teams[scorer].score += 1;
+      this.possession = -1;
+      resetFormation(config, teams, ball, this.rng);
+      return;
+    }
 
-    if (ball.x <= 0 && ball.y >= goalTop && ball.y <= goalBottom) {
-      teams[1].score += 1;
-      this.possession = -1;
-      resetFormation(config, teams, ball, this.rng);
-    } else if (ball.x >= config.fieldWidth && ball.y >= goalTop && ball.y <= goalBottom) {
-      teams[0].score += 1;
-      this.possession = -1;
-      resetFormation(config, teams, ball, this.rng);
-    } else {
-      if (ball.x < config.ballRadius || ball.x > config.fieldWidth - config.ballRadius) {
-        ball.x = clamp(ball.x, config.ballRadius, config.fieldWidth - config.ballRadius);
-        ball.vx *= -0.9;
-      }
-      if (ball.y < config.ballRadius || ball.y > config.fieldHeight - config.ballRadius) {
-        ball.y = clamp(ball.y, config.ballRadius, config.fieldHeight - config.ballRadius);
-        ball.vy *= -0.9;
-      }
+    const inGoalMouth =
+      ball.y + config.ballRadius >= config.fieldHeight / 2 - config.goalSize / 2 &&
+      ball.y - config.ballRadius <= config.fieldHeight / 2 + config.goalSize / 2;
+
+    if ((ball.x < config.ballRadius || ball.x > config.fieldWidth - config.ballRadius) && !inGoalMouth) {
+      ball.x = clamp(ball.x, config.ballRadius, config.fieldWidth - config.ballRadius);
+      ball.vx *= -0.9;
+    }
+    if (ball.y < config.ballRadius || ball.y > config.fieldHeight - config.ballRadius) {
+      ball.y = clamp(ball.y, config.ballRadius, config.fieldHeight - config.ballRadius);
+      ball.vy *= -0.9;
     }
   }
 

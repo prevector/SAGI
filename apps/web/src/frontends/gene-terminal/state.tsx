@@ -337,7 +337,7 @@ export function GeneTerminalProvider({ children }: { children: ReactNode }) {
       const creature = items.find((item) => item.id === selectedId);
       if (!creature) return items;
       const existing = compatibleFootballBrain(creature, hiddenSize);
-      if (existing && existing.bestScore > step.bestScore) return items;
+      if (existing && existing.bestScore >= step.bestScore) return items;
       const updated: StoredCreature = {
         ...creature,
         bestFootball: {

@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   DockviewReact,
+  Orientation,
+  type SerializedDockview,
   type DockviewApi,
   type DockviewReadyEvent
 } from "dockview";
@@ -64,6 +66,115 @@ const panelSpecs = {
 } as const;
 
 type PanelId = keyof typeof panelSpecs;
+const DEFAULT_LAYOUT_WIDTH = 1600;
+const DEFAULT_LAYOUT_HEIGHT = 920;
+
+function buildDefaultLayout(): SerializedDockview {
+  return {
+    activeGroup: "group-inference",
+    panels: {
+      network: {
+        id: "network",
+        contentComponent: "network",
+        title: "NETWORK"
+      },
+      library: {
+        id: "library",
+        contentComponent: "library",
+        title: "LIBRARY"
+      },
+      training: {
+        id: "training",
+        contentComponent: "training",
+        title: "TRAINING"
+      },
+      creature: {
+        id: "creature",
+        contentComponent: "creature",
+        title: "CREATURE"
+      },
+      inference: {
+        id: "inference",
+        contentComponent: "inference",
+        title: "INFERENCE"
+      }
+    },
+    grid: {
+      width: DEFAULT_LAYOUT_WIDTH,
+      height: DEFAULT_LAYOUT_HEIGHT,
+      orientation: Orientation.HORIZONTAL,
+      root: {
+        type: "branch",
+        size: DEFAULT_LAYOUT_WIDTH,
+        data: [
+          {
+            type: "branch",
+            size: 300,
+            data: [
+              {
+                type: "leaf",
+                size: 240,
+                data: {
+                  id: "group-network",
+                  views: ["network"],
+                  activeView: "network"
+                }
+              },
+              {
+                type: "leaf",
+                size: 680,
+                data: {
+                  id: "group-library",
+                  views: ["library"],
+                  activeView: "library"
+                }
+              }
+            ]
+          },
+          {
+            type: "branch",
+            size: 1300,
+            data: [
+              {
+                type: "branch",
+                size: 260,
+                data: [
+                  {
+                    type: "leaf",
+                    size: 980,
+                    data: {
+                      id: "group-training",
+                      views: ["training"],
+                      activeView: "training"
+                    }
+                  },
+                  {
+                    type: "leaf",
+                    size: 320,
+                    data: {
+                      id: "group-creature",
+                      views: ["creature"],
+                      activeView: "creature"
+                    }
+                  }
+                ]
+              },
+              {
+                type: "leaf",
+                size: 660,
+                data: {
+                  id: "group-inference",
+                  views: ["inference"],
+                  activeView: "inference"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  };
+}
 
 function Workspace() {
   const terminal = useGeneTerminal();
@@ -74,9 +185,7 @@ function Workspace() {
 
   function onReady(event: DockviewReadyEvent) {
     dockApiRef.current = event.api;
-    (Object.keys(panelSpecs) as PanelId[]).forEach((panelId) => {
-      event.api.addPanel(panelSpecs[panelId]);
-    });
+    event.api.fromJSON(buildDefaultLayout());
     event.api.onDidAddPanel(() => setLayoutNonce((value) => value + 1));
     event.api.onDidRemovePanel(() => setLayoutNonce((value) => value + 1));
     event.api.onDidActivePanelChange(() => setLayoutNonce((value) => value + 1));

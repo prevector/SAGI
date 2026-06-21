@@ -31,19 +31,18 @@ export function FootballReplayPanelBody({
   terminal: GeneTerminalState;
   mode?: "inference" | "training";
 }) {
-  const genome = useMemo(
-    () => terminal.footballBest ? Float32Array.from(terminal.footballBest.genome) : terminal.trainingGenome,
-    [terminal.footballBest, terminal.trainingGenome]
-  );
+  const genome = useMemo(() => (
+    terminal.footballBest ? Float32Array.from(terminal.footballBest.genome) : null
+  ), [terminal.footballBest]);
   const runtimeRef = useRef<FootballMatchRuntime | null>(null);
   const [snapshot, setSnapshot] = useState<ReturnType<FootballMatchRuntime["snapshot"]> | null>(null);
-  const [result, setResult] = useState<ReturnType<FootballMatchRuntime["result"]> | null>(terminal.footballPreview);
+  const [result, setResult] = useState<ReturnType<FootballMatchRuntime["result"]> | null>(null);
 
   useEffect(() => {
     if (!genome || terminal.trainingMode !== "football") {
       runtimeRef.current = null;
       setSnapshot(null);
-      setResult(terminal.footballPreview);
+      setResult(null);
       return;
     }
     const runtime = new FootballMatchRuntime(
@@ -51,15 +50,15 @@ export function FootballReplayPanelBody({
       genome,
       terminal.hiddenSize,
       {
-        seed: `football-inference:${terminal.selectedCreature.id}:${terminal.generation}`,
-        teamSize: terminal.footballTeamSize,
-        maxTicks: terminal.footballMatchTicks
+        seed: `football-inference:${terminal.selectedCreature.id}:${terminal.footballBest?.updatedAt ?? "best"}`,
+        teamSize: terminal.footballBest?.teamSize ?? terminal.footballTeamSize,
+        maxTicks: terminal.footballBest?.matchTicks ?? terminal.footballMatchTicks
       }
     );
     runtimeRef.current = runtime;
     setSnapshot(runtime.snapshot());
     setResult(runtime.result());
-  }, [genome, terminal.footballMatchTicks, terminal.footballTeamSize, terminal.generation, terminal.hiddenSize, terminal.selectedCreature.id, terminal.trainingMode, terminal.footballPreview]);
+  }, [genome, terminal.hiddenSize, terminal.selectedCreature.id, terminal.trainingMode, terminal.footballBest]);
 
   useEffect(() => {
     if (terminal.trainingMode !== "football") return;
@@ -68,19 +67,20 @@ export function FootballReplayPanelBody({
       if (!runtime) return;
       runtime.tick();
       const nextSnapshot = runtime.snapshot();
-      if (nextSnapshot.tick >= terminal.footballMatchTicks) {
-        runtime.restart(`football-loop:${terminal.selectedCreature.id}:${terminal.generation}:${Date.now()}`);
+      const maxTicks = terminal.footballBest?.matchTicks ?? terminal.footballMatchTicks;
+      if (nextSnapshot.tick >= maxTicks) {
+        runtime.restart(`football-loop:${terminal.selectedCreature.id}:${terminal.footballBest?.updatedAt ?? "best"}`);
       }
       setSnapshot(runtime.snapshot());
       setResult(runtime.result());
     }, 16);
     return () => window.clearInterval(timer);
-  }, [terminal.trainingMode, genome, terminal.footballMatchTicks, terminal.footballTeamSize, terminal.generation, terminal.hiddenSize, terminal.selectedCreature.id]);
+  }, [terminal.trainingMode, genome, terminal.footballBest, terminal.footballMatchTicks, terminal.selectedCreature.id]);
 
   if (!genome || !snapshot || !result) {
     return (
       <div className={styles.note}>
-        Start football training first, then the current best brain can be inspected on the field here.
+        Train football first, then the global best football brain for this creature will loop here.
       </div>
     );
   }
