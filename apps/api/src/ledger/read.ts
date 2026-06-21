@@ -193,8 +193,7 @@ export function buildNetworkSnapshot(
       joinedAt: iso(w.createdAt),
       online: online.has(w.username)
     }))
-    .sort((a, b) => b.computePower - a.computePower)
-    .slice(0, 60);
+    .sort((a, b) => b.computePower - a.computePower);
 
   for (const user of connectedUsers) {
     if (nodes.some((node) => node.username === user.username)) continue;

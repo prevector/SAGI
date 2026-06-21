@@ -7,6 +7,10 @@ function sign(payload: string, secret: string): string {
   return crypto.createHmac("sha256", secret).update(payload).digest("base64url");
 }
 
+function sha256Hex(value: string): string {
+  return crypto.createHash("sha256").update(value).digest("hex");
+}
+
 function parseCookies(request: Request): Record<string, string> {
   const header = request.headers.cookie;
   if (!header) {
@@ -75,7 +79,7 @@ function decodeSessionValue(value: string, secret: string): string | null {
 }
 
 export function getAuthenticatedUsername(request: Request, env: AppEnv): string | null {
-  if (env.devMode) {
+  if (env.devMode && env.devBypassAuth) {
     return "Local developer";
   }
 
@@ -125,4 +129,32 @@ export function clearSessionCookie(response: Response, env: AppEnv): void {
     secure: env.secureCookies,
     path: "/"
   });
+}
+
+export function verifyPasswordHash(username: string, passwordHash: string, env: AppEnv): boolean {
+  const normalized = username.trim();
+  const expected = env.authUsers[normalized];
+  if (!expected) {
+    return false;
+  }
+  const candidate = passwordHash.trim().toLowerCase();
+  if (!/^[a-f0-9]{64}$/.test(candidate)) {
+    return false;
+  }
+  return safeEqual(expected, candidate);
+}
+
+export function devCredentialHints(env: AppEnv): Array<{ username: string; password: string }> {
+  if (!env.devMode || Object.keys(env.authUsers).length !== 2) {
+    return [];
+  }
+  const timHash = env.authUsers.tim;
+  const demoHash = env.authUsers.demo;
+  if (timHash === sha256Hex("tim") && demoHash === sha256Hex("demo")) {
+    return [
+      { username: "tim", password: "tim" },
+      { username: "demo", password: "demo" }
+    ];
+  }
+  return [];
 }

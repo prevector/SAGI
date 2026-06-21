@@ -3,7 +3,7 @@ import { fileURLToPath } from "node:url";
 import express from "express";
 import { replayGenome, trainOne, verifyGenome, type RunConfig } from "@sagi/evolution";
 import { getDashboardSnapshot } from "@sagi/shared";
-import { clearSessionCookie, getSessionInfo, isAuthenticated, setSessionCookie } from "./auth.js";
+import { clearSessionCookie, getSessionInfo, isAuthenticated, setSessionCookie, verifyPasswordHash } from "./auth.js";
 import { getAppEnv } from "./env.js";
 import { getFootballLeaderboard, simulateSubmittedFootballMatch, submitFootballTeam } from "./football.js";
 import { loadRun, saveRun } from "./runs.js";
@@ -123,19 +123,25 @@ app.get("/api/session", (request, response) => {
 });
 
 app.post("/api/auth/login", (request, response) => {
-  if (env.devMode) {
-    response.json(getSessionInfo(request, env));
-    return;
-  }
-
   const submittedUsername =
     typeof request.body?.username === "string" ? request.body.username.trim() : "";
+  const submittedPasswordHash =
+    typeof request.body?.passwordHash === "string" ? request.body.passwordHash.trim() : "";
 
   if (!submittedUsername) {
     response.status(400).json({ error: "Username is required." });
     return;
   }
+  if (!submittedPasswordHash) {
+    response.status(400).json({ error: "Password is required." });
+    return;
+  }
+  if (!verifyPasswordHash(submittedUsername, submittedPasswordHash, env)) {
+    response.status(401).json({ error: "Invalid username or password." });
+    return;
+  }
 
+  ledger.ensureWallet(submittedUsername);
   setSessionCookie(response, env, submittedUsername);
   response.json({
     authenticated: true,

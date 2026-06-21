@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { Html, OrbitControls } from "@react-three/drei";
+import { OrbitControls } from "@react-three/drei";
 import {
   AdditiveBlending,
   BufferAttribute,
@@ -12,20 +12,26 @@ import {
   MeshBasicMaterial,
   Vector3
 } from "three";
-import type { ConnectedUser } from "../../lib/types";
+import type { NetworkNode } from "../../lib/types";
 import styles from "./GeneTerminal.module.css";
 
 interface NetworkGraphViewportProps {
-  users: ConnectedUser[];
+  users: NetworkNode[];
   currentUser: string | null;
 }
 
 interface NodeLayout {
   id: string;
-  user: ConnectedUser;
+  user: NetworkNode;
   position: Vector3;
   color: string;
   isSelf: boolean;
+}
+
+interface HoverLabel {
+  text: string;
+  x: number;
+  y: number;
 }
 
 function hashSeed(seed: string): number {
@@ -37,13 +43,14 @@ function hashSeed(seed: string): number {
   return h >>> 0;
 }
 
-function colorForUsername(username: string, isSelf: boolean): string {
-  if (isSelf) {
-    return "#b56c3f";
+function colorForNode(node: NetworkNode, isSelf: boolean): string {
+  if (!node.online) {
+    return isSelf ? "#7f857d" : "#90958c";
   }
-  const h = hashSeed(username);
-  const hue = (h % 2 === 0 ? 206 : 30) + ((h >> 3) % 14) - 7;
-  return `hsl(${hue} 42% 48%)`;
+  if (isSelf) {
+    return "#6da459";
+  }
+  return "#7ba76b";
 }
 
 function fibonacciSphere(count: number, radius: number): Vector3[] {
@@ -59,20 +66,15 @@ function fibonacciSphere(count: number, radius: number): Vector3[] {
   });
 }
 
-function expandConnections(users: ConnectedUser[]): ConnectedUser[] {
-  return users.flatMap((user) => Array.from({ length: Math.max(1, user.sessions ?? 1) }, () => user));
-}
-
-function buildLayout(users: ConnectedUser[], currentUser: string | null): NodeLayout[] {
-  const expanded = expandConnections(users);
-  const positions = fibonacciSphere(expanded.length, 2.8);
-  return expanded.map((user, index) => {
+function buildLayout(users: NetworkNode[], currentUser: string | null): NodeLayout[] {
+  const positions = fibonacciSphere(users.length, 2.8);
+  return users.map((user, index) => {
     const isSelf = user.username === currentUser;
     return {
-      id: `${user.username}-${user.surface}-${index}`,
+      id: user.id,
       user,
       position: positions[index] ?? new Vector3(0, 0, 0),
-      color: colorForUsername(user.username, isSelf),
+      color: colorForNode(user, isSelf),
       isSelf
     };
   });
@@ -126,7 +128,13 @@ function MeshLinks({ nodes }: { nodes: NodeLayout[] }) {
   );
 }
 
-function MeshCloud({ nodes }: { nodes: NodeLayout[] }) {
+function MeshCloud({
+  nodes,
+  onHover
+}: {
+  nodes: NodeLayout[];
+  onHover: (value: HoverLabel | null) => void;
+}) {
   const groupRef = useRef<Group>(null);
 
   useFrame(({ clock }) => {
@@ -137,17 +145,31 @@ function MeshCloud({ nodes }: { nodes: NodeLayout[] }) {
     <group ref={groupRef}>
       <MeshLinks nodes={nodes} />
       {nodes.map((layout) => (
-        <PeerNode key={layout.id} layout={layout} />
+        <PeerNode key={layout.id} layout={layout} onHover={onHover} />
       ))}
     </group>
   );
 }
 
-function PeerNode({ layout }: { layout: NodeLayout }) {
+function PeerNode({
+  layout,
+  onHover
+}: {
+  layout: NodeLayout;
+  onHover: (value: HoverLabel | null) => void;
+}) {
   const groupRef = useRef<Group>(null);
   const glowRef = useRef<Mesh>(null);
-  const [hovered, setHovered] = useState(false);
   const scale = layout.isSelf ? 1.2 : 1;
+
+  function showLabel(event: any) {
+    event.stopPropagation();
+    onHover({
+      text: layout.isSelf ? `${layout.user.username} you` : layout.user.username,
+      x: event.nativeEvent.offsetX + 8,
+      y: event.nativeEvent.offsetY - 10
+    });
+  }
 
   useFrame(({ clock }) => {
     if (!groupRef.current) return;
@@ -162,13 +184,11 @@ function PeerNode({ layout }: { layout: NodeLayout }) {
     <group ref={groupRef} position={layout.position}>
       <mesh
         scale={scale}
-        onPointerOver={(event) => {
-          event.stopPropagation();
-          setHovered(true);
-        }}
+        onPointerOver={showLabel}
+        onPointerMove={showLabel}
         onPointerOut={(event) => {
           event.stopPropagation();
-          setHovered(false);
+          onHover(null);
         }}
       >
         <sphereGeometry args={[0.062, 14, 14]} />
@@ -180,28 +200,27 @@ function PeerNode({ layout }: { layout: NodeLayout }) {
       </mesh>
       <mesh
         scale={scale * 3}
-        onPointerOver={(event) => {
-          event.stopPropagation();
-          setHovered(true);
-        }}
+        onPointerOver={showLabel}
+        onPointerMove={showLabel}
         onPointerOut={(event) => {
           event.stopPropagation();
-          setHovered(false);
+          onHover(null);
         }}
       >
         <sphereGeometry args={[0.062, 10, 10]} />
         <meshBasicMaterial transparent opacity={0} depthWrite={false} />
       </mesh>
-      <Html position={[0, 0.16, 0]} center distanceFactor={10} style={{ pointerEvents: "none" }}>
-        <span className={`${styles.networkNodeLabel} ${hovered ? styles.networkNodeLabelVisible : ""}`}>
-          {layout.isSelf ? `${layout.user.username} you` : layout.user.username}
-        </span>
-      </Html>
     </group>
   );
 }
 
-function NetworkScene({ users, currentUser }: NetworkGraphViewportProps) {
+function NetworkScene({
+  users,
+  currentUser,
+  onHover
+}: NetworkGraphViewportProps & {
+  onHover: (value: HoverLabel | null) => void;
+}) {
   const nodes = useMemo(() => buildLayout(users, currentUser), [users, currentUser]);
 
   return (
@@ -210,18 +229,21 @@ function NetworkScene({ users, currentUser }: NetworkGraphViewportProps) {
       <fog attach="fog" args={["#e9e2d6", 6, 14]} />
       <ambientLight intensity={0.6} color="#f6eee2" />
       <pointLight position={[0, 0, 4]} intensity={0.28} color="#c8d8e3" />
-      {nodes.length > 0 ? <MeshCloud nodes={nodes} /> : null}
+      {nodes.length > 0 ? <MeshCloud nodes={nodes} onHover={onHover} /> : null}
     </>
   );
 }
 
 export function NetworkGraphViewport({ users, currentUser }: NetworkGraphViewportProps) {
+  const [hoveredLabel, setHoveredLabel] = useState<HoverLabel | null>(null);
+
   return (
     <div className={styles.networkCanvas}>
       <Canvas
         camera={{ position: [0, 0.4, 5.4], fov: 34 }}
         dpr={[1, 1.8]}
         gl={{ antialias: true, alpha: true }}
+        onPointerMissed={() => setHoveredLabel(null)}
       >
         <OrbitControls
           makeDefault
@@ -234,12 +256,20 @@ export function NetworkGraphViewport({ users, currentUser }: NetworkGraphViewpor
           maxDistance={8}
           target={[0, 0, 0]}
         />
-        <NetworkScene users={users} currentUser={currentUser} />
+        <NetworkScene users={users} currentUser={currentUser} onHover={setHoveredLabel} />
       </Canvas>
+      {hoveredLabel ? (
+        <div
+          className={`${styles.networkNodeLabel} ${styles.networkNodeLabelVisible}`}
+          style={{ left: hoveredLabel.x, top: hoveredLabel.y }}
+        >
+          {hoveredLabel.text}
+        </div>
+      ) : null}
       {users.length === 0 ? (
         <div className={styles.networkEmpty}>
-          <strong>No live peers yet</strong>
-          <span>Connected users will appear here as they join the network stream.</span>
+          <strong>No known users yet</strong>
+          <span>Everyone who has logged in will appear here. Online users glow green.</span>
         </div>
       ) : null}
     </div>

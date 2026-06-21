@@ -1,7 +1,6 @@
 import { OrbitControls } from "@react-three/drei";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { FootballMatchRuntime } from "@sagi/evolution";
-import type { FootballLeaderboardSnapshot } from "@sagi/shared";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { PCFShadowMap, Vector3 } from "three";
 import { CreatureActor3D } from "../CreatureViewport";
@@ -95,7 +94,6 @@ export function FootballReplayPanelBody({
   const runtimeRef = useRef<FootballMatchRuntime | null>(null);
   const [snapshot, setSnapshot] = useState<ReturnType<FootballMatchRuntime["snapshot"]> | null>(null);
   const [result, setResult] = useState<ReturnType<FootballMatchRuntime["result"]> | null>(null);
-  const [leaderboard, setLeaderboard] = useState<FootballLeaderboardSnapshot | null>(null);
   const [actionCamera, setActionCamera] = useState(true);
   const controlsRef = useRef<any>(null);
 
@@ -138,32 +136,6 @@ export function FootballReplayPanelBody({
     return () => window.clearInterval(timer);
   }, [terminal.trainingMode, genome, terminal.footballBest, terminal.footballMatchTicks, terminal.selectedCreature.id]);
 
-  useEffect(() => {
-    let cancelled = false;
-
-    async function loadLeaderboard() {
-      try {
-        const response = await fetch("/api/football/leaderboard");
-        if (!response.ok) {
-          return;
-        }
-        const next = await response.json() as FootballLeaderboardSnapshot;
-        if (!cancelled) {
-          setLeaderboard(next);
-        }
-      } catch (error) {
-        console.warn("Failed to load football leaderboard.", error);
-      }
-    }
-
-    void loadLeaderboard();
-    const timer = window.setInterval(loadLeaderboard, 5000);
-    return () => {
-      cancelled = true;
-      window.clearInterval(timer);
-    };
-  }, []);
-
   if (!genome || !snapshot || !result) {
     return (
       <div className={styles.note}>
@@ -172,20 +144,11 @@ export function FootballReplayPanelBody({
     );
   }
   const opponentPhenotype = makeOpponentPhenotype(terminal);
-  const division = leaderboard?.divisions.find((entry) => (
-    entry.hiddenSize === (terminal.footballBest?.hiddenSize ?? terminal.hiddenSize) &&
-    entry.teamSize === (terminal.footballBest?.teamSize ?? terminal.footballTeamSize) &&
-    entry.matchTicks === (terminal.footballBest?.matchTicks ?? terminal.footballMatchTicks)
-  )) ?? leaderboard?.divisions[0] ?? null;
 
   return (
     <>
       <div className={styles.visualizerStage}>
         <div className={styles.footballOverlay}>
-          <span>{result.score[0]}:{result.score[1]}</span>
-          <span>{result.fitness[0].toFixed(1)} / {result.fitness[1].toFixed(1)}</span>
-          <span>{snapshot.ball.x.toFixed(0)}, {snapshot.ball.y.toFixed(0)}</span>
-          <span>{result.winner === -1 ? "draw" : `team ${result.winner + 1}`}</span>
           <button
             type="button"
             className={styles.footballOverlayButton}
@@ -195,17 +158,11 @@ export function FootballReplayPanelBody({
           >
             {actionCamera ? "◎" : "○"}
           </button>
+          <span>{result.score[0]}:{result.score[1]}</span>
+          <span>{result.fitness[0].toFixed(1)} / {result.fitness[1].toFixed(1)}</span>
+          <span>{snapshot.ball.x.toFixed(0)}, {snapshot.ball.y.toFixed(0)}</span>
+          <span>{result.winner === -1 ? "draw" : `team ${result.winner + 1}`}</span>
         </div>
-        {division ? (
-          <div className={styles.footballLeaderboardOverlay}>
-            <b>{`SERVER DIVISION ${division.teamSize}v${division.teamSize}`}</b>
-            {division.rows.slice(0, 5).map((row) => (
-              <span key={`${row.username}:${row.creatureId}`}>
-                {row.rank}. {row.username} {row.verifiedScore.toFixed(1)}
-              </span>
-            ))}
-          </div>
-        ) : null}
         <Canvas
           camera={{ position: [0, 44, 46], fov: 34 }}
           dpr={[1, 1.8]}

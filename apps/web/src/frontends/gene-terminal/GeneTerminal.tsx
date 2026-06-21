@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { LogOut } from "lucide-react";
 import {
   DockviewReact,
   Orientation,
@@ -7,12 +8,14 @@ import {
   type DockviewReadyEvent
 } from "dockview";
 import "dockview/dist/styles/dockview.css";
+import { useAuth } from "../../auth/AuthContext";
 import { formatInt } from "../../lib/format";
 import { shortId } from "./components";
 import { GeneTerminalProvider, useGeneTerminal } from "./state";
 import { CreatureLibraryPanel } from "./panels/CreatureLibraryPanel";
 import { CreaturePanel } from "./panels/CreaturePanel";
 import { InferencePanel } from "./panels/InferencePanel";
+import { LeaderboardPanel } from "./panels/LeaderboardPanel";
 import { NetworkPanel } from "./panels/NetworkPanel";
 import { TrainingGraphPanel } from "./panels/TrainingGraphPanel";
 import { TrainingPanel } from "./panels/TrainingPanel";
@@ -22,6 +25,7 @@ const dockComponents = {
   creature: CreaturePanel,
   graph: TrainingGraphPanel,
   inference: InferencePanel,
+  leaderboard: LeaderboardPanel,
   library: CreatureLibraryPanel,
   network: NetworkPanel,
   training: TrainingPanel
@@ -40,7 +44,14 @@ const panelSpecs = {
     component: "library",
     title: "LIBRARY",
     position: { referencePanel: "network", direction: "below" as const },
-    initialHeight: 470
+    initialHeight: 360
+  },
+  leaderboard: {
+    id: "leaderboard",
+    component: "leaderboard",
+    title: "LEADERBOARD",
+    position: { referencePanel: "library", direction: "below" as const },
+    initialHeight: 220
   },
   training: {
     id: "training",
@@ -93,6 +104,11 @@ function buildDefaultLayout(): SerializedDockview {
         contentComponent: "library",
         title: "LIBRARY"
       },
+      leaderboard: {
+        id: "leaderboard",
+        contentComponent: "leaderboard",
+        title: "LEADERBOARD"
+      },
       training: {
         id: "training",
         contentComponent: "training",
@@ -137,11 +153,20 @@ function buildDefaultLayout(): SerializedDockview {
               },
               {
                 type: "leaf",
-                size: 680,
+                size: 430,
                 data: {
                   id: "group-library",
                   views: ["library"],
                   activeView: "library"
+                }
+              },
+              {
+                type: "leaf",
+                size: 250,
+                data: {
+                  id: "group-leaderboard",
+                  views: ["leaderboard"],
+                  activeView: "leaderboard"
                 }
               }
             ]
@@ -202,6 +227,7 @@ function buildDefaultLayout(): SerializedDockview {
 
 function Workspace() {
   const terminal = useGeneTerminal();
+  const { username, logout } = useAuth();
   const dockApiRef = useRef<DockviewApi | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const [openMenu, setOpenMenu] = useState<"window" | null>(null);
@@ -278,7 +304,11 @@ function Workspace() {
           {summary.map((item) => (
             <span key={item}>{item}</span>
           ))}
+          {username ? <span>{username}</span> : null}
           <span>{shortId(terminal.selectedGene.id)}</span>
+          <button className={styles.menuButton} onClick={() => void logout()} title="Log out" aria-label="Log out">
+            <LogOut size={12} />
+          </button>
         </div>
       </div>
       <div className={styles.dockShell}>

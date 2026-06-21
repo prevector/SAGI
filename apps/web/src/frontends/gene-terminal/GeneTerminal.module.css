@@ -298,28 +298,29 @@
 }
 
 .networkNodeLabel {
-  display: inline-flex;
-  align-items: center;
-  padding: 2px 6px;
-  border: 1px solid rgba(54, 47, 40, 0.08);
-  background: rgba(246, 242, 235, 0.72);
-  color: var(--terminal-text);
+  position: absolute;
+  z-index: 2;
+  display: block;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: rgba(54, 47, 40, 0.82);
   font-family: var(--font-mono);
-  font-size: 9px;
-  letter-spacing: 0.04em;
+  font-size: 8px;
+  letter-spacing: 0.03em;
   white-space: nowrap;
   opacity: 0;
-  transform: translateY(4px) scale(0.98);
+  transform: translateY(-2px);
   transition:
     opacity 140ms ease,
-    transform 140ms ease,
-    background-color 140ms ease;
+    transform 140ms ease;
+  text-shadow: 0 1px 0 rgba(245, 239, 228, 0.7);
+  pointer-events: none;
 }
 
 .networkNodeLabelVisible {
-  opacity: 0.9;
-  transform: translateY(0) scale(1);
-  background: rgba(246, 242, 235, 0.84);
+  opacity: 0.72;
+  transform: translateY(0);
 }
 
 .panelTools {
@@ -677,13 +678,14 @@
 }
 
 .chartOverlay span {
-  padding: 4px 6px;
-  border: 1px solid rgba(54, 47, 40, 0.16);
-  background: rgba(246, 240, 230, 0.76);
+  padding: 0;
+  border: 0;
+  background: transparent;
   color: var(--terminal-text);
   font-family: var(--font-mono);
   font-size: 11px;
   line-height: 1;
+  text-shadow: 0 1px 0 rgba(245, 239, 228, 0.75);
 }
 
 .chartProgress {
@@ -744,33 +746,32 @@
 }
 
 .footballOverlay span {
-  padding: 5px 8px;
-  border: 1px solid rgba(54, 47, 40, 0.18);
-  background: rgba(246, 240, 230, 0.78);
+  padding: 0;
+  border: 0;
+  background: transparent;
   color: var(--terminal-text);
   font-family: var(--font-mono);
   font-size: 12px;
   line-height: 1;
-  box-shadow: 0 6px 18px rgba(54, 47, 40, 0.08);
+  text-shadow: 0 1px 0 rgba(245, 239, 228, 0.82);
 }
 
 .footballOverlayButton {
   pointer-events: auto;
-  min-width: 28px;
-  padding: 5px 8px;
-  border: 1px solid rgba(54, 47, 40, 0.18);
-  background: rgba(246, 240, 230, 0.9);
+  min-width: 18px;
+  padding: 0;
+  border: 0;
+  background: transparent;
   color: var(--terminal-text);
   font-family: var(--font-mono);
   font-size: 15px;
   line-height: 1;
   cursor: pointer;
-  box-shadow: 0 6px 18px rgba(54, 47, 40, 0.08);
+  text-shadow: 0 1px 0 rgba(245, 239, 228, 0.82);
 }
 
 .footballOverlayButton:hover {
-  border-color: rgba(154, 104, 65, 0.28);
-  background: rgba(154, 104, 65, 0.1);
+  color: var(--terminal-accent);
 }
 
 .footballLeaderboardOverlay {
@@ -798,6 +799,72 @@
 
 .footballLeaderboardOverlay span {
   color: var(--terminal-text-muted);
+}
+
+.panelLeaderboard {
+  background:
+    linear-gradient(180deg, rgba(154, 104, 65, 0.05), transparent 18%),
+    linear-gradient(180deg, #f0ebe1, #ebe5da);
+}
+
+.leaderboardMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--terminal-line);
+  color: var(--terminal-text-muted);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.leaderboardList {
+  display: grid;
+  gap: 4px;
+}
+
+.leaderboardRow {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(54, 47, 40, 0.08);
+}
+
+.leaderboardRank {
+  color: var(--terminal-text-muted);
+}
+
+.leaderboardIdentity {
+  display: grid;
+  min-width: 0;
+  gap: 1px;
+}
+
+.leaderboardIdentity strong,
+.leaderboardIdentity span,
+.leaderboardRow b {
+  font-family: var(--font-mono);
+}
+
+.leaderboardIdentity strong {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.leaderboardIdentity span {
+  color: var(--terminal-text-muted);
+  font-size: 11px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.leaderboardRow b {
+  font-size: 12px;
+  font-weight: 500;
 }
 
 .visualizerHud {

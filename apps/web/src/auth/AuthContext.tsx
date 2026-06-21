@@ -22,7 +22,7 @@ interface AuthState {
   username: string | null;
   mode: Mode;
   loading: boolean;
-  login: (username: string) => Promise<void>;
+  login: (username: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -57,12 +57,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     void refresh();
   }, [refresh]);
 
+  async function hashPassword(password: string): Promise<string> {
+    const encoded = new TextEncoder().encode(password);
+    const digest = await crypto.subtle.digest("SHA-256", encoded);
+    return Array.from(new Uint8Array(digest))
+      .map((value) => value.toString(16).padStart(2, "0"))
+      .join("");
+  }
+
   const login = useCallback(
-    async (raw: string) => {
+    async (raw: string, password: string) => {
       const name = raw.trim();
+      const passwordHash = await hashPassword(password);
       const session = await fetchJson<SessionInfo>("/api/auth/login", {
         method: "POST",
-        body: JSON.stringify({ username: name })
+        body: JSON.stringify({ username: name, passwordHash })
       });
       applySession(session);
     },
