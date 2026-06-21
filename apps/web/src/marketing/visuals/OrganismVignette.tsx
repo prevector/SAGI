@@ -28,7 +28,9 @@ function lerp(a: number, b: number, t: number) {
  */
 export default function OrganismVignette({
   behavior = "adapts",
-  accent = "#17C4C4",
+  // Brand secondary accent (--blue-500). Canvas needs a literal — vars don't
+  // apply to 2D context fillStyle. Keep in sync with tokens.css.
+  accent = "#3C7FA8",
   style,
 }: OrganismVignetteProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);

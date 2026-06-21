@@ -1,7 +1,8 @@
 import { Suspense, lazy, useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
 import { useInView } from "../lib/useInView";
 import { useNetworkStats } from "../network/useNetworkStats";
+import { Eyebrow } from "../components/Eyebrow";
+import { CtaLink } from "../components/CtaLink";
 import { APP_LOGIN } from "../lib/content";
 import styles from "./SagiNetwork.module.css";
 
@@ -78,7 +79,7 @@ export function SagiNetwork() {
         </div>
 
         <div className={styles.center}>
-          <p className={styles.eyebrow}>SAGI network</p>
+          <Eyebrow>SAGI network</Eyebrow>
           <h2 className={styles.title}>The swarm, alive.</h2>
           <p className={styles.sub}>
             Every device and every app contributing compute and human judgment shows up here —
@@ -125,15 +126,15 @@ export function SagiNetwork() {
           earns tokens and ripples through the swarm above in real time.
         </p>
         <div className={styles.ctaRow}>
-          <Link className={styles.ctaSecondary} to="/docs">Check the documentation</Link>
+          <CtaLink to="/docs" variant="ghost">Check the documentation</CtaLink>
           {CONTRIBUTE_URL ? (
             <>
-              <a className={styles.cta} href={CONTRIBUTE_URL}>See an app built on the SDK →</a>
+              <CtaLink href={CONTRIBUTE_URL} variant="primary">See an app built on the SDK →</CtaLink>
               <span className={styles.note}>a live example contributing to the swarm</span>
             </>
           ) : (
             <>
-              <a className={styles.cta} href={APP_LOGIN}>Join the network →</a>
+              <CtaLink href={APP_LOGIN} variant="primary">Join the network →</CtaLink>
               <span className={styles.note}>contribute compute and judgment, earn tokens</span>
             </>
           )}

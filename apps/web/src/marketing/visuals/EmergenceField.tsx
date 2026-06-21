@@ -43,22 +43,24 @@ function segDist(px: number, py: number, ax: number, ay: number, bx: number, by:
 }
 
 /**
- * EmergenceField — a full-bleed grey field of flickering code glyphs out of which
- * a teal-glowing organism resolves and evolves (cell → worm → fish → reptile →
- * raptor → eagle that flies off). Ported from the SAGI Framer project; the hero
- * signature visual (DESIGN.md §1 / STRUCTURE.md S02). Decorative → aria-hidden.
+ * EmergenceField — a full-bleed field of flickering code glyphs out of which a
+ * pale organism resolves and evolves (cell → worm → fish → reptile → raptor →
+ * eagle that flies off). Ported from the SAGI Framer project; the hero signature
+ * visual (DESIGN.md §1 / §5 / STRUCTURE.md S02). Decorative → aria-hidden.
+ * Defaults match the DESIGN §5 hero config (warm noise + white organism over the
+ * pink→blue gradient); canvas needs colour literals, so these mirror the tokens.
  */
 export default function EmergenceField({
   density = 1,
   speed = 1,
-  noiseColor = "#6E8080",
-  organismColor = "#FFFFFF",
-  glowColor = "#17C4C4",
+  noiseColor = "rgba(46,33,24,0.18)",
+  organismColor = "rgba(255,255,255,0.95)",
+  glowColor = "rgba(255,255,255,0.4)",
   focusX = 0.66,
   scale = 1,
   glyphChars = DEFAULT_GLYPHS,
   transparentBg = true,
-  bgColor = "#041414",
+  bgColor = "#2E2118",
   style,
 }: EmergenceFieldProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);

@@ -1,14 +1,15 @@
-/* S05.5 — "SAGI network": the live swarm embedded in the homepage scroll. Dark
-   band so the 3D canvas (bg #041414) reads as part of the page. */
+/* S05.5 — "SAGI network": the live swarm embedded in the homepage scroll.
+   Warm editorial band (--brown-50) so the 3D canvas reads as part of the page.
+   All colour via tokens (tokens.css); no drop shadows (DESIGN §4). */
 
 .section {
   position: relative;
-  background: #041414;
-  color: #faf8f0;
+  background: var(--bg-warm);
+  color: var(--text);
   padding: 0;
   overflow: hidden;
-  border-top: 1px solid rgba(23, 196, 196, 0.12);
-  border-bottom: 1px solid rgba(23, 196, 196, 0.12);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
 }
 
 /* The swarm band — canvas backdrop with the readout layered over it. */
@@ -23,7 +24,7 @@
 .canvasFallback {
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at 50% 45%, rgba(23, 196, 196, 0.18), transparent 60%), #041414;
+  background: radial-gradient(circle at 50% 45%, var(--pink-100), transparent 60%), var(--bg-warm);
 }
 
 .topBar {
@@ -41,27 +42,26 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-family: var(--font-mono, "Geist Mono Variable", ui-monospace, monospace);
-  font-size: 10px;
-  letter-spacing: 0.18em;
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #9fb6b6;
-  border: 1px solid rgba(23, 196, 196, 0.25);
-  border-radius: 999px;
-  padding: 6px 12px;
-  background: rgba(4, 20, 20, 0.4);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  padding: 6px 14px;
+  background: rgba(255, 255, 255, 0.7);
 }
 .dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #17c4c4;
-  box-shadow: 0 0 6px #17c4c4;
-  animation: sagiNetPulse 2s ease-out infinite;
+  width: 7px;
+  height: 7px;
+  border-radius: var(--radius-pill);
+  background: var(--pink-700);
+  animation: sagiNetPing 2s ease-in-out infinite;
 }
 .dotSim {
-  background: #6e8585;
-  box-shadow: none;
+  background: var(--brown-300);
   animation: none;
 }
 
@@ -77,28 +77,22 @@
   padding: 0 24px;
   pointer-events: none;
 }
-.eyebrow {
-  font-family: var(--font-mono, "Geist Mono Variable", ui-monospace, monospace);
-  font-size: 11px;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: #17c4c4;
-  margin: 0 0 14px;
-}
 .title {
-  font-size: clamp(28px, 5vw, 48px);
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  margin: 0;
-  text-shadow: 0 2px 40px rgba(4, 20, 20, 0.9);
+  font-family: var(--font-sans);
+  font-size: clamp(28px, 5vw, 44px);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.05;
+  color: var(--text);
+  margin: 10px 0 0;
 }
 .sub {
-  font-size: clamp(14px, 2vw, 17px);
-  color: #9fb6b6;
+  font-family: var(--font-display);
+  font-size: clamp(16px, 2vw, 18px);
+  color: var(--brown-500);
   max-width: 520px;
   margin: 14px auto 0;
-  line-height: 1.5;
-  text-shadow: 0 1px 20px rgba(4, 20, 20, 0.9);
+  line-height: 1.4;
 }
 
 /* Counter strip along the bottom of the band. */
@@ -114,28 +108,29 @@
   justify-content: center;
   align-items: flex-end;
   padding: 30px 24px 36px;
-  background: linear-gradient(0deg, rgba(4, 20, 20, 0.94) 0%, transparent 100%);
+  background: linear-gradient(0deg, var(--bg-warm), transparent);
   pointer-events: none;
 }
 .stat {
   text-align: center;
 }
 .statValue {
-  font-family: var(--font-mono, "Geist Mono Variable", ui-monospace, monospace);
+  font-family: var(--font-sans);
   font-size: clamp(22px, 4.5vw, 32px);
   font-weight: 700;
   line-height: 1;
-  color: #17c4c4;
+  color: var(--text);
 }
 .statTokens {
-  color: #f0783d;
+  color: var(--blue-500);
 }
 .statLabel {
-  font-family: var(--font-mono, "Geist Mono Variable", ui-monospace, monospace);
-  font-size: 10px;
-  letter-spacing: 0.14em;
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #6e8585;
+  color: var(--text-muted);
   margin-top: 7px;
 }
 
@@ -144,25 +139,24 @@
   position: relative;
 }
 .humanValue {
-  font-family: var(--font-mono, "Geist Mono Variable", ui-monospace, monospace);
+  font-family: var(--font-sans);
   font-size: clamp(30px, 6vw, 46px);
   font-weight: 800;
   line-height: 1;
-  color: #f0783d;
-  text-shadow: 0 0 24px rgba(240, 120, 61, 0.5);
-  transition: transform 160ms ease;
+  color: var(--pink-700);
+  transition: transform 160ms var(--ease-out);
 }
 .humanPop {
   transform: scale(1.28);
 }
 .humanLabel {
-  font-family: var(--font-mono, "Geist Mono Variable", ui-monospace, monospace);
-  font-size: 10px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: #f0783d;
-  margin-top: 7px;
+  font-family: var(--font-ui);
+  font-size: 12px;
   font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--pink-700);
+  margin-top: 7px;
 }
 
 /* Transient "a human just contributed" toast over the canvas. */
@@ -176,19 +170,19 @@
   align-items: center;
   gap: 10px;
   padding: 12px 20px;
-  border-radius: 999px;
-  background: rgba(240, 120, 61, 0.16);
-  border: 1px solid rgba(240, 120, 61, 0.6);
-  box-shadow: 0 0 40px rgba(240, 120, 61, 0.4);
-  font-family: var(--font-mono, "Geist Mono Variable", ui-monospace, monospace);
+  border-radius: var(--radius-pill);
+  background: var(--pink-50);
+  border: 1px solid var(--pink-300);
+  font-family: var(--font-ui);
   font-size: 13px;
-  letter-spacing: 0.06em;
-  color: #faf8f0;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--text);
   pointer-events: none;
-  animation: sagiNetToast 320ms ease-out;
+  animation: sagiNetToast 320ms var(--ease-out);
 }
 .toast strong {
-  color: #f0783d;
+  color: var(--pink-700);
 }
 
 /* Pitch + CTA below the band. */
@@ -199,15 +193,19 @@
   text-align: center;
 }
 .pitchTitle {
-  font-size: clamp(22px, 4vw, 32px);
-  font-weight: 700;
-  letter-spacing: -0.02em;
+  font-family: var(--font-sans);
+  font-size: clamp(24px, 4vw, 40px);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+  color: var(--text);
   margin: 0;
 }
 .pitchBody {
-  font-size: clamp(15px, 2vw, 17px);
-  color: #9fb6b6;
-  line-height: 1.65;
+  font-family: var(--font-display);
+  font-size: clamp(16px, 2vw, 18px);
+  color: var(--brown-500);
+  line-height: 1.6;
   margin: 18px 0 0;
 }
 .ctaRow {
@@ -218,49 +216,16 @@
   align-items: center;
   margin-top: 32px;
 }
-.cta {
-  display: inline-block;
-  font-family: var(--font-mono, "Geist Mono Variable", ui-monospace, monospace);
-  font-size: 15px;
-  letter-spacing: 0.04em;
-  font-weight: 600;
-  color: #041414;
-  background: #17c4c4;
-  text-decoration: none;
-  padding: 13px 24px;
-  border-radius: 12px;
-}
-/* Secondary "Check the documentation" button — sits to the left of the primary
-   CTA, reads as a quieter outline against the dark band. */
-.ctaSecondary {
-  display: inline-block;
-  font-family: var(--font-mono, "Geist Mono Variable", ui-monospace, monospace);
-  font-size: 15px;
-  letter-spacing: 0.04em;
-  font-weight: 600;
-  color: #17c4c4;
-  background: transparent;
-  text-decoration: none;
-  padding: 13px 24px;
-  border-radius: 12px;
-  border: 1px solid rgba(23, 196, 196, 0.4);
-  transition: border-color 160ms ease, background 160ms ease;
-}
-.ctaSecondary:hover {
-  border-color: rgba(23, 196, 196, 0.85);
-  background: rgba(23, 196, 196, 0.08);
-}
 .note {
-  font-family: var(--font-mono, "Geist Mono Variable", ui-monospace, monospace);
+  font-family: var(--font-ui);
   font-size: 12px;
-  color: #6e8585;
-  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  letter-spacing: 0.02em;
 }
 
-@keyframes sagiNetPulse {
-  0% { box-shadow: 0 0 0 0 rgba(23, 196, 196, 0.6); }
-  70% { box-shadow: 0 0 0 7px rgba(23, 196, 196, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(23, 196, 196, 0); }
+@keyframes sagiNetPing {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
 }
 @keyframes sagiNetToast {
   from { opacity: 0; transform: translate(-50%, -42%) scale(0.92); }

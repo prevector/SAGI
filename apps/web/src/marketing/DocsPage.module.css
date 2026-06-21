@@ -1,13 +1,13 @@
-/* Initial SAGI SDK documentation page. Light "paper" theme for long-form
-   reading, with marketing tokens (teal #17C4C4, orange #F0783D) and a dark
-   code block. Self-contained chrome so it doesn't inherit the homepage's
-   in-page #anchor nav. */
+/* SAGI SDK documentation page. Warm editorial theme (DESIGN.md): Cormorant for
+   long-form prose, Gothic A1 for headings + UI labels, brand tokens only, no drop
+   shadows. Dark code blocks use --brown-900 (the same warm dark as the footer).
+   Self-contained chrome so it doesn't inherit the homepage's #anchor nav. */
 
 .page {
-  background: #faf8f0;
-  color: #102020;
+  background: var(--bg);
+  color: var(--text);
   min-height: 100vh;
-  font-family: var(--font-sans, "Geist Variable", ui-sans-serif, system-ui, sans-serif);
+  font-family: var(--font-display);
 }
 
 /* Sticky minimal header. */
@@ -15,9 +15,9 @@
   position: sticky;
   top: 0;
   z-index: 10;
-  background: rgba(250, 248, 240, 0.85);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid rgba(16, 32, 32, 0.08);
+  background: rgba(253, 240, 243, 0.85);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
 }
 .headerInner {
   max-width: 860px;
@@ -28,10 +28,11 @@
   justify-content: space-between;
 }
 .wordmark {
+  font-family: var(--font-sans);
   font-weight: 700;
   font-size: 20px;
   letter-spacing: 0.14em;
-  color: #102020;
+  color: var(--text);
   text-decoration: none;
 }
 .headerNav {
@@ -40,13 +41,14 @@
   gap: 22px;
 }
 .headerLink {
-  font-family: var(--font-mono, "Geist Mono Variable", ui-monospace, monospace);
+  font-family: var(--font-ui);
   font-size: 13px;
-  color: #4a6060;
+  font-weight: 500;
+  color: var(--text-muted);
   text-decoration: none;
 }
 .headerLink:hover {
-  color: #102020;
+  color: var(--text);
 }
 
 .main {
@@ -57,24 +59,28 @@
 
 /* Hero. */
 .eyebrow {
-  font-family: var(--font-mono, "Geist Mono Variable", ui-monospace, monospace);
-  font-size: 11px;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: #0fa3a3;
-  margin: 0 0 14px;
+  font-family: var(--font-display);
+  font-style: normal;
+  font-size: clamp(18px, 2vw, 22px);
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: var(--accent-dark);
+  margin: 0 0 12px;
 }
 .h1 {
-  font-size: clamp(32px, 6vw, 52px);
+  font-family: var(--font-sans);
+  font-size: clamp(36px, 6vw, 56px);
   font-weight: 700;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.01em;
   line-height: 1.05;
+  color: var(--text);
   margin: 0;
 }
 .lead {
-  font-size: clamp(16px, 2.2vw, 19px);
-  color: #38504f;
-  line-height: 1.6;
+  font-family: var(--font-display);
+  font-size: clamp(18px, 2.2vw, 20px);
+  color: var(--brown-500);
+  line-height: 1.5;
   max-width: 620px;
   margin: 20px 0 0;
 }
@@ -84,63 +90,71 @@
   margin-top: clamp(48px, 8vw, 80px);
 }
 .h2 {
-  font-size: clamp(22px, 4vw, 30px);
-  font-weight: 700;
-  letter-spacing: -0.015em;
+  font-family: var(--font-sans);
+  font-size: clamp(28px, 4vw, 40px);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+  color: var(--text);
   margin: 0 0 18px;
 }
 .p {
-  font-size: 16px;
-  color: #38504f;
-  line-height: 1.7;
+  font-family: var(--font-display);
+  font-size: 18px;
+  color: var(--brown-700);
+  line-height: 1.6;
   margin: 0 0 16px;
   max-width: 660px;
 }
 .p a {
-  color: #0c8a8a;
+  color: var(--accent-2);
   text-decoration: underline;
+}
+.p a:hover {
+  color: var(--accent-2-dark);
 }
 
 /* The four-call quickstart code block. */
 .codeBlock {
-  border: 1px solid rgba(16, 32, 32, 0.12);
-  border-radius: 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
   overflow: hidden;
-  background: #041414;
+  background: var(--brown-900);
   margin-top: 8px;
 }
 .codeHeader {
-  font-family: var(--font-mono, "Geist Mono Variable", ui-monospace, monospace);
-  font-size: 10px;
-  letter-spacing: 0.16em;
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #6e8585;
+  color: var(--brown-300);
   padding: 12px 18px;
-  border-bottom: 1px solid rgba(23, 196, 196, 0.14);
+  border-bottom: 1px solid rgba(245, 240, 234, 0.1);
 }
 .code {
   margin: 0;
   padding: 18px 20px;
-  font-family: var(--font-mono, "Geist Mono Variable", ui-monospace, monospace);
+  font-family: var(--font-mono);
   font-size: clamp(12px, 1.7vw, 13.5px);
   line-height: 1.75;
-  color: #cfe0e0;
+  color: var(--brown-100);
   overflow-x: auto;
   white-space: pre;
 }
 .install {
   display: block;
-  font-family: var(--font-mono, "Geist Mono Variable", ui-monospace, monospace);
+  font-family: var(--font-mono);
   font-size: 14px;
-  color: #cfe0e0;
-  background: #041414;
-  border-radius: 12px;
+  color: var(--brown-50);
+  background: var(--brown-900);
+  border-radius: var(--radius);
   padding: 14px 18px;
   margin: 0 0 22px;
 }
 .install::before {
   content: "$ ";
-  color: #17c4c4;
+  color: var(--pink-300);
 }
 
 /* Concept / contribution cards. */
@@ -151,20 +165,23 @@
   margin-top: 8px;
 }
 .card {
-  border: 1px solid rgba(16, 32, 32, 0.1);
-  border-radius: 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
   padding: 22px;
-  background: #fff;
+  background: var(--bg-warm);
 }
 .cardTitle {
-  font-size: 16px;
-  font-weight: 700;
+  font-family: var(--font-sans);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text);
   margin: 0 0 8px;
 }
 .cardBody {
-  font-size: 14px;
-  color: #4a6060;
-  line-height: 1.55;
+  font-family: var(--font-display);
+  font-size: 16px;
+  color: var(--brown-500);
+  line-height: 1.5;
   margin: 0;
 }
 
@@ -176,29 +193,32 @@
   margin: 8px 0 22px;
 }
 .path {
-  border: 1px solid rgba(16, 32, 32, 0.1);
+  border: 1px solid var(--border);
   border-top-width: 3px;
-  border-radius: 14px;
+  border-radius: var(--radius-lg);
   padding: 22px 24px;
-  background: #fff;
+  background: var(--bg-warm);
 }
 .pathCompute {
-  border-top-color: #17c4c4;
+  border-top-color: var(--blue-500);
 }
 .pathSignal {
-  border-top-color: #f0783d;
+  border-top-color: var(--pink-500);
 }
 .pathTag {
-  font-family: var(--font-mono, "Geist Mono Variable", ui-monospace, monospace);
+  font-family: var(--font-ui);
   font-size: 11px;
-  letter-spacing: 0.16em;
+  font-weight: 500;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #6e8585;
+  color: var(--text-muted);
   margin: 0;
 }
 .pathName {
+  font-family: var(--font-sans);
   font-size: 19px;
   font-weight: 700;
+  color: var(--text);
   margin: 4px 0 14px;
 }
 .metaRow {
@@ -206,37 +226,41 @@
   grid-template-columns: 96px 1fr;
   gap: 12px;
   padding: 10px 0;
-  border-top: 1px solid rgba(16, 32, 32, 0.07);
+  border-top: 1px solid var(--border);
   font-size: 14px;
 }
 .metaKey {
-  font-family: var(--font-mono, "Geist Mono Variable", ui-monospace, monospace);
+  font-family: var(--font-ui);
   font-size: 10px;
-  letter-spacing: 0.12em;
+  font-weight: 500;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #6e8585;
+  color: var(--text-muted);
   padding-top: 3px;
 }
 .metaVal {
-  color: #38504f;
+  font-family: var(--font-display);
+  font-size: 16px;
+  color: var(--brown-700);
   line-height: 1.5;
 }
 
 /* Callout box for the "why" notes. */
 .callout {
-  border-left: 3px solid #17c4c4;
-  background: rgba(23, 196, 196, 0.07);
-  border-radius: 0 12px 12px 0;
+  border-left: 3px solid var(--accent-2);
+  background: var(--blue-50);
+  border-radius: 0 var(--radius) var(--radius) 0;
   padding: 16px 20px;
   margin: 8px 0 0;
-  font-size: 15px;
-  color: #2a4544;
+  font-family: var(--font-display);
+  font-size: 17px;
+  color: var(--brown-700);
   line-height: 1.6;
   max-width: 700px;
 }
 .calloutOrange {
-  border-left-color: #f0783d;
-  background: rgba(240, 120, 61, 0.08);
+  border-left-color: var(--accent-dark);
+  background: var(--pink-50);
 }
 
 /* Guarantee / exclusion lists. */
@@ -251,32 +275,33 @@
 .guards li {
   position: relative;
   padding-left: 24px;
-  font-size: 14px;
-  color: #38504f;
+  font-family: var(--font-display);
+  font-size: 16px;
+  color: var(--brown-700);
   line-height: 1.5;
 }
 .guards li::before {
   content: "✓";
   position: absolute;
   left: 0;
-  color: #0fa3a3;
+  color: var(--positive);
   font-weight: 700;
 }
 .guardsNo li::before {
   content: "✕";
-  color: #b06a4a;
+  color: var(--negative);
 }
 
 /* Inline code in prose. */
 .p code,
 .metaVal code,
 .callout code {
-  font-family: var(--font-mono, "Geist Mono Variable", ui-monospace, monospace);
-  font-size: 0.88em;
-  color: #0c6e6e;
-  background: rgba(23, 196, 196, 0.12);
+  font-family: var(--font-mono);
+  font-size: 0.86em;
+  color: var(--accent-2-dark);
+  background: var(--blue-50);
   padding: 1px 6px;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
 }
 
 /* Two-column split (v1 scope, trust boundary). */
@@ -300,12 +325,12 @@
   align-items: start;
 }
 .stepNum {
-  font-family: var(--font-mono, "Geist Mono Variable", ui-monospace, monospace);
-  font-size: 13px;
+  font-family: var(--font-ui);
+  font-size: 14px;
   font-weight: 700;
-  color: #0fa3a3;
-  border: 1px solid rgba(15, 163, 163, 0.35);
-  border-radius: 10px;
+  color: var(--accent-2);
+  border: 1px solid var(--blue-300);
+  border-radius: var(--radius);
   width: 40px;
   height: 40px;
   display: flex;
@@ -313,21 +338,24 @@
   justify-content: center;
 }
 .stepTitle {
-  font-size: 16px;
+  font-family: var(--font-sans);
+  font-size: 17px;
   font-weight: 600;
+  color: var(--text);
   margin: 6px 0 4px;
 }
 .stepTitle code {
-  font-family: var(--font-mono, "Geist Mono Variable", ui-monospace, monospace);
+  font-family: var(--font-mono);
   font-size: 14px;
-  color: #0c6e6e;
-  background: rgba(23, 196, 196, 0.12);
+  color: var(--accent-2-dark);
+  background: var(--blue-50);
   padding: 1px 6px;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
 }
 .stepBody {
-  font-size: 14px;
-  color: #4a6060;
+  font-family: var(--font-display);
+  font-size: 16px;
+  color: var(--brown-500);
   line-height: 1.6;
   margin: 0;
 }
@@ -342,27 +370,34 @@
 }
 .ctaPrimary {
   display: inline-block;
-  font-family: var(--font-mono, "Geist Mono Variable", ui-monospace, monospace);
+  font-family: var(--font-ui);
   font-size: 15px;
-  letter-spacing: 0.04em;
-  font-weight: 600;
-  color: #041414;
-  background: #17c4c4;
+  font-weight: 500;
+  color: var(--brown-900);
+  background: var(--pink-300);
   text-decoration: none;
-  padding: 13px 24px;
-  border-radius: 12px;
+  padding: 12px 22px;
+  border-radius: var(--radius-pill);
+  transition: background var(--motion-fast) var(--ease-out);
+}
+.ctaPrimary:hover {
+  background: var(--pink-500);
 }
 .ctaSecondary {
   display: inline-block;
-  font-family: var(--font-mono, "Geist Mono Variable", ui-monospace, monospace);
+  font-family: var(--font-ui);
   font-size: 15px;
-  letter-spacing: 0.04em;
-  font-weight: 600;
-  color: #0c6e6e;
+  font-weight: 500;
+  color: var(--brown-900);
   text-decoration: none;
-  padding: 13px 24px;
-  border-radius: 12px;
-  border: 1px solid rgba(16, 32, 32, 0.18);
+  padding: 12px 22px;
+  border-radius: var(--radius-pill);
+  border: 1px solid rgba(46, 33, 24, 0.3);
+  transition: background var(--motion-fast) var(--ease-out), border-color var(--motion-fast) var(--ease-out);
+}
+.ctaSecondary:hover {
+  background: rgba(46, 33, 24, 0.05);
+  border-color: rgba(46, 33, 24, 0.5);
 }
 
 /* Footer. */
@@ -370,19 +405,19 @@
   max-width: 860px;
   margin: 0 auto;
   padding: 32px 24px 56px;
-  border-top: 1px solid rgba(16, 32, 32, 0.08);
+  border-top: 1px solid var(--border);
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
   justify-content: space-between;
-  font-family: var(--font-mono, "Geist Mono Variable", ui-monospace, monospace);
+  font-family: var(--font-ui);
   font-size: 12px;
-  color: #6e8585;
+  color: var(--text-muted);
 }
 .footer a {
-  color: #6e8585;
+  color: var(--text-muted);
   text-decoration: none;
 }
 .footer a:hover {
-  color: #102020;
+  color: var(--text);
 }

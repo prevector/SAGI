@@ -28,8 +28,11 @@ export default function TokenResolution({
   leftWords = ["7B", "70B", "700B", "7T"],
   rightWords = ["meridian", "helix-2f", "aleph-knot", "corabel-x", "northwind-7"],
   cycleMs = 5200,
-  tealColor = "var(--accent-hover)",
-  neutralColor = "var(--sagi-dark)",
+  // Right column = the "resolved" population, in the blue secondary accent;
+  // left column = the single neutral model, in primary text. (Tokens, not the
+  // old teal/sagi-dark vars which no longer exist.)
+  tealColor = "var(--accent-2)",
+  neutralColor = "var(--text)",
   fontSize = 16,
   style,
 }: TokenResolutionProps) {

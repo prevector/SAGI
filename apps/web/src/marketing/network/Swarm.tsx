@@ -1,26 +1,36 @@
 // 3D swarm canvas for the marketing "SAGI network" section — the network as a
-// living graphic. Ported from the SDK demo (SDK/web/src/components/Swarm.tsx) with
-// two additions for this context:
-//   • `active` — when false (section offscreen / reduced motion) the render loop is
-//     parked (`frameloop="never"`) so the homepage isn't taxed by an idle canvas.
-//   • `humanPulseIds` — nodes that should flare ORANGE and large, marking a real
-//     human contribution distinctly from the quiet teal ambient pulses.
+// living graphic, in the warm editorial brand. Brand-coloured matte nodes drift
+// on a warm cream backdrop, connected by thin brown spokes. No bloom/vignette:
+// glow reads as washed-out haze on a light background, so we render crisp flat
+// dots instead (also cheaper — no postprocessing pass).
+//   • `active` — when false (offscreen / reduced motion) the render loop is parked
+//     (`frameloop="never"`) so an idle canvas never taxes the homepage.
+//   • `humanPulseIds` — nodes that flare to deep pink and swell, marking a real
+//     human contribution distinctly from the quiet ambient pulses.
 
 import { useEffect, useRef, type CSSProperties } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, Line } from "@react-three/drei";
-import { EffectComposer, Bloom, Vignette } from "@react-three/postprocessing";
 import * as THREE from "three";
 import { createNoise3D } from "simplex-noise";
 import type { NetworkNode } from "./swarmClient";
 
-const TEAL = "#17C4C4";
-const ORANGE = "#F0783D";
-const PAPER = "#FAF8F0";
-const BG = "#041414";
+// Warm editorial palette — mirrors tokens.css. Canvas needs literals (CSS vars
+// don't apply to materials); keep these in sync with the design tokens.
+const BG = "#F5F0EA"; // --brown-50, the warm band
+const CORE = "#2E2118"; // --brown-900, the dark network anchor
+const BLUE = "#3C7FA8"; // --blue-500, passive (compute) nodes
+const PINK = "#E07A97"; // --pink-500, active (signal) nodes
+const SPOKE = "#A8886A"; // --brown-300, connections
+const HUMAN = "#C04B6E"; // --pink-700, the loud human-signal flare
 
 const noise3D = createNoise3D();
-const ORANGE_COLOR = new THREE.Color(ORANGE);
+const HUMAN_COLOR = new THREE.Color(HUMAN);
+
+function nodeColor(node: NetworkNode): string {
+  if (node.id === "core") return CORE;
+  return node.type === "passive" ? BLUE : PINK;
+}
 
 function NodeDot({
   node,
@@ -34,14 +44,13 @@ function NodeDot({
   isHumanPulsing: boolean;
 }) {
   const meshRef = useRef<THREE.Mesh>(null);
-  const matRef = useRef<THREE.MeshStandardMaterial>(null);
+  const matRef = useRef<THREE.MeshBasicMaterial>(null);
   const isCore = node.id === "core";
-  const baseColor = isCore ? PAPER : node.type === "passive" ? TEAL : ORANGE;
-  const baseColorObj = useRef(new THREE.Color(baseColor));
-  const baseRadius = isCore ? 0.45 : node.type === "passive" ? 0.12 : 0.09;
-  const baseIntensity = isCore ? 3.5 : 1.6;
-  const pulseRef = useRef(0); // teal/ambient brightness flare
-  const humanRef = useRef(0); // orange human burst — bigger, slower decay
+  const base = nodeColor(node);
+  const baseColorObj = useRef(new THREE.Color(base));
+  const baseRadius = isCore ? 0.42 : node.type === "passive" ? 0.13 : 0.1;
+  const pulseRef = useRef(0); // quiet ambient flare (a small swell)
+  const humanRef = useRef(0); // human burst — turns deep pink, swells, slow decay
 
   useEffect(() => { if (isPulsing) pulseRef.current = 1; }, [isPulsing]);
   useEffect(() => { if (isHumanPulsing) humanRef.current = 1; }, [isHumanPulsing]);
@@ -63,24 +72,14 @@ function NodeDot({
     if (humanRef.current > 0) humanRef.current = Math.max(0, humanRef.current - 0.018);
 
     const human = humanRef.current;
-    // During a human burst the node turns hot orange and swells dramatically.
-    mat.emissive.copy(human > 0.01 ? ORANGE_COLOR : baseColorObj.current);
-    mat.color.copy(human > 0.01 ? ORANGE_COLOR : baseColorObj.current);
-    mat.emissiveIntensity = baseIntensity + pulseRef.current * 4 + human * 9;
-    mesh.scale.setScalar(1 + pulseRef.current * 1.5 + human * 3.5);
+    mat.color.copy(human > 0.01 ? HUMAN_COLOR : baseColorObj.current);
+    mesh.scale.setScalar(1 + pulseRef.current * 1.1 + human * 3.2);
   });
 
   return (
     <mesh ref={meshRef} position={isCore ? [0, 0, 0] : [node.x, node.y, node.z]}>
-      <sphereGeometry args={[baseRadius, isCore ? 20 : 10, isCore ? 16 : 8]} />
-      <meshStandardMaterial
-        ref={matRef}
-        color={baseColor}
-        emissive={new THREE.Color(baseColor)}
-        emissiveIntensity={baseIntensity}
-        roughness={0.3}
-        metalness={0.1}
-      />
+      <sphereGeometry args={[baseRadius, isCore ? 24 : 12, isCore ? 18 : 10]} />
+      <meshBasicMaterial ref={matRef} color={base} toneMapped={false} />
     </mesh>
   );
 }
@@ -92,10 +91,10 @@ function Spokes({ nodes }: { nodes: NetworkNode[] }) {
         <Line
           key={`spoke-${node.id}`}
           points={[[node.x, node.y, node.z], [0, 0, 0]]}
-          color={node.type === "passive" ? TEAL : ORANGE}
-          lineWidth={0.4}
+          color={SPOKE}
+          lineWidth={0.5}
           transparent
-          opacity={0.12}
+          opacity={0.22}
         />
       ))}
     </>
@@ -115,9 +114,6 @@ function SwarmScene({
 }) {
   return (
     <>
-      <ambientLight intensity={0.15} color={TEAL} />
-      <pointLight position={[0, 0, 0]} intensity={4} color={PAPER} distance={30} decay={2} />
-      <directionalLight position={[10, 15, 10]} intensity={0.4} color={PAPER} />
       <Spokes nodes={nodes} />
       {nodes.map((node, i) => (
         <NodeDot
@@ -137,10 +133,6 @@ function SwarmScene({
         autoRotate={active}
         autoRotateSpeed={0.25}
       />
-      <EffectComposer enableNormalPass={false}>
-        <Bloom intensity={1.2} luminanceThreshold={1.0} luminanceSmoothing={0.25} mipmapBlur />
-        <Vignette eskil={false} offset={0.3} darkness={0.9} />
-      </EffectComposer>
     </>
   );
 }

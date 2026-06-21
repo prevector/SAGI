@@ -40,20 +40,24 @@
 
 .switcherActive {
   background: var(--accent);
-  color: var(--ink-on-teal);
+  color: var(--brown-900);
 }
 
 .eyebrow {
-  font-family: var(--font-mono);
-  font-size: var(--fs-mono);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--accent);
+  font-family: var(--font-display);
+  font-style: normal;
+  font-weight: 500;
+  font-size: 18px;
+  letter-spacing: 0.01em;
+  color: var(--accent-dark);
   margin-bottom: var(--s3);
 }
 
 .title {
-  font-size: var(--fs-h1);
+  font-family: var(--font-sans);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  font-size: 32px;
   margin-bottom: var(--s2);
 }
 
@@ -70,7 +74,8 @@
 .label {
   display: grid;
   gap: var(--s2);
-  font-size: var(--fs-sm);
+  font-family: var(--font-ui);
+  font-size: 14px;
   color: var(--text-muted);
 }
 
@@ -93,15 +98,16 @@
   border-radius: var(--radius-pill);
   padding: var(--s3) var(--s5);
   background: var(--accent);
-  color: var(--ink-on-teal);
-  font-size: var(--fs-sm);
+  color: var(--brown-900);
+  font-family: var(--font-ui);
+  font-size: 14px;
   font-weight: 500;
   cursor: pointer;
   transition: background var(--motion-fast) var(--ease-out);
 }
 
 .button:hover {
-  background: var(--accent-hover);
+  background: var(--pink-500);
 }
 
 .button:disabled {
@@ -119,7 +125,7 @@
 
 .mode {
   margin-top: var(--s5);
-  font-family: var(--font-mono);
-  font-size: var(--fs-mono);
+  font-family: var(--font-ui);
+  font-size: 12px;
   color: var(--text-faint);
 }
