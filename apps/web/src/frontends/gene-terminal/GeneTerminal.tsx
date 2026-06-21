@@ -9,6 +9,7 @@ import {
 } from "dockview";
 import "dockview/dist/styles/dockview.css";
 import { useAuth } from "../../auth/AuthContext";
+import { ComputeMetricsWidget } from "../../features/compute-metrics";
 import { formatInt } from "../../lib/format";
 import { shortId } from "./components";
 import { GeneTerminalProvider, useGeneTerminal } from "./state";
@@ -301,6 +302,9 @@ function Workspace() {
               </div>
             ) : null}
           </div>
+        </div>
+        <div className={styles.centerCluster}>
+          <ComputeMetricsWidget />
         </div>
         <div className={styles.infoCluster}>
           {summary.map((item) => (

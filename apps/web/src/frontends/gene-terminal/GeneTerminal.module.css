@@ -25,6 +25,7 @@
 }
 
 .menuBar {
+  position: relative;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -48,6 +49,24 @@
 
 .menuCluster {
   gap: 4px;
+}
+
+/* Compute HUD: pinned to the true centre of the bar, independent of the
+   left/right cluster widths. Drops out on narrow bars via the widget's own
+   media query. */
+.centerCluster {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.centerCluster > * {
+  pointer-events: auto;
 }
 
 .infoCluster {
