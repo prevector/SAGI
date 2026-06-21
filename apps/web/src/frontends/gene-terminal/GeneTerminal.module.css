@@ -859,6 +859,7 @@
 
 .leaderboardMeta {
   display: flex;
+  align-items: center;
   flex-wrap: wrap;
   gap: 8px 14px;
   padding-bottom: 8px;
@@ -867,6 +868,21 @@
   font-size: 11px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
+}
+
+.leaderboardGraphButton {
+  margin-left: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--terminal-accent);
+  font: inherit;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.leaderboardGraphButton:hover {
+  color: var(--terminal-text);
 }
 
 .leaderboardList {
@@ -915,6 +931,55 @@
 .leaderboardRow b {
   font-size: 12px;
   font-weight: 500;
+}
+
+.tournamentGraph {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(160px, 1fr);
+  gap: 12px;
+  overflow-x: auto;
+  padding-top: 8px;
+  border-top: 1px solid var(--terminal-line);
+}
+
+.tournamentRound {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+}
+
+.tournamentRound > b {
+  color: var(--terminal-text-muted);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.tournamentMatch {
+  display: grid;
+  gap: 3px;
+  padding: 6px 0;
+  border-top: 1px solid rgba(54, 47, 40, 0.12);
+  font-family: var(--font-mono);
+  font-size: 10px;
+}
+
+.tournamentMatch span {
+  overflow: hidden;
+  color: var(--terminal-text-muted);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tournamentMatch em {
+  color: var(--terminal-accent);
+  font-style: normal;
+}
+
+.tournamentWinner {
+  color: var(--terminal-text) !important;
 }
 
 .visualizerHud {

@@ -57,6 +57,18 @@ export interface FootballTournamentResult {
   championIndex: number;
   runnerUpIndex: number;
   preview: FootballMatchResult;
+  matches: FootballTournamentMatch[];
+}
+
+export interface FootballTournamentMatch {
+  id: string;
+  round: number;
+  slot: number;
+  leftIndex: number;
+  rightIndex: number | null;
+  winnerIndex: number;
+  score: [number, number] | null;
+  fitness: [number, number] | null;
 }
 
 interface PlayerRuntime {
@@ -554,6 +566,7 @@ export function runFootballTournament(
   let round = 0;
   let championIndex = bracket[0] ?? 0;
   let runnerUpIndex = bracket[0] ?? 0;
+  const matches: FootballTournamentMatch[] = [];
   let preview = simulateFootballMatch(genomes[championIndex]!, genomes[runnerUpIndex]!, hiddenSize, {
     ...userConfig,
     seed: `${seedBase}:preview:initial`
@@ -566,6 +579,16 @@ export function runFootballTournament(
       const rightIndex = bracket[index + 1];
       if (rightIndex === undefined) {
         scores[leftIndex] += 1 + round;
+        matches.push({
+          id: `r${round}-s${index}`,
+          round,
+          slot: index,
+          leftIndex,
+          rightIndex: null,
+          winnerIndex: leftIndex,
+          score: null,
+          fitness: null
+        });
         nextRound.push(leftIndex);
         continue;
       }
@@ -579,6 +602,16 @@ export function runFootballTournament(
       const loser = winner === leftIndex ? rightIndex : leftIndex;
       scores[winner] += 2 + round * 1.5;
       scores[loser] -= 0.4;
+      matches.push({
+        id: `r${round}-s${index}`,
+        round,
+        slot: index,
+        leftIndex,
+        rightIndex,
+        winnerIndex: winner,
+        score: match.score,
+        fitness: match.fitness
+      });
       if (bracket.length <= 2) {
         championIndex = winner;
         runnerUpIndex = loser;
@@ -598,6 +631,7 @@ export function runFootballTournament(
     scores,
     championIndex,
     runnerUpIndex,
-    preview
+    preview,
+    matches
   };
 }

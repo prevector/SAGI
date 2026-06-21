@@ -18,6 +18,7 @@ import type {
 const footballDir = path.resolve(process.cwd(), "runs", "football");
 const submissionsPath = path.join(footballDir, "submissions.json");
 const leaderboardPath = path.join(footballDir, "leaderboard.json");
+const MAX_LEADERBOARD_ROWS = 10;
 
 function divisionKey(submission: FootballTeamSubmissionRecord): string {
   const football = submission.bestFootball;
@@ -157,18 +158,63 @@ function buildLeaderboard(submissions: FootballTeamSubmissionRecord[]): Football
         championUsername: champion?.username ?? null,
         previewScore: tournament.preview.score,
         previewWinner: tournament.preview.winner,
-        rows
+        rows: rows.slice(0, MAX_LEADERBOARD_ROWS),
+        tournament: {
+          entrants: entrants.map((entry, index) => ({
+            index,
+            username: entry.username,
+            creatureId: entry.creatureId,
+            creatureName: entry.creatureName
+          })),
+          matches: tournament.matches.map((match) => ({
+            id: match.id,
+            round: match.round,
+            slot: match.slot,
+            leftIndex: match.leftIndex,
+            rightIndex: match.rightIndex,
+            winnerIndex: match.winnerIndex,
+            score: match.score,
+            fitness: match.fitness
+          }))
+        }
       } satisfies FootballLeaderboardDivision;
     });
 
   return { updatedAt, divisions };
 }
 
+function pruneSubmissionsToLeaderboard(
+  submissions: FootballTeamSubmissionRecord[],
+  leaderboard: FootballLeaderboardSnapshot
+): FootballTeamSubmissionRecord[] {
+  const keepIds = new Set(
+    leaderboard.divisions.flatMap((division) => (
+      division.rows.slice(0, MAX_LEADERBOARD_ROWS).map((row) => row.creatureId)
+    ))
+  );
+  return submissions.filter((submission) => keepIds.has(submission.creatureId));
+}
+
+function isCurrentLeaderboardSnapshot(snapshot: FootballLeaderboardSnapshot | null): boolean {
+  return Boolean(snapshot?.divisions.every((division) => (
+    division.rows.length <= MAX_LEADERBOARD_ROWS &&
+    Array.isArray(division.tournament?.entrants) &&
+    Array.isArray(division.tournament?.matches)
+  )));
+}
+
 export async function getFootballLeaderboard(): Promise<FootballLeaderboardSnapshot> {
   const stored = await readJsonFile<FootballLeaderboardSnapshot | null>(leaderboardPath, null);
-  if (stored) return stored;
+  if (isCurrentLeaderboardSnapshot(stored)) {
+    return stored!;
+  }
+
   const submissions = await loadSubmissions();
   const snapshot = buildLeaderboard(submissions);
+  const pruned = pruneSubmissionsToLeaderboard(submissions, snapshot);
+  if (pruned.length !== submissions.length) {
+    await saveSubmissions(pruned);
+  }
   await saveLeaderboard(snapshot);
   return snapshot;
 }
@@ -182,7 +228,7 @@ export async function submitFootballTeam(
   const next = submissions.filter((entry) => entry.username !== username);
   next.push(submission);
   const leaderboard = buildLeaderboard(next);
-  await saveSubmissions(next);
+  await saveSubmissions(pruneSubmissionsToLeaderboard(next, leaderboard));
   await saveLeaderboard(leaderboard);
   return { submission, leaderboard };
 }

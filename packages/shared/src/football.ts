@@ -92,10 +92,33 @@ export interface FootballLeaderboardDivision {
   previewScore: [number, number];
   previewWinner: 0 | 1 | -1;
   rows: FootballLeaderboardRow[];
+  tournament: FootballTournamentGraph;
+}
+
+export interface FootballTournamentGraph {
+  entrants: FootballTournamentEntrant[];
+  matches: FootballTournamentMatch[];
+}
+
+export interface FootballTournamentEntrant {
+  index: number;
+  username: string;
+  creatureId: string;
+  creatureName: string;
+}
+
+export interface FootballTournamentMatch {
+  id: string;
+  round: number;
+  slot: number;
+  leftIndex: number;
+  rightIndex: number | null;
+  winnerIndex: number;
+  score: [number, number] | null;
+  fitness: [number, number] | null;
 }
 
 export interface FootballLeaderboardSnapshot {
   updatedAt: string;
   divisions: FootballLeaderboardDivision[];
 }
-
