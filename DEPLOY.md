@@ -79,6 +79,26 @@ Browser ──HTTPS──> Cloudflare ──HTTPS──> nginx (:443, sagi.netwo
 - [ ] First deploy only: confirm the service came up — the script prints
   `systemctl status sagi` at the end (look for `active (running)`).
 
+## Automatic deploys from GitHub
+
+Pushes to `main` run `.github/workflows/deploy.yml`. The workflow builds the
+repo on GitHub Actions, joins the Tailnet, then runs the same
+`scripts/release.sh` path against `deploy@100.125.227.68`.
+
+The VPS is configured for this safer deploy path:
+
+- `sagi.service` runs as the `deploy` user, not root.
+- `/var/www/sagi` is owned by `deploy`.
+- `/var/www/sagi/.env` is owned by `deploy` and mode `600`.
+- `deploy` has passwordless sudo only for `systemctl restart/status sagi`.
+
+Configure these repository secrets in GitHub:
+
+- `TS_AUTHKEY`: an ephemeral, reusable Tailscale auth key for GitHub Actions.
+- `SAGI_DEPLOY_SSH_KEY`: the private key for the `deploy` user.
+
+The SSH host key is pinned in `deploy/sagi-known-hosts`.
+
 ## Phase 4 — Verify
 
 - [ ] `https://sagi.network/` → the marketing landing page (S00–S10).

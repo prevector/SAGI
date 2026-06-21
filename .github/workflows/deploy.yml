@@ -1,0 +1,71 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy to reduta
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    env:
+      DEPLOY_HOST: deploy@100.125.227.68
+      REMOTE_PATH: /var/www/sagi
+      SERVICE_NAME: sagi
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Install deploy tools
+        run: sudo apt-get update && sudo apt-get install -y rsync
+
+      - name: Connect to Tailnet
+        uses: tailscale/github-action@v3
+        with:
+          authkey: ${{ secrets.TS_AUTHKEY }}
+
+      - name: Configure SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SAGI_DEPLOY_SSH_KEY }}
+        run: |
+          set -euo pipefail
+          test -n "$SSH_PRIVATE_KEY"
+
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/sagi_deploy_key
+          cp deploy/sagi-known-hosts ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/sagi_deploy_key ~/.ssh/known_hosts
+
+          cat > ~/.ssh/config <<'EOF'
+Host 100.125.227.68
+  IdentityFile ~/.ssh/sagi_deploy_key
+  IdentitiesOnly yes
+  StrictHostKeyChecking yes
+  UserKnownHostsFile ~/.ssh/known_hosts
+EOF
+          chmod 600 ~/.ssh/config
+
+      - name: Deploy
+        run: ./scripts/release.sh "$DEPLOY_HOST" "$REMOTE_PATH" "$SERVICE_NAME"
