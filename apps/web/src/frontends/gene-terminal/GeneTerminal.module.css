@@ -755,12 +755,14 @@
 }
 
 .footballOverlayButton {
+  pointer-events: auto;
+  min-width: 28px;
   padding: 5px 8px;
   border: 1px solid rgba(54, 47, 40, 0.18);
   background: rgba(246, 240, 230, 0.9);
   color: var(--terminal-text);
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 15px;
   line-height: 1;
   cursor: pointer;
   box-shadow: 0 6px 18px rgba(54, 47, 40, 0.08);
@@ -769,6 +771,33 @@
 .footballOverlayButton:hover {
   border-color: rgba(154, 104, 65, 0.28);
   background: rgba(154, 104, 65, 0.1);
+}
+
+.footballLeaderboardOverlay {
+  position: absolute;
+  z-index: 2;
+  top: 12px;
+  right: 12px;
+  display: grid;
+  gap: 4px;
+  min-width: 180px;
+  padding: 8px 10px;
+  border: 1px solid rgba(54, 47, 40, 0.18);
+  background: rgba(246, 240, 230, 0.84);
+  color: var(--terminal-text);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.2;
+  box-shadow: 0 6px 18px rgba(54, 47, 40, 0.08);
+}
+
+.footballLeaderboardOverlay b {
+  font-size: 10px;
+  letter-spacing: 0.06em;
+}
+
+.footballLeaderboardOverlay span {
+  color: var(--terminal-text-muted);
 }
 
 .visualizerHud {

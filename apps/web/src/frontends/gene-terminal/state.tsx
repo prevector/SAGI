@@ -35,6 +35,7 @@ import {
   type StoredCreature,
   upsertCreature
 } from "./creatureLibrary";
+import type { FootballTeamSubmissionPayload } from "@sagi/shared";
 
 export type TrainingStatus = "idle" | "running" | "paused";
 export type TrainingMode = "language" | "football";
@@ -284,6 +285,19 @@ function geneToCreature(gene: EvolutionGene, phenotype: CreaturePhenotype, exist
   };
 }
 
+function pickBestFootballCreature(creatures: StoredCreature[]): StoredCreature | null {
+  return [...creatures]
+    .filter((creature) => creature.bestFootball)
+    .sort((left, right) => {
+      const leftBest = left.bestFootball?.bestScore ?? Number.NEGATIVE_INFINITY;
+      const rightBest = right.bestFootball?.bestScore ?? Number.NEGATIVE_INFINITY;
+      return (
+        rightBest - leftBest ||
+        new Date(right.updatedAt).getTime() - new Date(left.updatedAt).getTime()
+      );
+    })[0] ?? null;
+}
+
 export function GeneTerminalProvider({ children }: { children: ReactNode }) {
   const [initialState] = useState(getInitialGeneState);
   const [creatures, setCreatures] = useState<StoredCreature[]>(initialState.creatures);
@@ -306,8 +320,10 @@ export function GeneTerminalProvider({ children }: { children: ReactNode }) {
   const [footballPreview, setFootballPreview] = useState<FootballMatchResult | null>(null);
   const [selectedSampleIndex, setSelectedSampleIndex] = useState(0);
   const [inferenceStepIndex, setInferenceStepIndex] = useState(0);
+  const lastFootballSubmissionRef = useRef("");
   const tokenBest = compatibleTokenBrain(selectedCreature, hiddenSize, tokenDataset.vocab.length);
   const footballBest = compatibleFootballBrain(selectedCreature, hiddenSize);
+  const bestFootballCreature = useMemo(() => pickBestFootballCreature(creatures), [creatures]);
 
   function persistTokenBest(step: ReturnType<GruEsTrainingSession["step"]>) {
     setCreatures((items) => {
@@ -419,6 +435,59 @@ export function GeneTerminalProvider({ children }: { children: ReactNode }) {
       console.warn("Failed to persist creatures to local storage.", error);
     }
   }, [creatures]);
+
+  useEffect(() => {
+    const creature = bestFootballCreature;
+    const football = creature?.bestFootball;
+    if (!creature || !football) {
+      return;
+    }
+
+    const signature = [
+      creature.id,
+      creature.gene.updatedAt,
+      football.updatedAt,
+      creature.bestToken?.updatedAt ?? "no-token"
+    ].join(":");
+
+    if (lastFootballSubmissionRef.current === signature) {
+      return;
+    }
+
+    const payload: FootballTeamSubmissionPayload = {
+      creatureId: creature.id,
+      creatureName: creature.name,
+      gene: creature.gene,
+      phenotype: creature.phenotype,
+      bestToken: creature.bestToken ?? null,
+      bestFootball: football
+    };
+
+    let cancelled = false;
+    void fetch("/api/football/submissions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(payload)
+    })
+      .then(async (response) => {
+        if (!response.ok) {
+          const message = await response.text();
+          throw new Error(message || `HTTP ${response.status}`);
+        }
+        if (!cancelled) {
+          lastFootballSubmissionRef.current = signature;
+        }
+      })
+      .catch((error) => {
+        console.warn("Failed to submit best football creature to server.", error);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [bestFootballCreature]);
 
   useEffect(() => {
     resetTrainingSession({ preserveStatus: status === "running" });

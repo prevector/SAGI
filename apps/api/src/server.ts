@@ -5,6 +5,7 @@ import { replayGenome, trainOne, verifyGenome, type RunConfig } from "@sagi/evol
 import { getDashboardSnapshot } from "@sagi/shared";
 import { clearSessionCookie, getSessionInfo, isAuthenticated, setSessionCookie } from "./auth.js";
 import { getAppEnv } from "./env.js";
+import { getFootballLeaderboard, simulateSubmittedFootballMatch, submitFootballTeam } from "./football.js";
 import { loadRun, saveRun } from "./runs.js";
 import { buildLedgerConfig } from "./ledger/config.js";
 import { openDb } from "./ledger/db/client.js";
@@ -148,6 +149,50 @@ app.post("/api/auth/login", (request, response) => {
 app.post("/api/auth/logout", (_request, response) => {
   clearSessionCookie(response, env);
   response.status(204).end();
+});
+
+app.get("/api/football/leaderboard", async (request, response) => {
+  if (!requireAuth(request, response)) {
+    return;
+  }
+  response.json(await getFootballLeaderboard());
+});
+
+app.post("/api/football/submissions", async (request, response) => {
+  if (!requireAuth(request, response)) {
+    return;
+  }
+  const username = getSessionInfo(request, env).user?.name?.trim();
+  if (!username) {
+    response.status(401).json({ error: "Authenticated username missing." });
+    return;
+  }
+
+  try {
+    const result = await submitFootballTeam(username, request.body);
+    response.status(201).json(result);
+  } catch (error) {
+    response.status(400).json({
+      error: error instanceof Error ? error.message : "Football submission failed."
+    });
+  }
+});
+
+app.get("/api/football/matches/:leftCreatureId/:rightCreatureId", async (request, response) => {
+  if (!requireAuth(request, response)) {
+    return;
+  }
+  try {
+    const result = await simulateSubmittedFootballMatch(
+      request.params.leftCreatureId,
+      request.params.rightCreatureId
+    );
+    response.json(result);
+  } catch (error) {
+    response.status(400).json({
+      error: error instanceof Error ? error.message : "Football match failed."
+    });
+  }
 });
 
 app.post("/api/verify", (request, response) => {

@@ -2,6 +2,7 @@
 // under the `Domain` namespace so its `Bounty`/`LeaderboardEntry` do not clash
 // with the legacy presentational types below that feed the old /api/dashboard.
 export * as Domain from "./domain.js";
+export * from "./football.js";
 
 export type Status = "verified" | "pending";
 
