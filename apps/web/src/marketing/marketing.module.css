@@ -1,15 +1,11 @@
-/* Shared landing-page primitives: container, section rhythm, the DESIGN.md §3
-   type scale, and the diffuse-in reveal. Section-specific surface/colour styling
-   lives in each section's own module. All values come from tokens.css. */
+/* Shared landing-page primitives: container, section rhythm, type scale, reveals. */
 
 .page {
-  /* Suppress the global body teal radial glow so light sections render clean. */
-  background: var(--sagi-dark);
+  background: var(--bg);
   width: 100%;
   overflow-x: clip;
 }
 
-/* Sticky header: announcement bar + nav travel together at the top. */
 .header {
   position: sticky;
   top: 0;
@@ -20,19 +16,18 @@
   width: 100%;
   max-width: var(--container);
   margin: 0 auto;
-  padding-inline: var(--s7); /* 48 desktop */
+  padding-inline: var(--s7);
 }
 
 @media (max-width: 810px) {
   .container {
-    padding-inline: var(--s5); /* 24 mobile/tablet */
+    padding-inline: var(--s5);
   }
 }
 
-/* Section vertical rhythm (DESIGN.md §4). */
 .section {
   padding-block: 128px;
-  scroll-margin-top: 104px; /* clear the sticky header on anchor jumps */
+  scroll-margin-top: 64px;
 }
 @media (max-width: 810px) {
   .section {
@@ -45,76 +40,83 @@
   }
 }
 
-/* ---- Type scale (DESIGN.md §3) ---- */
+/* ---- Type scale ---- */
 .h1 {
   font-family: var(--font-sans);
-  font-weight: 400;
-  font-size: 64px;
-  line-height: 1;
-  letter-spacing: -0.02em;
+  font-weight: 700;
+  font-size: 56px;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  color: var(--text);
   margin: 0;
 }
 .h2 {
   font-family: var(--font-sans);
-  font-weight: 400;
-  font-size: 48px;
+  font-weight: 600;
+  font-size: 40px;
   line-height: 1.1;
   letter-spacing: -0.01em;
+  color: var(--text);
   margin: 0;
 }
 .h3 {
   font-family: var(--font-sans);
-  font-weight: 500;
-  font-size: 30px;
+  font-weight: 600;
+  font-size: 24px;
   line-height: 1.2;
+  color: var(--text);
   margin: 0;
 }
 .bodyL {
-  font-family: var(--font-sans);
+  font-family: var(--font-display);
   font-weight: 400;
   font-size: 18px;
-  line-height: 1.5;
+  line-height: 1.4;
+  color: var(--text);
   margin: 0;
-  text-wrap: balance;
 }
 .body {
-  font-family: var(--font-sans);
+  font-family: var(--font-display);
   font-weight: 400;
   font-size: 16px;
-  line-height: 1.55;
+  line-height: 1.4;
+  color: var(--text);
   margin: 0;
 }
 .small {
-  font-family: var(--font-sans);
+  font-family: var(--font-ui);
   font-weight: 500;
-  font-size: 14px;
+  font-size: 12px;
   line-height: 1.4;
+  color: var(--text-muted);
 }
 .mono {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
 }
 
-@media (max-width: 810px) {
-  .h1 {
-    font-size: 40px;
-  }
-  .h2 {
-    font-size: 32px;
-  }
-  .h3 {
-    font-size: 24px;
-  }
-  .bodyL {
-    font-size: 17px;
-  }
+/* Eyebrow — Cormorant italic */
+.eyebrow {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 500;
+  font-size: 18px;
+  color: var(--text-muted);
+  letter-spacing: 0.01em;
 }
 
-/* ---- diffuse-in reveal (DESIGN.md §6) ---- */
+@media (max-width: 810px) {
+  .h1 { font-size: 36px; }
+  .h2 { font-size: 28px; }
+  .h3 { font-size: 20px; }
+  .eyebrow { font-size: 16px; }
+}
+
+/* ---- diffuse-in reveal ---- */
 .reveal {
   opacity: 0;
   transform: translateY(16px);
-  filter: blur(6px);
+  filter: blur(4px);
   transition:
     opacity var(--motion-slow) var(--ease-out),
     transform var(--motion-slow) var(--ease-out),

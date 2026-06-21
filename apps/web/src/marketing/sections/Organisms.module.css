@@ -1,5 +1,5 @@
 .section {
-  background: var(--sagi-dark);
+  background: var(--brown-900);
 }
 
 .head {
@@ -11,11 +11,11 @@
 }
 
 .title {
-  color: var(--text);
+  color: var(--white);
 }
 
 .intro {
-  color: var(--text-muted);
+  color: var(--brown-300);
 }
 
 .grid {

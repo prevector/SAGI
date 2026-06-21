@@ -3,8 +3,8 @@
   flex-direction: column;
   gap: var(--s4);
   padding: var(--s5);
-  background: var(--surface);
-  border: 1px solid var(--border);
+  background: var(--white);
+  border: 1px solid var(--gray-200);
   border-radius: var(--radius-lg);
 }
 
@@ -14,12 +14,13 @@
 }
 
 .tag {
-  font-family: var(--font-mono);
-  font-size: 12px;
-  font-weight: 500;
-  letter-spacing: 0.04em;
-  color: var(--accent);
-  border: 1px solid var(--accent);
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--status-success);
+  border: 1px solid var(--status-success);
   border-radius: var(--radius-sm);
   padding: 2px 8px;
 }
@@ -27,15 +28,15 @@
 .title {
   margin: 0;
   font-family: var(--font-sans);
-  font-weight: 500;
-  font-size: 20px;
+  font-weight: 600;
+  font-size: 18px;
   line-height: 1.25;
-  color: var(--text);
+  color: var(--brown-900);
 }
 
 .divider {
   height: 1px;
-  background: var(--border);
+  background: var(--gray-100);
 }
 
 .footer {
@@ -48,9 +49,9 @@
 
 .reward {
   font-family: var(--font-mono);
-  font-weight: 500;
-  font-size: 22px;
-  color: var(--accent-2);
+  font-weight: 600;
+  font-size: 20px;
+  color: var(--pink-700);
   font-variant-numeric: tabular-nums;
 }
 
@@ -58,6 +59,7 @@
   display: inline-flex;
   align-items: center;
   gap: var(--s2);
-  font-size: 14px;
-  color: var(--text-muted);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  color: var(--gray-500);
 }

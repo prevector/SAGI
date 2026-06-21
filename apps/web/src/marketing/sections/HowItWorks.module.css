@@ -1,5 +1,5 @@
 .section {
-  background: var(--sagi-white);
+  background: var(--white);
 }
 
 .head {
@@ -11,11 +11,11 @@
 }
 
 .title {
-  color: var(--sagi-dark);
+  color: var(--brown-900);
 }
 
 .intro {
-  color: rgba(43, 42, 41, 0.64);
+  color: var(--brown-500);
 }
 
 .steps {
@@ -32,52 +32,50 @@
   flex-direction: column;
   gap: var(--s3);
   padding-top: var(--s4);
-  border-top: 1px solid rgba(43, 42, 41, 0.12);
+  border-top: 1px solid var(--gray-200);
 }
 
 .stepTop {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  color: var(--accent-hover);
 }
 
 .num {
   font-family: var(--font-mono);
-  font-size: 14px;
+  font-size: 13px;
   letter-spacing: 0.06em;
-  color: rgba(43, 42, 41, 0.5);
+  color: var(--brown-300);
 }
 
 .stepIcon {
-  color: var(--sagi-dark);
+  color: var(--pink-700);
 }
 
 .stepTitle {
   margin: 0;
   font-family: var(--font-sans);
-  font-weight: 500;
-  font-size: 24px;
+  font-weight: 600;
+  font-size: 22px;
   line-height: 1.2;
-  color: var(--sagi-dark);
+  color: var(--brown-900);
 }
 
 .stepBody {
   margin: 0;
-  font-size: 16px;
-  line-height: 1.55;
-  color: rgba(43, 42, 41, 0.64);
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--brown-500);
 }
 
-/* TokenResolution module */
 .module {
   display: flex;
   flex-direction: column;
   gap: var(--s4);
   padding: var(--s6);
-  border: 1px solid rgba(43, 42, 41, 0.12);
+  border: 1px solid var(--gray-200);
   border-radius: var(--radius-lg);
-  background: var(--sagi-light-muted);
+  background: var(--gray-50);
 }
 
 .moduleHeads {
@@ -91,13 +89,13 @@
   font-size: 13px;
   font-weight: 500;
   letter-spacing: 0.04em;
-  color: rgba(43, 42, 41, 0.64);
+  color: var(--brown-500);
 }
 
 .caption {
   margin: 0;
   font-size: 14px;
-  color: rgba(43, 42, 41, 0.64);
+  color: var(--gray-500);
 }
 
 @media (max-width: 900px) {

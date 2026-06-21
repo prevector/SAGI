@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Menu, X } from "lucide-react";
 import { APP_LOGIN, navLinks, PLACEHOLDER } from "../lib/content";
 import { CtaLink } from "../components/CtaLink";
+import { SagiLogo } from "../components/SagiLogo";
 import styles from "./LandingNav.module.css";
 
 /** S01 — sticky nav; transparent over the hero, gains a dark fill on scroll. */
@@ -20,7 +21,7 @@ export function LandingNav() {
     <nav className={[styles.nav, scrolled ? styles.scrolled : ""].join(" ")} aria-label="Primary">
       <div className={styles.inner}>
         <a href="#top" className={styles.wordmark} onClick={() => setOpen(false)}>
-          SAGI
+          <SagiLogo height={28} />
         </a>
 
         <div className={styles.links}>

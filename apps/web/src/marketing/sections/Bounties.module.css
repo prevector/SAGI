@@ -1,5 +1,5 @@
 .section {
-  background: var(--sagi-light-muted);
+  background: var(--gray-50);
 }
 
 .head {
@@ -11,11 +11,11 @@
 }
 
 .title {
-  color: var(--sagi-dark);
+  color: var(--brown-900);
 }
 
 .intro {
-  color: rgba(43, 42, 41, 0.64);
+  color: var(--brown-500);
 }
 
 .bounties {
@@ -33,20 +33,21 @@
   justify-content: space-between;
   gap: var(--s4);
   padding: var(--s4) var(--s5);
-  background: var(--sagi-white);
-  border: 1px solid rgba(43, 42, 41, 0.12);
+  background: var(--white);
+  border: 1px solid var(--gray-200);
   border-radius: var(--radius);
 }
 
 .bountyTitle {
-  font-size: 16px;
-  color: var(--sagi-dark);
+  font-size: 15px;
+  color: var(--brown-900);
 }
 
 .bountyReward {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-weight: 500;
-  color: var(--accent-2);
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--pink-700);
   white-space: nowrap;
 }

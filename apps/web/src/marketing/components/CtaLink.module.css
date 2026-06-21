@@ -5,7 +5,9 @@
   gap: var(--s2);
   border: 1px solid transparent;
   border-radius: var(--radius-pill);
+  font-family: var(--font-ui);
   font-weight: 500;
+  font-size: 13px;
   cursor: pointer;
   white-space: nowrap;
   transition:
@@ -20,39 +22,47 @@
 }
 
 .md {
-  padding: var(--s3) var(--s5);
-  font-size: var(--fs-sm);
+  padding: 10px var(--s5);
 }
 
 .sm {
   padding: var(--s2) var(--s4);
-  font-size: var(--fs-sm);
+  font-size: 12px;
 }
 
+.icon {
+  display: inline-flex;
+}
+
+/* Brand Pink primary */
 .primary {
-  background: var(--accent);
-  color: var(--ink-on-teal);
+  background: var(--pink-300);
+  color: var(--brown-900);
+  border-color: var(--pink-300);
+}
+.primary:hover:not(:disabled) {
+  background: var(--pink-500);
+  border-color: var(--pink-500);
 }
 
-.primary:hover {
-  background: var(--accent-hover);
-}
-
+/* Reward — blue accent */
 .reward {
-  background: var(--accent-2);
-  color: var(--ink-on-orange);
+  background: var(--blue-500);
+  color: var(--white);
+  border-color: var(--blue-500);
+}
+.reward:hover:not(:disabled) {
+  background: var(--blue-700);
+  border-color: var(--blue-700);
 }
 
-.reward:hover {
-  background: var(--accent-2-hover);
-}
-
+/* Ghost — transparent with brown border */
 .ghost {
   background: transparent;
-  color: var(--text);
-  border-color: var(--border-strong);
+  color: var(--brown-900);
+  border-color: rgba(46, 33, 24, 0.3);
 }
-
-.ghost:hover {
-  background: rgba(250, 248, 240, 0.08);
+.ghost:hover:not(:disabled) {
+  background: rgba(46, 33, 24, 0.05);
+  border-color: rgba(46, 33, 24, 0.5);
 }

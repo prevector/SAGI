@@ -1,11 +1,11 @@
 .hero {
   position: relative;
-  background: var(--sagi-dark);
+  background: var(--hero-gradient);
   min-height: 90vh;
   display: flex;
   align-items: center;
   overflow: clip;
-  padding-block: 120px;
+  padding-block: 120px 160px;
 }
 
 .field {
@@ -13,6 +13,7 @@
   inset: 0;
   z-index: 0;
   pointer-events: none;
+  opacity: 0.55;
 }
 
 .inner {
@@ -25,17 +26,34 @@
   flex-direction: column;
   align-items: flex-start;
   gap: var(--s5);
-  max-width: 680px;
+  max-width: 640px;
+}
+
+.eyebrow {
+  font-family: var(--font-display);
+  font-style: normal;
+  font-weight: 500;
+  font-size: 26px;
+  color: var(--brown-700);
+  letter-spacing: 0.01em;
 }
 
 .title {
-  color: var(--text);
-  max-width: 14ch;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 52px;
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  color: var(--brown-900);
 }
 
 .subhead {
-  color: var(--text-muted);
-  max-width: 60ch;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 18px;
+  line-height: 1.4;
+  color: var(--brown-700);
+  max-width: 52ch;
 }
 
 .ctas {
@@ -48,6 +66,13 @@
 @media (max-width: 810px) {
   .hero {
     min-height: 80vh;
+    padding-block: 80px 120px;
+  }
+  .title {
+    font-size: 36px;
+  }
+  .eyebrow {
+    font-size: 17px;
   }
 }
 
