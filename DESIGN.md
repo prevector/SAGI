@@ -166,3 +166,67 @@ Sticky top. Transparent over hero; on scroll: `background: rgba(253,240,243,0.85
 --blue-500:   #3C7FA8;  /* secondary accent */
 --hero-gradient: linear-gradient(135deg, #FAD9E2 0%, #6BADD4 60%, #3C7FA8 100%);
 ```
+
+---
+
+## 9. Dashboard — "SAGI Terminal" (authenticated workspace, `/app`)
+
+The dashboard is a **dock-panel workspace** (an IDE-style instrument), rebranded from the old dark terminal to the warm editorial system. Same tokens as the marketing site — never hardcode hex.
+
+### Shell & layout
+- **Frame:** full-viewport app. Vertical stack: **menu bar (46px, fixed)** above a **dock area (fills remaining)**.
+- **Dock area:** horizontal, 12px gutter + 12px padding. **Left column** `320px` fixed (Network / Library / Leaderboard) · **right area** fills, containing a `380px` **sub-column** (Training / Graph / Creature) beside a flexible **Inference** panel.
+- **Background:** `--bg-warm` (`--brown-50`) warm paper. Optional faint scanline/grid overlay at very low opacity is allowed but never dark.
+
+### Menu bar
+- Background `--white` @ ~85%, bottom `1px --border`. Left cluster + right cluster, space-between, 20px side padding.
+- **Mark:** `SAGI` in `--font-display` (Cormorant) SemiBold 18 + `TERMINAL` in `--font-ui` (Gothic A1) Medium 11, uppercase, tracked `+0.08em`, color `--pink-700`.
+- **Menu items / info cluster:** `--font-ui` 11px, uppercase, tracked, `--brown-500`; pipe-separated.
+
+### Panel pattern (every dock panel)
+- Card: `--surface` (white) fill, `1px --border`, `--radius` (8px), clipped. **No drop shadows** — elevation via border + surface only.
+- **Header bar:** `--bg-muted` (`--gray-50`) fill, `1px --border` bottom. Title `--font-ui` Medium 11, uppercase, tracked `+0.07em`, `--brown-700`. Optional right-aligned meta `--font-ui` 10, `--brown-500`.
+- **Body:** 12px padding, 10–12px item spacing.
+
+### Panel inventory
+| Panel | Contents |
+|---|---|
+| Network | Auto-laid node cloud on `--brown-50`; self/online node `--status-success`, peers in `--pink-300` / `--blue-500` / `--brown-300` |
+| Library | `NAME` field (muted input) · `NEW CREATURE` (pink-300) + `SAVE` (ghost) buttons · creature list, **selected row** `--pink-300` tint + border |
+| Leaderboard | rank (`--brown-300`) · name/creature (`--brown-700`) · score (`--pink-700`) rows |
+| Training | mode rows (active row pink-tinted) with `iterations` value · `▶ RUN` button (`--pink-300`) |
+| Graph | training curve in a `--gray-50` plot: **current** line `--brown-700` solid, **best** line `--blue-500` dashed |
+| Creature | warm radial viewport (`--brown-50→--brown-100`) with an abstract morphology |
+| Inference | token glyph chips 44×44: **active** `--blue-500` tint, **predicted** `--pink-300` tint, idle `--gray-50` + border |
+
+### Type & accent rules
+- **`--font-ui` (Gothic A1) for all UI** — labels, values, micro-labels. `--font-display` (Cormorant) is reserved for the wordmark only; **never** use Cormorant in dense data UI.
+- Accent semantics: **brown** = primary/current, **blue-500** = secondary/best, **pink** = selection/highlight, **success** = self/online.
+
+---
+
+## 10. Bounty posting (`/app/launch-bounty`)
+
+A centered **form**, rebranded to the warm editorial system (replaces the repo's hardcoded warm-paper hex with brand variables).
+
+### Shell
+- Page background `--bg-warm` (`--brown-50`). Centered **shell** `max-width: 720px`, 20px gap. Back link (`← Back`) top-left, `--font-ui` 13, `--brown-500`.
+- **Header:** H1 `Launch a bounty` — `--font-sans` SemiBold 32, `--brown-900`. Lede in `--font-display` (Cormorant) 18, `--brown-700`.
+
+### Section cards
+- `--surface` @ ~70%, `1px --border`, `--radius-lg`, 24px padding, 16px gap. **No shadows.**
+- **Section title:** `--font-ui` Medium 12, uppercase, tracked `+0.06em`, `--pink-700` (e.g. `BOUNTY SPECIFICATION`, `REWARD & CONTRIBUTION`).
+
+### Fields
+- Label `--font-ui` Medium 12, `--brown-500`, above the input.
+- Input: `--bg-muted` fill, `1px --border`, `--radius` (8px), 10–12px padding. Value `--font-ui` Regular 13 `--brown-900`; placeholder `--brown-500`. Selects show `▾`; paired fields use 2-col rows (collapse to 1-col on narrow).
+- **Bounty specification:** Title · Type of algorithm (select) · Sponsor category (select) · Estimated compute (GFLOP-hours) · Start/End date · Target metric · Target value (optional) · Description (textarea).
+- **Reward & contribution:** Your contribution (EUR, `€` prefix) · Reward (tokens, read-only, `⬡` prefix) + rate hint + utility note.
+
+### Reward parameters (constants)
+- `1 token = €10` · minimum **€100 / 10 tokens** · `tokens = floor(EUR / 10)` (read-only, derived).
+- Currency **EUR (€)**, token glyph **⬡**. Payment via **Mollie**. Submit CTA: `Continue to payment · €{amount}` (pink/gradient).
+
+### Copy constraints (binding)
+- The token is a **utility / work token** — never describe contributions or credits as **shares, equity, or a financial stake**, and never imply **proportional IP / licensing payouts**. The footer utility-disclaimer stays exactly as written.
+

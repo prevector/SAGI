@@ -4,6 +4,8 @@
 
 /** Where "Join the network" sends visitors — into the terminal workspace login. */
 export const APP_LOGIN = "/app/login";
+/** Long-form thesis behind the SAGI landing page. */
+export const THESIS_URL = "https://trussner.com/blogs/sagi-search-for-artificial-general-intelligence.html";
 /** Placeholder destination for not-yet-wired secondary links. */
 export const PLACEHOLDER = "#";
 
@@ -137,7 +139,7 @@ export const footerColumns: FooterColumn[] = [
   {
     title: "Project",
     links: [
-      { label: "Thesis", href: PLACEHOLDER },
+      { label: "Thesis", href: THESIS_URL },
       { label: "Paper", href: PLACEHOLDER },
       { label: "GitHub", href: PLACEHOLDER },
     ],

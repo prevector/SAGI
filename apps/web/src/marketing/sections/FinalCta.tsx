@@ -1,6 +1,6 @@
 import { Reveal } from "../components/Reveal";
 import { CtaLink } from "../components/CtaLink";
-import { APP_LOGIN, PLACEHOLDER } from "../lib/content";
+import { APP_LOGIN, THESIS_URL } from "../lib/content";
 import shared from "../marketing.module.css";
 import styles from "./FinalCta.module.css";
 
@@ -19,7 +19,7 @@ export function FinalCta() {
             <CtaLink to={APP_LOGIN} variant="primary">
               Join the network
             </CtaLink>
-            <CtaLink href={PLACEHOLDER} variant="ghost">
+            <CtaLink href={THESIS_URL} variant="ghost">
               Read the thesis
             </CtaLink>
           </div>

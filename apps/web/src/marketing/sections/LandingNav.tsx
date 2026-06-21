@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Menu, X } from "lucide-react";
-import { APP_LOGIN, navLinks, PLACEHOLDER } from "../lib/content";
+import { APP_LOGIN, navLinks, THESIS_URL } from "../lib/content";
 import { CtaLink } from "../components/CtaLink";
 import { SagiLogo } from "../components/SagiLogo";
 import styles from "./LandingNav.module.css";
@@ -33,7 +33,7 @@ export function LandingNav() {
         </div>
 
         <div className={styles.cluster}>
-          <CtaLink href={PLACEHOLDER} variant="ghost" className={styles.thesis}>
+          <CtaLink href={THESIS_URL} variant="ghost" className={styles.thesis}>
             Read the thesis
           </CtaLink>
           <CtaLink to={APP_LOGIN} variant="primary">
@@ -58,7 +58,7 @@ export function LandingNav() {
               {l.label}
             </a>
           ))}
-          <a href={PLACEHOLDER} className={styles.drawerLink} onClick={() => setOpen(false)}>
+          <a href={THESIS_URL} className={styles.drawerLink} onClick={() => setOpen(false)}>
             Read the thesis
           </a>
         </div>
