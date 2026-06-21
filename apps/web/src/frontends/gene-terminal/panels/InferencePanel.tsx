@@ -6,6 +6,22 @@ import { Readout } from "../components";
 import { useGeneTerminal } from "../state";
 import styles from "../GeneTerminal.module.css";
 
+function tokenIcon(token: string): string {
+  switch (token) {
+    case "<mode-a>": return "○";
+    case "<mode-b>": return "◆";
+    case "<subject-x>": return "✦";
+    case "<subject-y>": return "✶";
+    case "<sep>": return "⟐";
+    case "<eos>": return "◎";
+    case "ka": return "●";
+    case "mi": return "▲";
+    case "li": return "■";
+    case "ra": return "✚";
+    default: return "•";
+  }
+}
+
 export function InferencePanel(_: IDockviewPanelProps) {
   const terminal = useGeneTerminal();
   const dataset = terminal.tokenDataset;
@@ -17,13 +33,14 @@ export function InferencePanel(_: IDockviewPanelProps) {
     if (terminal.trainingMode !== "language" || !trace) return;
     const timer = window.setInterval(() => {
       if (terminal.inferenceStepIndex >= trace.steps.length - 1) {
-        terminal.resetInference();
+        const nextSample = (terminal.selectedSampleIndex + 1) % Math.max(dataset.samples.length, 1);
+        terminal.selectSample(nextSample);
         return;
       }
       terminal.stepInference();
     }, 180);
     return () => window.clearInterval(timer);
-  }, [terminal, trace]);
+  }, [dataset.samples.length, terminal, trace]);
 
   if (terminal.trainingMode === "football") {
     return (
@@ -35,31 +52,6 @@ export function InferencePanel(_: IDockviewPanelProps) {
 
   return (
     <section className={`${styles.panel} ${styles.panelInference}`}>
-      <div className={styles.trainingHeader}>
-        <div>
-          <h2>Token inference</h2>
-          <span className={styles.sectionLabel}>best predictor replay</span>
-        </div>
-      </div>
-
-      <div className={styles.formGrid}>
-        <label className={styles.field}>
-          <span>sample</span>
-          <select
-            value={terminal.selectedSampleIndex}
-            onChange={(event) => terminal.selectSample(Number(event.target.value))}
-            className={styles.selectField}
-          >
-            {dataset.samples.map((_, index) => (
-              <option key={index} value={index}>
-                sample {index + 1}
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
-
-      <div className={styles.sectionLabel}>language sample</div>
       <div className={styles.tokenStrip}>
         {sample ? Array.from(sample.tokens).map((token, index) => {
           const active = index === terminal.inferenceStepIndex;
@@ -69,7 +61,7 @@ export function InferencePanel(_: IDockviewPanelProps) {
               key={`${index}-${token}`}
               className={`${styles.tokenChip} ${active ? styles.tokenChipActive : ""} ${predicted ? styles.tokenChipPredicted : ""}`}
             >
-              {dataset.vocab[token]}
+              {tokenIcon(dataset.vocab[token] ?? "")}
             </span>
           );
         }) : null}
@@ -79,16 +71,16 @@ export function InferencePanel(_: IDockviewPanelProps) {
         <>
           <div className={styles.marketGrid}>
             <Readout label="token step" value={`${formatInt(terminal.inferenceStepIndex + 1)} / ${formatInt(trace?.steps.length ?? 0)}`} />
-            <Readout label="input token" value={dataset.vocab[step.token] ?? "?"} />
-            <Readout label="target next" value={dataset.vocab[step.expected] ?? "?"} />
-            <Readout label="predicted" value={dataset.vocab[step.predicted] ?? "?"} tone={step.predicted === step.expected ? "good" : "warn"} />
+            <Readout label="input" value={tokenIcon(dataset.vocab[step.token] ?? "?")} />
+            <Readout label="target" value={tokenIcon(dataset.vocab[step.expected] ?? "?")} />
+            <Readout label="predicted" value={tokenIcon(dataset.vocab[step.predicted] ?? "?")} tone={step.predicted === step.expected ? "good" : "warn"} />
           </div>
 
           <div className={styles.sectionLabel}>prediction probabilities</div>
           <div className={styles.probList}>
             {Array.from(step.probabilities).map((probability, index) => (
               <div key={index} className={styles.probRow}>
-                <span>{dataset.vocab[index]}</span>
+                <span>{tokenIcon(dataset.vocab[index] ?? "")}</span>
                 <div className={styles.probBar}>
                   <i style={{ width: `${probability * 100}%` }} />
                 </div>
@@ -116,7 +108,7 @@ export function InferencePanel(_: IDockviewPanelProps) {
           </div>
         </>
       ) : (
-        <div className={styles.note}>Train the current creature first, then step through one sequence here.</div>
+        <div className={styles.note}>No trained token brain yet.</div>
       )}
     </section>
   );

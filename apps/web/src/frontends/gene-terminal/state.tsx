@@ -293,7 +293,7 @@ export function GeneTerminalProvider({ children }: { children: ReactNode }) {
   const [runConfig] = useState<IafRunConfig>(PAPER_IAF_RUN);
   const [es, setEs] = useState<EsHyperparams>(PAPER_IAF_ES);
   const [hiddenSize, setHiddenSize] = useState(8);
-  const [trainingMode, setTrainingMode] = useState<TrainingMode>("language");
+  const [trainingMode, setTrainingMode] = useState<TrainingMode>("football");
   const [status, setStatus] = useState<TrainingStatus>("idle");
   const sessionRef = useRef<GruEsTrainingSession | FootballEsTrainingSession | null>(null);
   const [history, setHistory] = useState<MockPoint[]>([]);
@@ -355,7 +355,7 @@ export function GeneTerminalProvider({ children }: { children: ReactNode }) {
     });
   }
 
-  function resetTrainingSession() {
+  function resetTrainingSession(options?: { preserveStatus?: boolean }) {
     if (trainingMode === "language") {
       const dataset = buildFakeLanguageDataset({ seed: `token-task:${selectedCreature.id}`, sampleCount: 32 });
       setTokenDataset(dataset);
@@ -407,7 +407,9 @@ export function GeneTerminalProvider({ children }: { children: ReactNode }) {
         persistFootballBest(initial);
       }
     }
-    setStatus("idle");
+    if (!options?.preserveStatus) {
+      setStatus("idle");
+    }
   }
 
   useEffect(() => {
@@ -419,7 +421,7 @@ export function GeneTerminalProvider({ children }: { children: ReactNode }) {
   }, [creatures]);
 
   useEffect(() => {
-    resetTrainingSession();
+    resetTrainingSession({ preserveStatus: status === "running" });
   }, [selectedCreature.id, hiddenSize, trainingMode, es.learningRate, es.momentum, es.populationPairs, es.sigma, footballTeamSize, footballMatchTicks]);
 
   useEffect(() => {
@@ -462,7 +464,7 @@ export function GeneTerminalProvider({ children }: { children: ReactNode }) {
         ]);
       }
       if (next.done) {
-        setStatus("paused");
+        setTrainingMode((current) => current === "football" ? "language" : "football");
       }
     }, 220);
     return () => window.clearInterval(timer);
@@ -616,9 +618,9 @@ export function GeneTerminalProvider({ children }: { children: ReactNode }) {
     start: () => {
       const latestGeneration = latest?.generation ?? 0;
       if (latestGeneration >= es.generations) {
-        const extended = es.generations + Math.max(20, Math.round(es.generations * 0.5));
-        setEs((current) => ({ ...current, generations: extended }));
-        sessionRef.current?.setMaxIterations(extended);
+        setTrainingMode((current) => current === "football" ? "language" : "football");
+        setStatus("running");
+        return;
       }
       setStatus("running");
     },

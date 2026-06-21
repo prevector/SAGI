@@ -224,6 +224,12 @@
     linear-gradient(180deg, #f2ece2, #eee7dd);
 }
 
+.panelGraph {
+  background:
+    linear-gradient(180deg, rgba(110, 140, 166, 0.08), transparent 20%),
+    linear-gradient(180deg, #f1ece3, #ede6db);
+}
+
 .panelVisualizer {
   background:
     linear-gradient(180deg, rgba(23, 196, 196, 0.08), transparent 18%),
@@ -320,6 +326,32 @@
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+}
+
+.trainingToolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 130px auto;
+  gap: 10px;
+  align-items: end;
+}
+
+.trainingActions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.iconButton {
+  min-width: 54px;
+  height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--terminal-line);
+  background: rgba(255, 255, 255, 0.34);
+  color: var(--terminal-text);
+  font: inherit;
+  font-size: 17px;
+  line-height: 1;
+  cursor: pointer;
 }
 
 .libraryHeader {
@@ -436,7 +468,7 @@
 
 .geneList {
   display: grid;
-  gap: 6px;
+  gap: 4px;
   min-height: 0;
   overflow: auto;
 }
@@ -480,9 +512,9 @@
 
 .geneList button {
   display: grid;
-  gap: 2px;
+  gap: 0;
   text-align: left;
-  padding: 8px;
+  padding: 6px 8px;
   background: rgba(255, 255, 255, 0.2);
   color: var(--terminal-text);
   border: 1px solid rgba(54, 47, 40, 0.04);
@@ -505,6 +537,7 @@
   display: flex;
   gap: 8px;
   align-items: center;
+  min-height: 20px;
 }
 
 .geneList small,
@@ -624,12 +657,50 @@
 }
 
 .chartPane {
+  position: relative;
   display: grid;
   gap: 8px;
   padding: 8px 10px 0;
   border-top: 1px solid var(--terminal-line);
   background:
     linear-gradient(180deg, rgba(110, 140, 166, 0.06), rgba(255, 255, 255, 0));
+}
+
+.chartOverlay {
+  position: absolute;
+  z-index: 2;
+  top: 10px;
+  left: 12px;
+  display: flex;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.chartOverlay span {
+  padding: 4px 6px;
+  border: 1px solid rgba(54, 47, 40, 0.16);
+  background: rgba(246, 240, 230, 0.76);
+  color: var(--terminal-text);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1;
+}
+
+.chartProgress {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  width: 120px;
+  height: 3px;
+  border: 1px solid var(--terminal-line);
+  background: rgba(255, 255, 255, 0.34);
+  overflow: hidden;
+}
+
+.chartProgress i {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--terminal-accent), var(--terminal-accent-3));
 }
 
 .visualizerStage {
@@ -681,6 +752,23 @@
   font-size: 12px;
   line-height: 1;
   box-shadow: 0 6px 18px rgba(54, 47, 40, 0.08);
+}
+
+.footballOverlayButton {
+  padding: 5px 8px;
+  border: 1px solid rgba(54, 47, 40, 0.18);
+  background: rgba(246, 240, 230, 0.9);
+  color: var(--terminal-text);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(54, 47, 40, 0.08);
+}
+
+.footballOverlayButton:hover {
+  border-color: rgba(154, 104, 65, 0.28);
+  background: rgba(154, 104, 65, 0.1);
 }
 
 .visualizerHud {
@@ -759,6 +847,7 @@
 }
 
 @media (max-width: 900px) {
+  .trainingToolbar,
   .trainingHeader,
   .menuBar {
     display: grid;

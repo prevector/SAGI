@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import type { IDockviewPanelProps } from "dockview";
-import { summarizeCreatureGene } from "../creatureLibrary";
 import { useGeneTerminal } from "../state";
 import styles from "../GeneTerminal.module.css";
 
@@ -37,7 +36,6 @@ export function CreatureLibraryPanel(_: IDockviewPanelProps) {
         </label>
         <div className={styles.panelTools}>
           <button onClick={terminal.generateCreature}>NEW CREATURE</button>
-          <button onClick={terminal.mutateGene}>MUTATE</button>
           <button onClick={terminal.saveCreature}>SAVE</button>
         </div>
       </div>
@@ -55,23 +53,17 @@ export function CreatureLibraryPanel(_: IDockviewPanelProps) {
       </div>
 
       <div className={styles.geneList}>
-        {terminal.creatures.map((item) => {
-          const itemSummary = summarizeCreatureGene(item.gene);
-          return (
-            <button
-              key={item.id}
-              className={item.id === terminal.selectedId ? styles.selectedGene : ""}
-              onClick={() => terminal.selectGene(item.id)}
-            >
-              <span className={styles.creatureListTitle}>
-                {item.name}
-              </span>
-              <small>
-                {itemSummary.legPairs * 2} legs · {itemSummary.archetype}
-              </small>
-            </button>
-          );
-        })}
+        {terminal.creatures.map((item) => (
+          <button
+            key={item.id}
+            className={item.id === terminal.selectedId ? styles.selectedGene : ""}
+            onClick={() => terminal.selectGene(item.id)}
+          >
+            <span className={styles.creatureListTitle}>
+              {item.name}
+            </span>
+          </button>
+        ))}
       </div>
     </section>
   );

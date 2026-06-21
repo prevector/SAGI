@@ -14,11 +14,13 @@ import { CreatureLibraryPanel } from "./panels/CreatureLibraryPanel";
 import { CreaturePanel } from "./panels/CreaturePanel";
 import { InferencePanel } from "./panels/InferencePanel";
 import { NetworkPanel } from "./panels/NetworkPanel";
+import { TrainingGraphPanel } from "./panels/TrainingGraphPanel";
 import { TrainingPanel } from "./panels/TrainingPanel";
 import styles from "./GeneTerminal.module.css";
 
 const dockComponents = {
   creature: CreaturePanel,
+  graph: TrainingGraphPanel,
   inference: InferencePanel,
   library: CreatureLibraryPanel,
   network: NetworkPanel,
@@ -45,21 +47,29 @@ const panelSpecs = {
     component: "training",
     title: "TRAINING",
     position: { referencePanel: "network", direction: "right" as const },
-    initialWidth: 920,
-    initialHeight: 320
+    initialWidth: 360,
+    initialHeight: 220
+  },
+  graph: {
+    id: "graph",
+    component: "graph",
+    title: "GRAPH",
+    position: { referencePanel: "training", direction: "right" as const },
+    initialWidth: 520,
+    initialHeight: 220
   },
   inference: {
     id: "inference",
     component: "inference",
     title: "INFERENCE",
-    position: { referencePanel: "training", direction: "below" as const },
+    position: { referencePanel: "graph", direction: "below" as const },
     initialHeight: 640
   },
   creature: {
     id: "creature",
     component: "creature",
     title: "CREATURE",
-    position: { referencePanel: "training", direction: "right" as const },
+    position: { referencePanel: "graph", direction: "right" as const },
     initialWidth: 280,
     initialHeight: 250
   }
@@ -87,6 +97,11 @@ function buildDefaultLayout(): SerializedDockview {
         id: "training",
         contentComponent: "training",
         title: "TRAINING"
+      },
+      graph: {
+        id: "graph",
+        contentComponent: "graph",
+        title: "GRAPH"
       },
       creature: {
         id: "creature",
@@ -141,11 +156,20 @@ function buildDefaultLayout(): SerializedDockview {
                 data: [
                   {
                     type: "leaf",
-                    size: 980,
+                    size: 360,
                     data: {
                       id: "group-training",
                       views: ["training"],
                       activeView: "training"
+                    }
+                  },
+                  {
+                    type: "leaf",
+                    size: 620,
+                    data: {
+                      id: "group-graph",
+                      views: ["graph"],
+                      activeView: "graph"
                     }
                   },
                   {

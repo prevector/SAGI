@@ -1,8 +1,8 @@
 import { OrbitControls } from "@react-three/drei";
-import { Canvas } from "@react-three/fiber";
+import { Canvas, useFrame } from "@react-three/fiber";
 import { FootballMatchRuntime } from "@sagi/evolution";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { PCFShadowMap } from "three";
+import { PCFShadowMap, Vector3 } from "three";
 import { CreatureActor3D } from "../CreatureViewport";
 import { useGeneTerminal, type GeneTerminalState } from "../state";
 import styles from "../GeneTerminal.module.css";
@@ -13,6 +13,61 @@ const FIELD_LINE_THICKNESS = 0.05;
 const FOOTBALL_GAIT_SCALE = 1.45;
 const TEAM_LEFT_COLOR = "#5d8fbd";
 const TEAM_RIGHT_COLOR = "#b36a42";
+const CAMERA_TARGET = new Vector3();
+const CAMERA_POSITION = new Vector3();
+const CAMERA_LOOK = new Vector3();
+
+function ActionCamera({
+  snapshot,
+  active
+}: {
+  snapshot: ReturnType<FootballMatchRuntime["snapshot"]>;
+  active: boolean;
+}) {
+  useFrame((state) => {
+    if (!active) {
+      return;
+    }
+
+    const ballX = snapshot.ball.x - 55;
+    const ballZ = snapshot.ball.y - 35;
+    const allPlayers = [...snapshot.teams[0], ...snapshot.teams[1]];
+    const nearestPlayers = [...allPlayers]
+      .sort((left, right) => {
+        const leftDx = left.x - snapshot.ball.x;
+        const leftDy = left.y - snapshot.ball.y;
+        const rightDx = right.x - snapshot.ball.x;
+        const rightDy = right.y - snapshot.ball.y;
+        return leftDx * leftDx + leftDy * leftDy - (rightDx * rightDx + rightDy * rightDy);
+      })
+      .slice(0, 4);
+
+    let clusterX = ballX * 2.2;
+    let clusterZ = ballZ * 2.2;
+    let count = 2.2;
+    for (const player of nearestPlayers) {
+      clusterX += player.x - 55;
+      clusterZ += player.y - 35;
+      count += 1;
+    }
+    clusterX /= count;
+    clusterZ /= count;
+
+    const goalBias = Math.max(-1, Math.min(1, ballX / 55));
+    CAMERA_TARGET.set(clusterX, 0.6, clusterZ);
+    CAMERA_POSITION.set(
+      clusterX - goalBias * 9,
+      31 + Math.abs(goalBias) * 4,
+      clusterZ + 33
+    );
+    CAMERA_LOOK.set(clusterX + goalBias * 6, 0.2, clusterZ - 7);
+
+    state.camera.position.lerp(CAMERA_POSITION, 0.055);
+    state.camera.lookAt(CAMERA_LOOK);
+  });
+
+  return null;
+}
 
 function makeOpponentPhenotype(terminal: GeneTerminalState) {
   const phenotype = terminal.selectedCreature.phenotype;
@@ -37,6 +92,8 @@ export function FootballReplayPanelBody({
   const runtimeRef = useRef<FootballMatchRuntime | null>(null);
   const [snapshot, setSnapshot] = useState<ReturnType<FootballMatchRuntime["snapshot"]> | null>(null);
   const [result, setResult] = useState<ReturnType<FootballMatchRuntime["result"]> | null>(null);
+  const [actionCamera, setActionCamera] = useState(true);
+  const controlsRef = useRef<any>(null);
 
   useEffect(() => {
     if (!genome || terminal.trainingMode !== "football") {
@@ -94,6 +151,13 @@ export function FootballReplayPanelBody({
           <span>{result.fitness[0].toFixed(1)} / {result.fitness[1].toFixed(1)}</span>
           <span>{snapshot.ball.x.toFixed(0)}, {snapshot.ball.y.toFixed(0)}</span>
           <span>{result.winner === -1 ? "draw" : `team ${result.winner + 1}`}</span>
+          <button
+            type="button"
+            className={styles.footballOverlayButton}
+            onClick={() => setActionCamera((value) => !value)}
+          >
+            {actionCamera ? "ACTIVE CAM" : "FREE CAM"}
+          </button>
         </div>
         <Canvas
           camera={{ position: [0, 44, 46], fov: 34 }}
@@ -101,10 +165,13 @@ export function FootballReplayPanelBody({
           gl={{ antialias: true, alpha: true }}
           shadows={{ type: PCFShadowMap }}
         >
+          <ActionCamera snapshot={snapshot} active={actionCamera} />
           <OrbitControls
+            ref={controlsRef}
             makeDefault
+            enabled={!actionCamera}
             enablePan={true}
-            enableDamping={false}
+            enableDamping={true}
             autoRotate={false}
             minDistance={24}
             maxDistance={120}
@@ -120,8 +187,14 @@ export function FootballReplayPanelBody({
             intensity={1.8}
             color="#fff1cf"
             castShadow
-            shadow-mapSize-width={1024}
-            shadow-mapSize-height={1024}
+            shadow-mapSize-width={2048}
+            shadow-mapSize-height={2048}
+            shadow-camera-left={-80}
+            shadow-camera-right={80}
+            shadow-camera-top={80}
+            shadow-camera-bottom={-80}
+            shadow-camera-near={1}
+            shadow-camera-far={140}
           />
 
           <mesh rotation-x={-Math.PI / 2} position={[0, -0.32, 0]} receiveShadow>
