@@ -1,0 +1,178 @@
+/* Centred compute HUD for the terminal menu bar. Uses the warm --terminal-*
+   palette so it reads as part of the bar, not a transplant. Single horizontal
+   row: a live dot, CPU + GPU gauges, and a throughput readout, divided by hair
+   rules. Falls back gracefully as the bar narrows. */
+
+.widget {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 3px 12px;
+  border: 1px solid var(--terminal-line);
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.28);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  text-transform: none;
+  color: var(--terminal-text-muted);
+  user-select: none;
+  white-space: nowrap;
+}
+
+/* "Local node" live indicator — pulses while under load. */
+.status {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--terminal-line-strong);
+  flex: none;
+}
+
+.statusLive {
+  background: var(--terminal-accent);
+  box-shadow: 0 0 0 0 var(--terminal-glow);
+  animation: pulse 1.8s ease-out infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(192, 75, 110, 0.35);
+  }
+  70% {
+    box-shadow: 0 0 0 5px rgba(192, 75, 110, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(192, 75, 110, 0);
+  }
+}
+
+.gauge {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.tag {
+  color: var(--terminal-text);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+
+.spec {
+  color: var(--terminal-text-muted);
+  opacity: 0.75;
+}
+
+/* Segmented bar: filled length encodes the value, so it reads without colour. */
+.bar {
+  display: inline-flex;
+  gap: 2px;
+  align-items: center;
+}
+
+.seg {
+  width: 3px;
+  height: 10px;
+  border-radius: 1px;
+  background: var(--terminal-line-strong);
+  transition: background 220ms ease;
+}
+
+.cpu .seg.on {
+  background: var(--terminal-accent); /* warm copper */
+}
+
+.gpu .seg.on {
+  background: var(--terminal-accent-3); /* slate blue — distinct hue AND lightness */
+}
+
+/* High-load threshold tick: a non-colour cue at the ~80% mark. */
+.tick {
+  width: 2px;
+  height: 13px;
+  margin: 0 2px;
+  border-radius: 1px;
+  background: var(--terminal-line-strong);
+}
+
+.high .tick {
+  background: var(--terminal-text);
+}
+
+/* Under high load every lit segment shifts toward the alert hue (redundant with
+   the bar reaching the tick — colour is never the sole signal). */
+.high.cpu .seg.on,
+.high.gpu .seg.on {
+  background: #b4452f;
+}
+
+.pct {
+  min-width: 30px;
+  text-align: right;
+  color: var(--terminal-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.high .pct {
+  color: #b4452f;
+}
+
+.divider {
+  width: 1px;
+  height: 14px;
+  background: var(--terminal-line-strong);
+  flex: none;
+}
+
+.throughput {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--terminal-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.throughput .up {
+  font-size: 8px;
+  color: var(--terminal-accent);
+  line-height: 1;
+}
+
+.thrVal {
+  color: var(--terminal-text);
+  min-width: 26px;
+  text-align: right;
+}
+
+.thrUnit {
+  opacity: 0.7;
+}
+
+.note {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--terminal-text-muted);
+  opacity: 0.6;
+}
+
+/* Shed detail before the whole widget disappears. */
+@media (max-width: 1280px) {
+  .spec {
+    display: none;
+  }
+}
+
+@media (max-width: 1080px) {
+  .throughput,
+  .divider:last-of-type {
+    display: none;
+  }
+}
+
+@media (max-width: 880px) {
+  .widget {
+    display: none; /* the bar is too tight; menu + summary take priority */
+  }
+}
