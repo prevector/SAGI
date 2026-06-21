@@ -1,0 +1,63 @@
+.card {
+  width: 100%;
+  margin: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--s5);
+}
+
+.head {
+  margin-bottom: var(--s4);
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--brown-900);
+}
+
+.caption {
+  margin: var(--s1) 0 0;
+  font-family: var(--font-display);
+  font-size: 14px;
+  color: var(--brown-700);
+}
+
+.svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.axis {
+  font-family: var(--font-display);
+  font-size: 13px;
+  fill: var(--gray-500);
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s3) var(--s5);
+  margin: var(--s4) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  font-family: var(--font-display);
+  font-size: 14px;
+  color: var(--brown-700);
+}
+
+.swatch {
+  width: 16px;
+  height: 4px;
+  border-radius: var(--radius-sm);
+}

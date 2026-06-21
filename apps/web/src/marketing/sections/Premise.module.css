@@ -24,3 +24,23 @@
 .highlight {
   color: var(--blue-500);
 }
+
+.chartWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s4);
+  margin-top: var(--s8);
+}
+
+.source {
+  font-family: var(--font-display);
+  font-size: 15px;
+  color: var(--blue-700);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.source:hover {
+  color: var(--blue-500);
+}
