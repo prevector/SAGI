@@ -3,12 +3,12 @@
 How SAGI is served: **one Node process** (`apps/api`, port `4000`) serves both the
 API (`/api/*`, `/health`) **and** the built website (`apps/web/dist`) with a
 catch-all that returns `index.html` for any non-API path. So the same origin
-serves `/` (landing page) and `/app/*` (dashboard). The public domain just needs
-to reach that process over HTTPS — handled by **Caddy** reverse-proxying to
+serves `/` (landing page) and `/app/*` (dashboard). The public domain reaches
+that process through Cloudflare and **nginx** reverse-proxying to
 `127.0.0.1:4000`. There is **no separate static host**.
 
 ```
-Browser ──HTTPS──> Caddy (:443, sagi.network) ──> Node API (:4000) ──> serves /api + web build
+Browser ──HTTPS──> Cloudflare ──HTTPS──> nginx (:443, sagi.network) ──> Node API (:4000) ──> serves /api + web build
 ```
 
 ---
@@ -17,7 +17,7 @@ Browser ──HTTPS──> Caddy (:443, sagi.network) ──> Node API (:4000) �
 
 - [ ] A Linux server/VPS with a **public IP** and ports **80 + 443** open.
 - [ ] Install **Node 20+** and **npm** on the server.
-- [ ] Install **Caddy** (auto-HTTPS via Let's Encrypt).
+- [ ] Install **nginx** and **Certbot** (`certbot python3-certbot-nginx`).
 - [ ] Create a deploy user and app dir: `sudo useradd -m deploy` and `sudo mkdir -p /var/www/sagi && sudo chown deploy:deploy /var/www/sagi`.
 - [ ] Ensure your SSH key can reach the server as `deploy@<server-ip>`.
 
@@ -30,24 +30,41 @@ Browser ──HTTPS──> Caddy (:443, sagi.network) ──> Node API (:4000) �
 
 ## Phase 2 — Server config (one-time)
 
-- [ ] **Caddyfile** — put this in `/etc/caddy/Caddyfile` (Caddy fetches the TLS cert automatically):
-  ```caddy
-  sagi.network {
-    reverse_proxy 127.0.0.1:4000
-  }
+- [ ] **nginx** — create `/etc/nginx/sites-available/sagi.network` and symlink it
+  into `/etc/nginx/sites-enabled/`:
+  ```nginx
+  server {
+    listen 80;
+    server_name sagi.network www.sagi.network;
+    include /etc/nginx/snippets/cloudflare-only.conf;
 
-  # optional: redirect www → apex
-  www.sagi.network {
-    redir https://sagi.network{uri}
+    location / {
+      proxy_pass http://127.0.0.1:4000;
+      proxy_http_version 1.1;
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection "upgrade";
+      proxy_set_header Host $host;
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header X-Forwarded-Proto $scheme;
+      proxy_read_timeout 60s;
+    }
   }
   ```
-  Then: `sudo systemctl reload caddy`
+  If the site is Cloudflare-proxied, copy
+  `deploy/cloudflare-only.nginx.example` to `/etc/nginx/snippets/cloudflare-only.conf`
+  before reloading nginx.
+  Then: `sudo nginx -t && sudo systemctl reload nginx`
+- [ ] **TLS** — once DNS points at the server, issue the certificate:
+  ```bash
+  sudo certbot --nginx -d sagi.network -d www.sagi.network --redirect
+  ```
 - [ ] **systemd service** — copy `deploy/sagi.service.example` to `/etc/systemd/system/sagi.service` (it runs `npm run start` in `/var/www/sagi` as user `deploy`, `NODE_ENV=production`).
 - [ ] **Environment** — create `/var/www/sagi/.env` from `.env.example` with at least:
   ```env
   PORT=4000
   SESSION_SECRET=<a long random secret>     # CHANGE THIS
-  SECURE_COOKIES=1                           # ok — Caddy provides HTTPS
+  SECURE_COOKIES=1                           # ok — Cloudflare/nginx provide HTTPS
   LEDGER_MODE=production                      # real tx only, synthetic purged
   ```
 - [ ] Enable the service: `sudo systemctl daemon-reload && sudo systemctl enable sagi`
@@ -85,7 +102,7 @@ Browser ──HTTPS──> Caddy (:443, sagi.network) ──> Node API (:4000) �
 - **Logs / restart on the server:**
   - `sudo journalctl -u sagi -f` — tail app logs
   - `sudo systemctl restart sagi` — restart the app
-  - `sudo systemctl reload caddy` — reload after a Caddyfile change
+  - `sudo nginx -t && sudo systemctl reload nginx` — reload after an nginx change
 - **Backend data:** the dashboard needs the API + its SQLite ledger
   (`LEDGER_DB_PATH`, default under `runs/`, git-ignored). The landing page itself
   is fully static and needs no backend.
@@ -98,4 +115,4 @@ The whole app runs as one service: **build** `npm run build`, **start**
 - [ ] Create a Web Service from this repo; Build = `npm run build`, Start = `npm run start`.
 - [ ] Set env vars: `SESSION_SECRET`, `SECURE_COOKIES=1`, `LEDGER_MODE=production` (`PORT` is provided by the platform).
 - [ ] Add `sagi.network` as a custom domain in the platform dashboard and follow
-      its DNS instructions (it handles TLS for you). Caddy/systemd are not needed in this case.
+      its DNS instructions (it handles TLS for you). nginx/systemd are not needed in this case.
