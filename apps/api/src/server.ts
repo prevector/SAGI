@@ -172,6 +172,10 @@ app.post("/api/auth/login", async (request, response) => {
     response.status(400).json({ error: "Password is required." });
     return;
   }
+  if (!isValidPasswordHash(submittedPasswordHash)) {
+    response.status(400).json({ error: "Password is invalid." });
+    return;
+  }
   try {
     const valid =
       verifyPasswordHash(submittedUsername, submittedPasswordHash, env) ||

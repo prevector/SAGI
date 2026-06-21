@@ -1,6 +1,7 @@
 import type { IDockviewPanelProps } from "dockview";
 import type { FootballLeaderboardSnapshot } from "@sagi/shared";
 import { useEffect, useMemo, useState } from "react";
+import { fetchJson } from "../../../lib/request";
 import { useGeneTerminal } from "../state";
 import styles from "../GeneTerminal.module.css";
 
@@ -13,11 +14,7 @@ export function LeaderboardPanel(_: IDockviewPanelProps) {
 
     async function loadLeaderboard() {
       try {
-        const response = await fetch("/api/football/leaderboard");
-        if (!response.ok) {
-          return;
-        }
-        const next = await response.json() as FootballLeaderboardSnapshot;
+        const next = await fetchJson<FootballLeaderboardSnapshot>("/api/football/leaderboard");
         if (!cancelled) {
           setLeaderboard(next);
         }

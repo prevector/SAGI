@@ -36,6 +36,7 @@ import {
   upsertCreature
 } from "./creatureLibrary";
 import type { FootballTeamSubmissionPayload } from "@sagi/shared";
+import { apiUrl } from "../../lib/request";
 
 export type TrainingStatus = "idle" | "running" | "paused";
 export type TrainingMode = "language" | "football";
@@ -473,8 +474,9 @@ export function GeneTerminalProvider({ children }: { children: ReactNode }) {
     };
 
     let cancelled = false;
-    void fetch("/api/football/submissions", {
+    void fetch(apiUrl("/api/football/submissions"), {
       method: "POST",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json"
       },
