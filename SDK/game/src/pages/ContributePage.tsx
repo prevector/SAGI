@@ -171,7 +171,10 @@ function Stat({ label, value, accent }: { label: string; value: number; accent: 
 
 const styles: Record<string, CSSProperties> = {
   root: {
-    position: "fixed",
+    // `absolute` (not `fixed`) so the app fills whatever positioned container the
+    // PhoneFrame hands it — the phone screen on desktop, or a full-viewport box on
+    // mobile / inside the website's demo iframe.
+    position: "absolute",
     inset: 0,
     display: "flex",
     flexDirection: "column",
@@ -290,9 +293,10 @@ const styles: Record<string, CSSProperties> = {
     whiteSpace: "pre",
   },
 
-  // First-run explainer overlay.
+  // First-run explainer overlay. `absolute` so it covers only the app (the phone
+  // screen when framed), not the whole desktop viewport.
   introScrim: {
-    position: "fixed",
+    position: "absolute",
     inset: 0,
     zIndex: 20,
     display: "flex",

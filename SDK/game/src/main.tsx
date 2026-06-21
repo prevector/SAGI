@@ -2,6 +2,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./styles/tokens.css";
 import ContributePage from "./pages/ContributePage";
+import { PhoneFrame } from "./PhoneFrame";
 
 // Dev-only self-heal: this app is a PWA, so a service worker from a prior
 // `vite preview` of dist/ can linger and replay a stale build inside the demo's
@@ -18,6 +19,8 @@ if (import.meta.env.DEV && "serviceWorker" in navigator) {
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <ContributePage />
+    <PhoneFrame>
+      <ContributePage />
+    </PhoneFrame>
   </StrictMode>
 );
