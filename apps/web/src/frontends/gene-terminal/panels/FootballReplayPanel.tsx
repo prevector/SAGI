@@ -74,17 +74,6 @@ function ActionCamera({
   return null;
 }
 
-function makeOpponentPhenotype(terminal: GeneTerminalState) {
-  const phenotype = terminal.selectedCreature.phenotype;
-  return {
-    ...phenotype,
-    bodyFrom: phenotype.bodyTo,
-    bodyTo: phenotype.cool,
-    crest: phenotype.accent,
-    limb: phenotype.limb
-  };
-}
-
 function FootballGoal({
   x,
   direction
@@ -227,8 +216,6 @@ export function FootballReplayPanelBody({
       </div>
     );
   }
-  const opponentPhenotype = makeOpponentPhenotype(terminal);
-
   return (
     <>
       <div className={styles.visualizerStage}>
@@ -340,7 +327,7 @@ export function FootballReplayPanelBody({
             <CreatureActor3D
               key={`football-b-${index}`}
               gene={terminal.selectedGene}
-              phenotype={opponentPhenotype}
+              phenotype={terminal.selectedCreature.phenotype}
               generation={terminal.generation}
               status="running"
               worldPosition={[player.x - 55, FIELD_SURFACE_Y, player.y - 35]}

@@ -914,26 +914,21 @@ function CreatureWalker({
     const cycle = time * (1.1 + locomotion * 0.95);
     const dt = Math.min(delta, 1 / 30);
     const activeFloorY = worldGroundY ?? spec.floorY;
+    const controlledActor = Boolean(worldPosition);
     if (worldPosition) {
       const current = controlledPositionRef.current ?? controlledBodyPosition(spec, worldPosition, worldGroundY);
       const target = TEMP_D.copy(controlledBodyPosition(spec, worldPosition, worldGroundY));
       const previous = current.clone();
       const largeTeleport = current.distanceToSquared(target) > 36;
-      if (largeTeleport) {
-        current.copy(target);
-      } else {
-        current.lerp(target, 1 - Math.exp(-dt * 10));
-      }
+      current.copy(target);
       motion.position.copy(current);
       motion.velocity.copy(TEMP_E.subVectors(current, previous)).multiplyScalar(1 / Math.max(dt, 1e-4));
       if (motion.velocity.length() > 2.4) {
         motion.velocity.setLength(2.4);
       }
       if (worldHeading !== undefined) {
-        const lastHeading = controlledHeadingRef.current;
-        const deltaHeading = Math.atan2(Math.sin(worldHeading - lastHeading), Math.cos(worldHeading - lastHeading));
-        controlledHeadingRef.current = lastHeading + deltaHeading * (1 - Math.exp(-dt * 9));
-        motion.heading = controlledHeadingRef.current;
+        controlledHeadingRef.current = worldHeading;
+        motion.heading = worldHeading;
       } else if (motion.velocity.lengthSq() > 1e-4) {
         motion.heading = Math.atan2(motion.velocity.z, motion.velocity.x);
       }
@@ -963,10 +958,9 @@ function CreatureWalker({
     }
 
     const walkStrength = (status === "running" ? 0.96 : 0.48) * gaitScale;
-    const forward = TEMP_B.set(motion.velocity.x, 0, motion.velocity.z);
-    if (forward.lengthSq() < 1e-6) {
-      forward.set(Math.cos(motion.heading), 0, Math.sin(motion.heading));
-    } else {
+    const forward = TEMP_B.set(Math.cos(motion.heading), 0, Math.sin(motion.heading));
+    if (!controlledActor && motion.velocity.lengthSq() >= 1e-6) {
+      forward.set(motion.velocity.x, 0, motion.velocity.z);
       forward.normalize();
     }
     const lateral = TEMP_C.set(-forward.z, 0, forward.x).normalize();
