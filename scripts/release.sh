@@ -19,6 +19,7 @@ rsync \
   --delete \
   --exclude ".git" \
   --exclude ".env" \
+  --exclude ".impeccable" \
   --exclude "node_modules" \
   --exclude "OEEToolbox-master" \
   --exclude "apps/*/dist" \
