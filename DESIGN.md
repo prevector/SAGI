@@ -1,211 +1,168 @@
 # DESIGN.md — SAGI Design System
 
 **Project:** SAGI — a distributed search for artificial general intelligence
-**Surface:** single-page marketing landing site, built in Framer (Basic paid plan)
-**Status:** frozen. This file is the single source of truth for all visual tokens. `STRUCTURE.md` references these tokens by name; do not invent new colors, type sizes, or spacing values.
+**Surface:** single-page marketing landing site (React + Vite + CSS Modules)
+**Status:** active. This file is the single source of truth for all visual tokens and brand conventions. Never hardcode hex values or invent new type sizes — reference the tokens below.
 
 ---
 
 ## 1. Brand essence & principles
 
-SAGI is a worldwide, living laboratory where candidate minds are grown, observed, and selected. The site should feel like a **lab instrument watching intelligence emerge from noise** — deep-tech, precise, and distinctive, not a generic crypto or SaaS page.
+SAGI is a worldwide, living laboratory where candidate minds are grown, observed, and selected. The site feels **warm and editorial** — precise and intelligent, not a generic crypto or SaaS page.
 
 Three principles drive every decision:
 
-1. **Emergence from noise.** Random genomes resolve into a living organism. This is the motif behind the hero animation, the scroll reveals, and the accent logic.
-2. **Dark lab, lit field notes.** Dark sections are the instrument/void where organisms and data glow; warm off-white sections are the human "field-note" moments. Sections alternate.
-3. **Two axes, two accents.** Teal = the *intelligence* axis (evolution, selection, the resolved organism). Orange = the *economy* axis (tokens, rewards, bounties). Every accent use means one of these two things — never decoration.
+1. **Warm emergence.** The hero gradient (soft pink dissolving into deep blue) is the emotional centre. Sections with gradient backgrounds carry significance: hero, "Why contribute".
+2. **Editorial calm.** Cormorant serif for body and eyebrow text gives a thoughtful, scientific-journal quality. Gothic A1 handles headings with clean weight.
+3. **Two fonts, one palette.** Cormorant for everything readers absorb (eyebrows, body, captions). Gothic A1 for everything that commands (headings, nav labels). Never mix roles.
 
-**Signature element (spend boldness here):** the hero *emergence field* — a field of noise glyphs crystallising into a coherent teal organism and dissolving again — paired with the two-column "one scaled model vs an evolving population" token resolution. Everything else stays quiet and disciplined.
-
-**Restraint rule:** one bold moment (the signature), everything around it precise and calm. Cut decoration that doesn't serve the brief.
+**Signature element:** the hero *EmergenceField* canvas animation — noise glyphs crystallising into a living organism — layered over the pink→blue gradient. Spend boldness here; keep everything else restrained.
 
 ---
 
 ## 2. Color
 
-All hex values are authoritative. In Framer, create each as a **named color style** (group → name as below) and reference styles everywhere — never hardcode a hex on a layer.
+All values are defined as CSS custom properties in `apps/web/src/styles/tokens.css`. Reference variables — never hardcode hex.
 
-### Surfaces — dark
-
-| Token | Hex | Use |
-|---|---|---|
-| `bg/deep` | `#000000` | Announcement bar, backers row, footer |
-| `bg/dark` | `#041414` | Primary dark sections, hero (teal-tinted near-black) |
-| `bg/dark-raised` | `#0B1E1E` | Cards/surfaces on dark |
-
-### Surfaces — light
+### Brand palette
 
 | Token | Hex | Use |
 |---|---|---|
-| `bg/paper` | `#FAF8F0` | Primary light sections (warm off-white) |
-| `bg/light` | `#FFFFFF` | Clean light sections (steps/diagram) |
-| `bg/light-muted` | `#F7F7F7` | Subtle light sections (leaderboard/data) |
+| `--pink-50` | `#FDF0F3` | Faint pink tint |
+| `--pink-100` | `#FAD9E2` | Gradient start |
+| `--pink-300` | `#F5C5CE` | Primary accent, buttons |
+| `--pink-500` | `#E07A97` | Mid pink |
+| `--pink-700` | `#C04B6E` | Accent dark / hover |
+| `--pink-900` | `#7A1F3D` | Deep pink |
+| `--brown-50` | `#F5F0EA` | Warm off-white |
+| `--brown-100` | `#E4D8C8` | Warm tint |
+| `--brown-300` | `#A8886A` | Muted brown |
+| `--brown-500` | `#6B4F35` | Secondary text |
+| `--brown-700` | `#3E2A18` | Body text |
+| `--brown-900` | `#2E2118` | Primary text, footer bg |
+| `--blue-50` | `#EDF4F9` | Faint blue |
+| `--blue-100` | `#C8DFF0` | Gradient mid |
+| `--blue-300` | `#6BADD4` | Gradient accent |
+| `--blue-500` | `#3C7FA8` | Secondary accent |
+| `--blue-700` | `#2A5F7D` | Blue hover |
+| `--blue-900` | `#1A3A4E` | Deep blue |
 
-### Text
+### Semantic tokens
 
-| Token | Value | Use |
+| Token | Resolves to | Use |
 |---|---|---|
-| `text/on-dark` | `#FAF8F0` | Primary text on dark |
-| `text/on-dark-2` | `rgba(250,248,240,0.66)` | Secondary text on dark |
-| `text/on-dark-3` | `rgba(250,248,240,0.42)` | Captions / fine print on dark |
-| `text/on-light` | `#2B2A29` | Primary text on light |
-| `text/on-light-2` | `rgba(43,42,41,0.64)` | Secondary text on light |
+| `--bg` | white | Page background |
+| `--bg-muted` | `--gray-50` | Subtle section bg |
+| `--text` | `--brown-900` | Primary body text |
+| `--text-muted` | `--gray-500` | Captions, metadata |
+| `--accent` | `--pink-300` | Primary accent |
+| `--accent-2` | `--blue-500` | Secondary accent |
+| `--hero-gradient` | `135deg, --pink-100 → --blue-300 → --blue-500` | Hero + "Why contribute" bg |
 
-### Accents
+### Color rules
 
-| Token | Hex | Meaning / use |
-|---|---|---|
-| `accent/teal` | `#17C4C4` | Intelligence axis: resolved/selected, primary CTA, links, focus, "verified" |
-| `accent/teal-deep` | `#159999` | Teal hover/pressed; teal text on light (minimum contrast) |
-| `accent/teal-pale` | `#EFF9F9` | Teal tint highlights on dark |
-| `accent/orange` | `#F0783D` | Economy axis: tokens, rewards, bounties, earnings |
-| `accent/orange-deep` | `#C85E2A` | Orange hover/pressed |
-
-### Borders & ink-on-accent
-
-| Token | Value | Use |
-|---|---|---|
-| `border/on-dark` | `rgba(250,248,240,0.12)` | Hairline on dark |
-| `border/on-dark-strong` | `rgba(250,248,240,0.24)` | Hover/emphasis on dark; ghost button border |
-| `border/on-light` | `rgba(43,42,41,0.12)` | Hairline on light |
-| `ink/on-teal` | `#041414` | Text on a teal fill |
-| `ink/on-orange` | `#2B1206` | Text on an orange fill (deep brown) |
-
-### Color rules (hard requirements)
-
-- **Color never carries meaning alone.** The stakeholder is colorblind. Every teal/orange state must also be signalled by a label, icon, mono tag, or position. Teal-vs-orange is distinguishable for the common CVD types, but we never rely on it.
-- **Teal = intelligence/selection; orange = economy/reward.** Don't mix the meanings. Orange is concentrated in sections S06–S07 and the "earn" phrase in the announcement bar; teal carries everything else (links, primary CTA, "verified", focus).
-- **Contrast:** `text/on-dark` on `bg/dark` ≈ 16:1 (excellent). Use teal and orange for large text, UI accents, and graphics **only — never body copy.** Teal on white is low-contrast; if teal text must sit on light, use `accent/teal-deep` and keep it short.
+- **Never hardcode hex.** Always `var(--token-name)`.
+- **`--hero-gradient`** is used for two sections: the hero and the TokenEconomy ("Why contribute") section. These are the only gradient backgrounds.
+- The footer uses `--brown-900` as its background with white text.
+- Primary buttons use `--pink-300` fill with `--brown-900` text — warm pink, not blue.
 
 ---
 
 ## 3. Typography
 
-**Families (only these two):**
-- `Geist` — display, headings, UI, and body. (Vercel Geist, SIL OFL; add as a Framer font.)
-- `Geist Mono` — eyebrows/kickers, tokens, data, code, numbers.
+**Two families only:**
+- `Cormorant` — eyebrows, body large, body, captions. The editorial voice.
+- `Gothic A1` — headings (H1/H2/H3) and UI labels. The structural voice.
 
-Geist's lighter weights echo the reference's light display feel; Geist Mono does the distinctive "genome/token" work. Create each row below as a **named text style** in Framer.
+Both are self-hosted (fonts in the Claude Design project) and also loaded via Google Fonts as a fallback in `apps/web/src/styles/globals.css`.
 
-| Style name | Font | Desktop | Mobile | Weight | Line-height | Notes |
-|---|---|---|---|---|---|---|
-| `Display/H1` | Geist | 64px | 40px | 400 | 1.0 | tracking −0.02em, sentence case |
-| `Heading/H2` | Geist | 48px | 32px | 400 | 1.1 | sentence case |
-| `Subheading/H3` | Geist | 30px | 24px | 500 | 1.2 | feature/step titles |
-| `Body-L` | Geist | 18px | 17px | 400 | 1.5 | hero subhead, section intros |
-| `Body` | Geist | 16px | 16px | 400 | 1.55 | default copy |
-| `Small` | Geist | 14px | 14px | 500 | 1.4 | meta, captions, footer links |
-| `Eyebrow` | Geist Mono | 13px | 13px | 500 | 1.3 | letter-spacing 0.08em; `accent/teal` or `text/*-2` |
-| `Mono-Token` | Geist Mono | 16–28px | 14–22px | 400–500 | 1.2 | animation chips, counters, IDs, pricing |
+### Type scale
 
-**Case:** sentence case everywhere. The only uppercase permitted is the `Eyebrow` style (with letter-spacing). Never Title Case, never ALL CAPS elsewhere.
+| Style | Family | Size | Weight | Line-height | Notes |
+|---|---|---|---|---|---|
+| H1 | Gothic A1 (`--font-sans`) | 56px | 700 | 1.05 | `letter-spacing: -0.01em` |
+| H2 | Gothic A1 (`--font-sans`) | 40px | 600 | 1.1 | `letter-spacing: -0.01em` |
+| H3 | Gothic A1 (`--font-sans`) | 24px | 600 | 1.2 | |
+| Eyebrow | Cormorant (`--font-display`) | 22px | 500 | 1.3 | **Not italic.** `letter-spacing: 0.01em` |
+| Body Large | Cormorant (`--font-display`) | 18px | 400 | 1.4 | Section intros, hero subhead |
+| Body | Cormorant (`--font-display`) | 16px | 400 | 1.4 | Default copy |
+| Small / Label | Gothic A1 (`--font-ui`) | 12px | 500 | 1.4 | UI chrome, metadata |
+
+**Critical rule:** eyebrows and body copy are Cormorant — not Gothic A1. Cormorant should not be italic in UI contexts (the old spec used italic; the current brand does not).
+
+Mobile breakpoint (≤810px): H1 → 36px, H2 → 28px, H3 → 20px, Eyebrow → 16–17px.
 
 ---
 
 ## 4. Spacing & layout
 
-**Spacing scale (8pt-based)** — create as the only spacing values used:
-`space/1`=4 · `space/2`=8 · `space/3`=12 · `space/4`=16 · `space/5`=24 · `space/6`=32 · `space/7`=48 · `space/8`=64 · `space/9`=96 · `space/10`=128
+Spacing scale (`--s1` through `--s8`): 4 · 8 · 12 · 16 · 24 · 32 · 48 · 64
 
-- **Container:** max-width `1320px`, centered. Side gutter `space/5` (24) on mobile, `space/7` (48) on desktop.
-- **Section vertical padding:** desktop `space/10` (128) top & bottom; tablet `space/9`→`88`; mobile `space/8` (64)→`56`.
-- **Grid:** 12-column mental model; card grids use auto-fit (`minmax(280px, 1fr)`).
-- **Radius:** buttons = pill (`9999px`); cards = `16px`; chips/tags = `8px`. Never round a single-sided border.
-- **Elevation:** from surface color only. **No drop shadows, no gradients** (except the hero canvas), no glow.
-- **Borders:** 1px hairlines using the border tokens.
+- **Container:** `max-width: 1320px` (`--container`), centered. Side padding `--s7` (48px) desktop, `--s5` (24px) mobile.
+- **Section vertical padding:** 128px desktop · 88px tablet · 56px mobile.
+- **Radius:** `--radius-sm`=4px · `--radius`=8px · `--radius-lg`=16px · `--radius-pill`=9999px (buttons).
+- **No drop shadows.** Elevation is expressed through surface color only.
 
 ---
 
 ## 5. Components
 
-Build each as a real Framer **component with variants** (not repeated raw frames). Names below are used verbatim in `STRUCTURE.md`.
-
 ### `Button`
-Pill, padding `12px 20px`, `Small` weight 500, all-sides border only where noted. Variants:
-- `Primary` — fill `accent/teal`, text `ink/on-teal`, no border. Hover fill `accent/teal-deep`.
-- `Reward` — fill `accent/orange`, text `ink/on-orange`, no border. Hover fill `accent/orange-deep`.
-- `Ghost-dark` — transparent, text `text/on-dark`, 1px `border/on-dark-strong`. Hover: fill `rgba(250,248,240,0.08)`.
-- `Ghost-light` — transparent, text `text/on-light`, 1px `border/on-light`. Hover: fill `rgba(43,42,41,0.06)`.
-Focus state (all): 2px `accent/teal` ring, 2px offset.
+Pill (`--radius-pill`), padding `12px 20px`. Variants:
+- **Primary** — `background: --pink-300`, `color: --brown-900`. The default CTA.
+- **Ghost** — transparent, `color: --brown-900`, `border: 1px solid rgba(46,33,24,0.3)`.
 
 ### `Eyebrow`
-`Eyebrow` text style + optional 6px leading dot in `accent/teal`. Used to label every section.
+Cormorant 22px, weight 500, non-italic, `--brown-700`. Optional 5px dot prefix in `--pink-700`. Used to label every section.
 
 ### `Nav`
-Sticky top. Transparent over the hero; on scroll, fill `bg/dark` with a 1px bottom `border/on-dark`. Left: `SAGI` wordmark. Center/right: text links (`Small`, `text/on-dark-2`, hover `text/on-dark`). Right cluster: `Button/Ghost-dark` ("Read the thesis") + `Button/Primary` ("Join the network"). Mobile: collapse links into a hamburger; keep the primary button visible.
-
-### `AnnouncementBar`
-Full-width, `bg/deep`, height ~40px, single centered line, `Small` `text/on-dark`. Emphasis word in `accent/orange`; trailing `→` in `accent/teal`. Sticky above `Nav`.
-
-### `Card`
-Base: radius 16, 1px hairline, padding `space/5` (24). Variants:
-- `Base` — on light: `bg/light` + `border/on-light`; on dark: `bg/dark-raised` + `border/on-dark`.
-- `Organism` — dark, hosts an `OrganismVignette`, with a `Mono-Token` status label.
-- `RewardRail` — dark, icon + `Subheading/H3` + `Body`, optional `accent/orange` stat.
-- `Bounty` — dark, `Mono-Token` reward in `accent/orange`, `accent/teal` "verified" tag, hairline divider.
-
-### `LeaderboardRow`
-Grid row: rank (`Mono-Token`), organism name (`Body`), score (`Mono-Token`), status pill (teal "Verified"), reward (`Mono-Token`, `accent/orange`). Header row in `text/*-2`.
-
-### `LogoTicker`
-Continuous horizontal marquee of monochrome sponsor marks at ~65% opacity, equal optical height 24–28px, on `bg/deep`. Pause on hover. Duplicate the set for a seamless loop.
+Sticky top. Transparent over hero; on scroll: `background: rgba(253,240,243,0.85)` with `backdrop-filter: blur(12px)`. Left: SAGI logo SVG (`currentColor` → `--brown-900`). Right: Ghost button + Primary button.
 
 ### `Footer`
-`bg/deep`. Wordmark + tagline; 3–4 link columns (`Small`, `text/on-dark-2`); social row; disclaimer in `text/on-dark-3`; © line.
+`background: --brown-900`. SAGI logo SVG in white. 4-column link grid. Copyright + disclaimer in `--brown-500`.
 
-### Code components (see INSTRUCTIONS.md §6 for build approach)
-- `EmergenceField` — hero canvas animation (noise → organism, teal accents).
-- `OrganismVignette` — small looping creature/agent (props: `behavior` = adapts | remembers | recovers).
-- `TokenResolution` — two-column mono-token resolve animation.
-- `Counter` — count-up number in `Mono-Token` (props: `to`, `suffix`, `duration`).
+### Code components
+- `EmergenceField` — hero canvas animation. Configured with `transparentBg: true` over the gradient; `noiseColor: rgba(46,33,24,0.18)`, `organismColor: rgba(255,255,255,0.95)`.
+- `OrganismVignette` — small looping creature (per-section).
 
 ---
 
 ## 6. Motion
 
-**Principle:** one orchestrated "emergence" moment carries the page; everything else is restrained. Scattered effects read as AI-generated — avoid them.
+**Timing:** `--motion-fast`=150ms · `--motion-base`=300ms · `--motion-slow`=600ms
+**Easing:** `cubic-bezier(0.22, 1, 0.36, 1)` for all entrances.
 
-**Timing tokens:** `motion/fast`=150ms · `motion/base`=300ms · `motion/slow`=600ms.
-**Easing:** `cubic-bezier(0.22, 1, 0.36, 1)` (ease-out) for all entrances.
-
-**Named animations:**
-- `diffuse-in` — scroll reveal: opacity 0→1, translateY 16px→0, slight blur 6px→0. `motion/slow`, once per element, triggered ~15% into viewport. The default reveal for section content.
-- `emergence` — hero `EmergenceField` loop (continuous, ambient, slow).
-- `token-resolve` — `TokenResolution`: left column types tokens sequentially; right column resolves teal tokens together from a brief scramble; loops with a pause.
+- `diffuse-in` — scroll reveal: opacity 0→1, translateY 16px→0, blur 6px→0. `motion/slow`.
+- `emergence` — hero EmergenceField loop (continuous, ambient).
 - `stagger` — cards/rows enter with `diffuse-in` + 80ms increments.
-- `count-up` — `Counter` animates on reveal.
-- `marquee` — `LogoTicker`, ~35s linear loop, pause on hover.
 
-**Reduced motion (required):** honor `prefers-reduced-motion`. Canvas animations render a single static frame/poster; `diffuse-in`/`stagger` become instant; `marquee` and `token-resolve` freeze on a legible state.
+`prefers-reduced-motion`: all transitions instant, canvas shows a static frame.
 
 ---
 
-## 7. Iconography & imagery
+## 7. Accessibility
 
-- **Icons:** one thin outline set only (e.g., Lucide). 1.5px stroke, sized 20–24px. Used in steps (S05) and reward rails (S06).
-- **Imagery:** minimal. The organisms and the canvas field are the visual interest, not stock photography. Sponsor marks are simple monochrome wordmarks/logos (fictional — see STRUCTURE.md S08).
-- **Wordmark:** `SAGI` set in Geist (or Geist Mono for a more instrument-like feel); decide during build and keep consistent in nav and footer.
-
----
-
-## 8. Accessibility (quality floor — non-negotiable)
-
-- Contrast: body text meets WCAG AA. Accents are for large text/graphics only.
-- Color is never the only signal (see §2 rules) — pair with label/icon/position.
-- Visible keyboard focus on every interactive element (2px `accent/teal` ring).
-- Semantic structure: one `h1`; logical `h2`/`h3`; semantic tags on frames (`header`, `nav`, `section`, `article`, `footer`).
-- All images have alt text; decorative canvases are `aria-hidden`.
-- `prefers-reduced-motion` respected everywhere (see §6).
+- Body text contrast meets WCAG AA.
+- One `h1` per page; logical heading hierarchy.
+- Visible keyboard focus on all interactive elements.
+- Canvas animations are `aria-hidden`.
 - Minimum font size 14px; body is 16px.
+- `prefers-reduced-motion` honoured everywhere.
 
 ---
 
-## 9. Assets / fonts checklist
+## 8. Token reference (quick lookup)
 
-- [ ] `Geist` + `Geist Mono` added as Framer fonts (weights 300/400/500/600 as needed).
-- [ ] Color styles created for every token in §2.
-- [ ] Text styles created for every style in §3.
-- [ ] Components built per §5 before sections are assembled.
-- [ ] Fictional sponsor marks (6–8) created for the `LogoTicker`.
-- [ ] Favicon + OG/social image (can be a simple wordmark on `bg/dark`).
+```css
+/* Fonts */
+--font-display: "Cormorant", Georgia, serif;   /* eyebrow, body */
+--font-sans:    "Gothic A1", system-ui, sans-serif; /* headings */
+--font-ui:      "Gothic A1", system-ui, sans-serif; /* labels */
+
+/* Key colors */
+--pink-300:   #F5C5CE;  /* primary accent / button fill */
+--brown-900:  #2E2118;  /* primary text / footer bg */
+--brown-700:  #3E2A18;  /* body / eyebrow text */
+--blue-500:   #3C7FA8;  /* secondary accent */
+--hero-gradient: linear-gradient(135deg, #FAD9E2 0%, #6BADD4 60%, #3C7FA8 100%);
+```

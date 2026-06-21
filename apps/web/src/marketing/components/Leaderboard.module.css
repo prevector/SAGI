@@ -6,10 +6,10 @@
 .table {
   width: 100%;
   min-width: 560px;
-  border: 1px solid var(--sagi-border-light, rgba(43, 42, 41, 0.12));
+  border: 1px solid var(--gray-200);
   border-radius: var(--radius-lg);
   overflow: clip;
-  background: var(--sagi-white);
+  background: var(--white);
 }
 
 .row {
@@ -18,36 +18,40 @@
   align-items: center;
   gap: var(--s4);
   padding: var(--s4) var(--s5);
-  border-bottom: 1px solid rgba(43, 42, 41, 0.08);
+  border-bottom: 1px solid var(--gray-100);
 }
 .row:last-child {
   border-bottom: none;
 }
 
 .head {
-  font-family: var(--font-mono);
-  font-size: 12px;
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 600;
   letter-spacing: 0.06em;
-  color: rgba(43, 42, 41, 0.64);
-  background: var(--sagi-light-muted);
+  text-transform: uppercase;
+  color: var(--gray-500);
+  background: var(--gray-50);
 }
 
 .rank,
 .score {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  color: var(--sagi-dark);
+  color: var(--brown-900);
 }
 
 .organism {
   font-family: var(--font-mono);
-  color: var(--sagi-dark);
+  font-size: 14px;
+  color: var(--brown-700);
 }
 
 .reward {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  color: var(--accent-2);
+  font-weight: 600;
+  color: var(--pink-700);
 }
 
 .right {
@@ -59,13 +63,13 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-family: var(--font-mono);
-  font-size: 13px;
+  font-family: var(--font-ui);
+  font-size: 12px;
   white-space: nowrap;
 }
 .verified {
-  color: var(--accent-hover);
+  color: var(--status-success);
 }
 .pending {
-  color: var(--status-closed);
+  color: var(--gray-500);
 }

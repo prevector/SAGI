@@ -1,8 +1,4 @@
-/* Self-hosted Geist (Vite-friendly via fontsource). On Vite we use the
-   @fontsource-variable packages rather than the Next-only `geist` package;
-   the fonts are identical. tokens.css maps them to --font-sans/--font-mono. */
-@import "@fontsource-variable/geist";
-@import "@fontsource-variable/geist-mono";
+@import url("https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Gothic+A1:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap");
 @import "./tokens.css";
 
 * {
@@ -17,12 +13,10 @@ body {
 
 body {
   min-height: 100vh;
-  background:
-    radial-gradient(circle at top, rgba(23, 196, 196, 0.1), transparent 36%),
-    var(--bg);
+  background: var(--bg);
   color: var(--text);
   font-family: var(--font-sans);
-  font-size: var(--fs-body);
+  font-size: 16px;
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
@@ -32,13 +26,8 @@ body {
   min-height: 100vh;
 }
 
-h1,
-h2,
-h3,
-h4 {
+h1, h2, h3, h4 {
   margin: 0;
-  font-weight: 500;
-  letter-spacing: -0.01em;
   line-height: 1.1;
 }
 
@@ -47,12 +36,12 @@ p {
 }
 
 a {
-  color: var(--accent);
+  color: var(--text);
   text-decoration: none;
 }
 
 a:hover {
-  color: var(--accent-hover);
+  color: var(--accent-dark);
 }
 
 button,
@@ -63,9 +52,8 @@ select {
   color: inherit;
 }
 
-/* Visible keyboard focus everywhere (DESIGN.md §8): 2px teal ring, 2px offset */
 :focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--accent-2);
   outline-offset: 2px;
   border-radius: var(--radius-sm);
 }
@@ -76,10 +64,9 @@ code,
 }
 
 ::selection {
-  background: rgba(23, 196, 196, 0.28);
+  background: rgba(245, 197, 206, 0.4);
 }
 
-/* Honour reduced-motion globally (DESIGN.md §6) */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

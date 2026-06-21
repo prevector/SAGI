@@ -1,15 +1,18 @@
 .nav {
   width: 100%;
   background: transparent;
-  border-bottom: 1px solid transparent;
+  border-bottom: 1px solid rgba(46, 33, 24, 0.15);
   transition:
     background var(--motion-base) var(--ease-out),
-    border-color var(--motion-base) var(--ease-out);
+    border-color var(--motion-base) var(--ease-out),
+    backdrop-filter var(--motion-base) var(--ease-out);
 }
 
 .scrolled {
-  background: var(--sagi-dark);
-  border-bottom-color: var(--border);
+  background: rgba(253, 240, 243, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom-color: rgba(46, 33, 24, 0.12);
 }
 
 .inner {
@@ -21,18 +24,16 @@
   max-width: var(--container);
   margin: 0 auto;
   padding: var(--s3) var(--s7);
-  min-height: 64px;
+  min-height: 60px;
 }
 
 .wordmark {
-  font-family: var(--font-mono);
-  font-weight: 600;
-  font-size: 18px;
-  letter-spacing: 0.04em;
-  color: var(--text);
+  display: inline-flex;
+  align-items: center;
+  color: var(--brown-900);
 }
 .wordmark:hover {
-  color: var(--text);
+  color: var(--brown-700);
 }
 
 .links {
@@ -42,12 +43,14 @@
 }
 
 .link {
-  font-size: 14px;
+  font-family: var(--font-ui);
+  font-size: 13px;
   font-weight: 500;
-  color: var(--text-muted);
+  color: var(--brown-500);
+  letter-spacing: 0.01em;
 }
 .link:hover {
-  color: var(--text);
+  color: var(--brown-900);
 }
 
 .cluster {
@@ -63,9 +66,9 @@
   width: 40px;
   height: 40px;
   background: transparent;
-  border: 1px solid var(--border-strong);
+  border: 1px solid var(--gray-200);
   border-radius: var(--radius-pill);
-  color: var(--text);
+  color: var(--brown-900);
   cursor: pointer;
 }
 
@@ -91,14 +94,15 @@
     flex-direction: column;
     gap: var(--s2);
     padding: var(--s3) var(--s5) var(--s5);
-    background: var(--sagi-dark);
-    border-bottom: 1px solid var(--border);
+    background: rgba(253, 240, 243, 0.95);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--gray-200);
   }
   .drawerLink {
     padding: var(--s3) 0;
     font-size: 16px;
-    color: var(--text);
-    border-bottom: 1px solid var(--border);
+    color: var(--brown-900);
+    border-bottom: 1px solid var(--gray-100);
   }
   .drawerLink:last-child {
     border-bottom: none;

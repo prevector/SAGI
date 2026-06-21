@@ -1,5 +1,5 @@
 .section {
-  background: var(--sagi-dark);
+  background: var(--white);
 }
 
 .panel {
@@ -8,25 +8,24 @@
   align-items: center;
   text-align: center;
   gap: var(--s5);
-  padding: var(--s9) var(--s7);
-  border: 1px solid rgba(23, 196, 196, 0.32);
+  padding: 80px var(--s7);
+  border: 1px solid var(--pink-300);
   border-radius: var(--radius-lg);
-  background:
-    radial-gradient(circle at 50% 0%, rgba(23, 196, 196, 0.16), transparent 60%),
-    var(--surface);
+  background: linear-gradient(135deg, var(--pink-50) 0%, var(--blue-50) 100%);
 }
 
 .title {
-  color: var(--text);
+  color: var(--brown-900);
 }
 
 .body {
-  color: var(--text-muted);
+  color: var(--brown-700);
   max-width: 52ch;
 }
 
 .earn {
-  color: var(--accent-2);
+  color: var(--pink-700);
+  font-weight: 600;
 }
 
 .ctas {

@@ -1,5 +1,5 @@
 .section {
-  background: var(--sagi-paper);
+  background: var(--brown-50);
 }
 
 .col {
@@ -13,14 +13,14 @@
 }
 
 .title {
-  color: var(--sagi-dark);
+  color: var(--brown-900);
   max-width: 20ch;
 }
 
 .body {
-  color: var(--sagi-dark);
+  color: var(--brown-700);
 }
 
 .highlight {
-  color: var(--accent-hover);
+  color: var(--blue-500);
 }

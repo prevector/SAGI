@@ -1,66 +1,76 @@
-/* SAGI design tokens — single source of truth.
-   Hex values are copied verbatim from DESIGN.md §2 (brand palette). The
-   semantic layer below is the dark-dashboard mapping from the build plan §3.
-   Never hardcode a hex anywhere else; reference these variables. */
+/* SAGI design tokens — new brand palette v2.
+   Warm editorial: Brand Pink / Brown / Blue.
+   Never hardcode hex elsewhere; reference these variables. */
 
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 
-  /* ---- Brand palette (DESIGN.md §2) ---- */
-  --sagi-black: #000000;
-  --sagi-dark: #041414;
-  --sagi-dark-raised: #0b1e1e;
-  --sagi-paper: #faf8f0;
-  --sagi-white: #ffffff;
-  --sagi-light-muted: #f7f7f7;
-  --sagi-teal: #17c4c4;
-  --sagi-teal-deep: #159999;
-  --sagi-teal-pale: #eff9f9;
-  --sagi-orange: #f0783d;
-  --sagi-orange-deep: #c85e2a;
+  /* ---- Brand palette ---- */
+  --pink-50:  #FDF0F3;
+  --pink-100: #FAD9E2;
+  --pink-300: #F5C5CE;
+  --pink-500: #E07A97;
+  --pink-700: #C04B6E;
+  --pink-900: #7A1F3D;
 
-  /* ---- Semantic (dark dashboard) ---- */
-  --bg: var(--sagi-dark);
-  --surface: var(--sagi-dark-raised);
-  --surface-2: #0e2626;
-  --text: var(--sagi-paper);
-  --text-muted: #9fb6b6;
-  /* Faint tier nudged lighter so captions/hints clear WCAG AA (~5:1) even on
-     the raised surface, not just on the darkest bg. */
-  --text-faint: #759090;
-  --border: rgba(250, 248, 240, 0.1);
-  --border-strong: rgba(250, 248, 240, 0.18);
+  --brown-50:  #F5F0EA;
+  --brown-100: #E4D8C8;
+  --brown-300: #A8886A;
+  --brown-500: #6B4F35;
+  --brown-700: #3E2A18;
+  --brown-900: #2E2118;
 
-  /* Ink on accent fills (DESIGN.md) */
-  --ink-on-teal: #041414;
-  --ink-on-orange: #2b1206;
+  --blue-50:  #EDF4F9;
+  --blue-100: #C8DFF0;
+  --blue-300: #6BADD4;
+  --blue-500: #3C7FA8;
+  --blue-700: #2A5F7D;
+  --blue-900: #1A3A4E;
 
-  /* intelligence / network / token axis */
-  --accent: var(--sagi-teal);
-  --accent-hover: var(--sagi-teal-deep);
-  /* economy / reward axis */
-  --accent-2: var(--sagi-orange);
-  --accent-2-hover: var(--sagi-orange-deep);
+  --gray-50:  #F5F6F7;
+  --gray-100: #EAECEE;
+  --gray-200: #D6D9DC;
+  --gray-500: #5C6B7A;
+  --white:    #FFFFFF;
 
-  /* Status + deltas — ALWAYS paired with an icon/label, never colour alone */
-  --status-open: var(--sagi-teal);
-  --status-live: var(--sagi-orange);
-  --status-closed: #7c8e8e;
-  --positive: #36c690;
-  --negative: #e1664b;
+  --status-success: #6A9E7F;
+  --status-warning: #C8924A;
+  --status-error:   #C4614A;
+  --status-info:    #3C7FA8;
 
-  /* ---- Type ---- */
-  --font-sans: "Geist Variable", system-ui, sans-serif;
-  --font-mono: "Geist Mono Variable", ui-monospace, monospace;
-  --fs-display: 2.5rem;
-  --fs-h1: 2rem;
-  --fs-h2: 1.5rem;
-  --fs-h3: 1.125rem;
-  --fs-body: 1rem;
-  --fs-sm: 0.8125rem;
-  --fs-mono: 0.8125rem;
+  /* ---- Semantic ---- */
+  --bg:           var(--white);
+  --bg-muted:     var(--gray-50);
+  --bg-warm:      var(--brown-50);
+  --surface:      var(--white);
+  --surface-2:    var(--gray-50);
 
-  /* ---- Space / radius / shadow / container ---- */
+  --text:         var(--brown-900);
+  --text-muted:   var(--gray-500);
+  --text-faint:   var(--gray-200);
+
+  --border:       var(--gray-200);
+  --border-strong: var(--gray-500);
+
+  --accent:       var(--pink-300);
+  --accent-dark:  var(--pink-700);
+  --accent-2:     var(--blue-500);
+  --accent-2-dark: var(--blue-700);
+
+  /* Hero gradient */
+  --hero-gradient: linear-gradient(135deg, var(--pink-100) 0%, var(--blue-300) 60%, var(--blue-500) 100%);
+
+  /* Status */
+  --positive: var(--status-success);
+  --negative: var(--status-error);
+
+  /* ---- Typography ---- */
+  --font-display: "Cormorant", Georgia, serif;
+  --font-sans:    "Gothic A1", system-ui, sans-serif;
+  --font-ui:      "Gothic A1", system-ui, sans-serif;
+  --font-mono:    ui-monospace, monospace;
+
+  /* ---- Space / radius / container ---- */
   --s1: 4px;
   --s2: 8px;
   --s3: 12px;
@@ -69,13 +79,13 @@
   --s6: 32px;
   --s7: 48px;
   --s8: 64px;
-  --radius-sm: 6px;
-  --radius: 10px;
+  --radius-sm: 4px;
+  --radius:    8px;
   --radius-lg: 16px;
   --radius-pill: 9999px;
   --container: 1320px;
 
-  /* ---- Motion (DESIGN.md §6) ---- */
+  /* ---- Motion ---- */
   --motion-fast: 150ms;
   --motion-base: 300ms;
   --motion-slow: 600ms;

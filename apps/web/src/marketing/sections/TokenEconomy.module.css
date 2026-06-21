@@ -1,5 +1,5 @@
 .section {
-  background: var(--sagi-dark);
+  background: var(--hero-gradient);
 }
 
 .head {
@@ -11,7 +11,7 @@
 }
 
 .title {
-  color: var(--text);
+  color: var(--brown-900);
 }
 
 .rails {
@@ -21,13 +21,13 @@
 }
 
 .utility {
-  color: var(--text-muted);
+  color: var(--brown-700);
   max-width: 760px;
   margin-block: var(--s8);
 }
 
 .tokens {
-  color: var(--accent-2);
+  color: var(--pink-700);
 }
 
 .stats {
@@ -35,8 +35,8 @@
   grid-template-columns: repeat(3, 1fr);
   gap: var(--s5);
   padding-block: var(--s5);
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
+  border-top: 1px solid var(--gray-200);
+  border-bottom: 1px solid var(--gray-200);
   margin-bottom: var(--s8);
 }
 
@@ -48,7 +48,7 @@
 
 .statCaption {
   font-size: 14px;
-  color: var(--text-muted);
+  color: var(--brown-500);
 }
 
 .bounty {

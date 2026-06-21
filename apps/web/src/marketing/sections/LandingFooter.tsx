@@ -1,4 +1,5 @@
 import { footerColumns, footerDisclaimer } from "../lib/content";
+import { SagiLogo } from "../components/SagiLogo";
 import shared from "../marketing.module.css";
 import styles from "./LandingFooter.module.css";
 
@@ -9,7 +10,7 @@ export function LandingFooter() {
       <div className={shared.container}>
         <div className={styles.top}>
           <div className={styles.brand}>
-            <span className={styles.wordmark}>SAGI</span>
+            <SagiLogo height={24} className={styles.wordmark} />
             <p className={styles.tagline}>A distributed search for artificial general intelligence.</p>
           </div>
           <div className={styles.columns}>

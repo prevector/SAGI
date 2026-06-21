@@ -4,25 +4,25 @@
   justify-content: center;
   min-height: 40px;
   padding: var(--s2) var(--s5);
-  background: var(--sagi-black);
-  color: var(--text);
+  background: var(--brown-900);
+  color: var(--brown-100);
   text-align: center;
-  font-family: var(--font-sans);
-  font-size: 14px;
+  font-family: var(--font-ui);
+  font-size: 13px;
   font-weight: 500;
   line-height: 1.4;
 }
 
 .bar:hover {
-  color: var(--text);
+  color: var(--white);
 }
 
 .earn {
-  color: var(--accent-2);
+  color: var(--pink-300);
 }
 
 .arrow {
-  color: var(--accent);
+  color: var(--blue-300);
 }
 
 .short {
