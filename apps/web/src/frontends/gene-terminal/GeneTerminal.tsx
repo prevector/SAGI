@@ -28,37 +28,38 @@ const panelSpecs = {
     id: "network",
     component: "network",
     title: "NETWORK",
-    initialWidth: 300,
-    initialHeight: 260
+    initialWidth: 280,
+    initialHeight: 250
   },
   library: {
     id: "library",
     component: "library",
     title: "LIBRARY",
     position: { referencePanel: "network", direction: "below" as const },
-    initialHeight: 420
+    initialHeight: 470
   },
   training: {
     id: "training",
     component: "training",
     title: "TRAINING",
     position: { referencePanel: "network", direction: "right" as const },
-    initialWidth: 860,
-    initialHeight: 340
-  },
-  creature: {
-    id: "creature",
-    component: "creature",
-    title: "CREATURE",
-    position: { referencePanel: "training", direction: "right" as const },
-    initialWidth: 300
+    initialWidth: 920,
+    initialHeight: 320
   },
   inference: {
     id: "inference",
     component: "inference",
     title: "INFERENCE",
     position: { referencePanel: "training", direction: "below" as const },
-    initialHeight: 520
+    initialHeight: 640
+  },
+  creature: {
+    id: "creature",
+    component: "creature",
+    title: "CREATURE",
+    position: { referencePanel: "training", direction: "right" as const },
+    initialWidth: 280,
+    initialHeight: 250
   }
 } as const;
 
@@ -73,8 +74,6 @@ function Workspace() {
 
   function onReady(event: DockviewReadyEvent) {
     dockApiRef.current = event.api;
-    event.api.getPanel("visualizer")?.api.close();
-    event.api.getPanel("genes")?.api.close();
     (Object.keys(panelSpecs) as PanelId[]).forEach((panelId) => {
       event.api.addPanel(panelSpecs[panelId]);
     });
@@ -115,12 +114,11 @@ function Workspace() {
   const summary = useMemo(() => {
     return [
       terminal.selectedCreature.name,
-      terminal.selectedCreature.phenotype.paletteName,
       `${formatInt(terminal.selectedMorphology.legPairs * 2)} legs`,
       terminal.status.toUpperCase(),
       `GEN ${formatInt(terminal.generation)}`
     ];
-  }, [terminal.generation, terminal.selectedCreature.name, terminal.selectedCreature.phenotype.paletteName, terminal.selectedMorphology.legPairs, terminal.status]);
+  }, [terminal.generation, terminal.selectedCreature.name, terminal.selectedMorphology.legPairs, terminal.status]);
 
   return (
     <div className={styles.terminal}>

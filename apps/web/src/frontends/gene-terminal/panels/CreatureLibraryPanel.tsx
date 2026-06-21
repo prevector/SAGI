@@ -64,12 +64,6 @@ export function CreatureLibraryPanel(_: IDockviewPanelProps) {
               onClick={() => terminal.selectGene(item.id)}
             >
               <span className={styles.creatureListTitle}>
-                <i
-                  className={styles.creatureDot}
-                  style={{
-                    background: `linear-gradient(135deg, ${item.phenotype.bodyFrom}, ${item.phenotype.bodyTo})`
-                  }}
-                />
                 {item.name}
               </span>
               <small>

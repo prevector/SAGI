@@ -73,7 +73,7 @@ export function TrainingPanel(_: IDockviewPanelProps) {
 
       <div className={styles.formGrid}>
         <NumberField
-          label="gru hidden"
+          label="brain size"
           min={2}
           max={64}
           value={terminal.hiddenSize}

@@ -192,13 +192,8 @@
   background: var(--terminal-bg);
 }
 
-.panelGenes {
-  background:
-    linear-gradient(180deg, rgba(110, 140, 166, 0.07), transparent 18%),
-    linear-gradient(180deg, #f1ece3, #eee8de);
-}
-
 .panelLibrary {
+  grid-template-rows: auto auto minmax(0, 1fr);
   background:
     linear-gradient(180deg, rgba(110, 140, 166, 0.05), transparent 16%),
     linear-gradient(180deg, #f0ebe1, #ece6dc);
@@ -327,6 +322,13 @@
   gap: 8px;
 }
 
+.libraryHeader {
+  display: grid;
+  gap: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--terminal-line);
+}
+
 .panelTools button,
 .geneList button,
 .field input {
@@ -435,7 +437,7 @@
 .geneList {
   display: grid;
   gap: 6px;
-  max-height: 220px;
+  min-height: 0;
   overflow: auto;
 }
 
@@ -503,14 +505,6 @@
   display: flex;
   gap: 8px;
   align-items: center;
-}
-
-.creatureDot {
-  width: 12px;
-  height: 12px;
-  border-radius: 999px;
-  border: 1px solid rgba(54, 47, 40, 0.08);
-  flex: 0 0 auto;
 }
 
 .geneList small,
