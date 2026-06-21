@@ -64,3 +64,9 @@
     gap: var(--s6);
   }
 }
+
+.closing {
+  max-width: 640px;
+  margin-top: var(--s6);
+  color: var(--brown-700);
+}

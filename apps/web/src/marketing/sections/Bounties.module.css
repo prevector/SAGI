@@ -51,3 +51,10 @@
   color: var(--pink-700);
   white-space: nowrap;
 }
+
+.embargo {
+  max-width: 640px;
+  margin-top: var(--s4);
+  color: var(--brown-500);
+  font-style: italic;
+}

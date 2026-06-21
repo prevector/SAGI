@@ -18,6 +18,9 @@ export function Bounties() {
             compute cost, each with its own leaderboard. Anyone can post a bounty to point the network at an unsolved
             problem.
           </p>
+          <p className={`${shared.body} ${styles.embargo}`}>
+            Sponsors fund directed research and get first access — a 90-day exclusivity window. After that, every result opens to the entire network. Bounties demanding permanent proprietary closure are rejected. Openness is constitutional.
+          </p>
         </Reveal>
 
         <Reveal>

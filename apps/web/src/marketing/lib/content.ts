@@ -59,12 +59,12 @@ export interface RewardRailSpec {
 export const rewardRails: RewardRailSpec[] = [
   {
     title: "Compute rewards",
-    body: "Earn tokens for every cycle of search your hardware contributes — idle laptop, GPU rig, or cloud node.",
+    body: "Earn credits for every cycle of search your hardware contributes — idle laptop, GPU rig, or cloud node.",
     icon: "Cpu",
   },
   {
     title: "Bounties",
-    body: "Earn larger rewards for a verified breakthrough that significantly improves an organism or algorithm — plus rewards for building hard environments, reproducing results, and finding benchmark exploits.",
+    body: "Earn larger rewards for verified breakthroughs, hard new environments, reproduced results, and benchmark exploits.",
     icon: "Trophy",
   },
 ];
@@ -83,7 +83,7 @@ export const counters: CounterSpec[] = [
 
 // S06 — sample bounty card.
 export const sampleBounty = {
-  title: "First to 0.80 transfer under a fixed compute budget",
+  title: "First to 0.85 transfer under a fixed compute budget",
   reward: "50,000 SAGI",
   tag: "Open",
   helper: "Verified on hidden tasks.",

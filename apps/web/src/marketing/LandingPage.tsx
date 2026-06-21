@@ -7,6 +7,8 @@ import { Organisms } from "./sections/Organisms";
 import { HowItWorks } from "./sections/HowItWorks";
 import { SagiNetwork } from "./sections/SagiNetwork";
 import { TokenEconomy } from "./sections/TokenEconomy";
+import { Foundation } from "./sections/Foundation";
+import { Ethics } from "./sections/Ethics";
 import { Bounties } from "./sections/Bounties";
 import { Backers } from "./sections/Backers";
 import { FinalCta } from "./sections/FinalCta";
@@ -45,6 +47,8 @@ export default function LandingPage() {
         <HowItWorks />
         <SagiNetwork />
         <TokenEconomy />
+        <Foundation />
+        <Ethics />
         <Bounties />
         <Backers />
         <FinalCta />
