@@ -21,6 +21,7 @@ jobs:
       REMOTE_PATH: /var/www/sagi
       SERVICE_NAME: sagi
       HAS_DEPLOY_SECRETS: ${{ secrets.TS_AUTHKEY != '' && secrets.SAGI_DEPLOY_SSH_KEY != '' }}
+      DEPLOY_ENABLED: ${{ github.event_name == 'workflow_dispatch' || vars.ENABLE_AUTO_DEPLOY == 'true' }}
 
     steps:
       - name: Check out repository
@@ -39,21 +40,27 @@ jobs:
         run: npm run build
 
       - name: Install deploy tools
+        if: env.DEPLOY_ENABLED == 'true'
         run: sudo apt-get update && sudo apt-get install -y rsync
 
+      - name: Skip automatic deploy
+        if: env.DEPLOY_ENABLED != 'true'
+        run: |
+          echo "Build passed. Skipping deploy because ENABLE_AUTO_DEPLOY is not true."
+
       - name: Check deploy secrets
-        if: env.HAS_DEPLOY_SECRETS != 'true'
+        if: env.DEPLOY_ENABLED == 'true' && env.HAS_DEPLOY_SECRETS != 'true'
         run: |
           echo "Skipping deploy because TS_AUTHKEY or SAGI_DEPLOY_SSH_KEY is not configured."
 
       - name: Connect to Tailnet
-        if: env.HAS_DEPLOY_SECRETS == 'true'
+        if: env.DEPLOY_ENABLED == 'true' && env.HAS_DEPLOY_SECRETS == 'true'
         uses: tailscale/github-action@v3
         with:
           authkey: ${{ secrets.TS_AUTHKEY }}
 
       - name: Configure SSH
-        if: env.HAS_DEPLOY_SECRETS == 'true'
+        if: env.DEPLOY_ENABLED == 'true' && env.HAS_DEPLOY_SECRETS == 'true'
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SAGI_DEPLOY_SSH_KEY }}
         run: |
@@ -76,5 +83,5 @@ EOF
           chmod 600 ~/.ssh/config
 
       - name: Deploy
-        if: env.HAS_DEPLOY_SECRETS == 'true'
+        if: env.DEPLOY_ENABLED == 'true' && env.HAS_DEPLOY_SECRETS == 'true'
         run: ./scripts/release.sh "$DEPLOY_HOST" "$REMOTE_PATH" "$SERVICE_NAME"

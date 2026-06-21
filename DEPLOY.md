@@ -81,8 +81,11 @@ Browser ──HTTPS──> Cloudflare ──HTTPS──> nginx (:443, sagi.netwo
 
 ## Automatic deploys from GitHub
 
-Pushes to `main` run `.github/workflows/deploy.yml`. The workflow builds the
-repo on GitHub Actions, joins the Tailnet, then runs the same
+Pushes to `main` run `.github/workflows/deploy.yml`. By default, the workflow
+builds but skips production deploys. Set the repository variable
+`ENABLE_AUTO_DEPLOY=true` after the Tailnet and SSH secrets are confirmed.
+
+When enabled, the workflow joins the Tailnet, then runs the same
 `scripts/release.sh` path against `deploy@100.125.227.68`.
 
 The VPS is configured for this safer deploy path:
@@ -96,6 +99,10 @@ Configure these repository secrets in GitHub:
 
 - `TS_AUTHKEY`: an ephemeral, reusable Tailscale auth key for GitHub Actions.
 - `SAGI_DEPLOY_SSH_KEY`: the private key for the `deploy` user.
+
+Configure this repository variable only when deploys should run on every push:
+
+- `ENABLE_AUTO_DEPLOY=true`
 
 The SSH host key is pinned in `deploy/sagi-known-hosts`.
 
