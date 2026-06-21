@@ -409,7 +409,14 @@ app.get("/api/dashboard", (request, response) => {
 });
 
 if (!env.devMode) {
-  app.use(express.static(webDistDir));
+  app.use(express.static(webDistDir, {
+    setHeaders(response, filePath) {
+      if (filePath.endsWith(path.join("media", "demo.mp4"))) {
+        response.setHeader("Cache-Control", "no-store, max-age=0");
+        response.setHeader("CDN-Cache-Control", "no-store");
+      }
+    }
+  }));
 
   app.get("/{*path}", (request, response, next) => {
     if (request.path.startsWith("/api/") || request.path === "/health") {
