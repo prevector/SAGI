@@ -55,6 +55,10 @@ export interface Stats {
   players: number;
   votes: number;
   tokens_awarded: number;
+  // Human contributions counted separately from ambient bot activity, so the
+  // swarm can make a real person's signal stand out (orange burst).
+  human_signals?: number;
+  human_tokens?: number;
 }
 
 export interface NetworkNode {

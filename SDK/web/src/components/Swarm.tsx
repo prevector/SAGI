@@ -17,16 +17,31 @@ const BG = "#041414";
 
 const noise3D = createNoise3D();
 
-function NodeDot({ node, index, isPulsing }: { node: NetworkNode; index: number; isPulsing: boolean }) {
+const ORANGE_COLOR = new THREE.Color(ORANGE);
+
+function NodeDot({
+  node,
+  index,
+  isPulsing,
+  isHumanPulsing,
+}: {
+  node: NetworkNode;
+  index: number;
+  isPulsing: boolean;
+  isHumanPulsing: boolean;
+}) {
   const meshRef = useRef<THREE.Mesh>(null);
   const matRef = useRef<THREE.MeshStandardMaterial>(null);
   const isCore = node.id === "core";
   const color = node.type === "passive" ? TEAL : ORANGE;
+  const baseColor = useRef(new THREE.Color(isCore ? PAPER : color));
   const baseRadius = isCore ? 0.45 : node.type === "passive" ? 0.12 : 0.09;
   const baseIntensity = isCore ? 3.5 : 1.6;
   const pulseRef = useRef(0);
+  const humanRef = useRef(0);
 
   useEffect(() => { if (isPulsing) pulseRef.current = 1; }, [isPulsing]);
+  useEffect(() => { if (isHumanPulsing) humanRef.current = 1; }, [isHumanPulsing]);
 
   useFrame(({ clock }) => {
     const mesh = meshRef.current;
@@ -42,8 +57,15 @@ function NodeDot({ node, index, isPulsing }: { node: NetworkNode; index: number;
       );
     }
     if (pulseRef.current > 0) pulseRef.current = Math.max(0, pulseRef.current - 0.04);
-    mat.emissiveIntensity = baseIntensity + pulseRef.current * 4;
-    mesh.scale.setScalar(1 + pulseRef.current * 1.5);
+    // The human burst is bigger, brighter and decays slower so it really lands.
+    if (humanRef.current > 0) humanRef.current = Math.max(0, humanRef.current - 0.018);
+
+    const h = humanRef.current;
+    mat.emissiveIntensity = baseIntensity + pulseRef.current * 4 + h * 9;
+    mesh.scale.setScalar(1 + pulseRef.current * 1.5 + h * 3.5);
+    // Bleed toward orange while a human signal is firing.
+    mat.color.copy(baseColor.current).lerp(ORANGE_COLOR, h);
+    mat.emissive.copy(baseColor.current).lerp(ORANGE_COLOR, h);
   });
 
   return (
@@ -78,7 +100,15 @@ function Spokes({ nodes }: { nodes: NetworkNode[] }) {
   );
 }
 
-function SwarmScene({ nodes, pulsingIds }: { nodes: NetworkNode[]; pulsingIds: Set<string> }) {
+function SwarmScene({
+  nodes,
+  pulsingIds,
+  humanPulseIds,
+}: {
+  nodes: NetworkNode[];
+  pulsingIds: Set<string>;
+  humanPulseIds: Set<string>;
+}) {
   return (
     <>
       <ambientLight intensity={0.15} color={TEAL} />
@@ -86,7 +116,13 @@ function SwarmScene({ nodes, pulsingIds }: { nodes: NetworkNode[]; pulsingIds: S
       <directionalLight position={[10, 15, 10]} intensity={0.4} color={PAPER} />
       <Spokes nodes={nodes} />
       {nodes.map((node, i) => (
-        <NodeDot key={node.id} node={node} index={i} isPulsing={pulsingIds.has(node.id)} />
+        <NodeDot
+          key={node.id}
+          node={node}
+          index={i}
+          isPulsing={pulsingIds.has(node.id)}
+          isHumanPulsing={humanPulseIds.has(node.id)}
+        />
       ))}
       <OrbitControls enablePan={false} enableDamping dampingFactor={0.05} minDistance={8} maxDistance={40} autoRotate autoRotateSpeed={0.25} />
       <EffectComposer enableNormalPass={false}>
@@ -97,7 +133,19 @@ function SwarmScene({ nodes, pulsingIds }: { nodes: NetworkNode[]; pulsingIds: S
   );
 }
 
-export function Swarm({ nodes, pulsingIds, style }: { nodes: NetworkNode[]; pulsingIds: Set<string>; style?: CSSProperties }) {
+const EMPTY: Set<string> = new Set();
+
+export function Swarm({
+  nodes,
+  pulsingIds,
+  humanPulseIds = EMPTY,
+  style,
+}: {
+  nodes: NetworkNode[];
+  pulsingIds: Set<string>;
+  humanPulseIds?: Set<string>;
+  style?: CSSProperties;
+}) {
   return (
     <Canvas
       frameloop="always"
@@ -107,7 +155,7 @@ export function Swarm({ nodes, pulsingIds, style }: { nodes: NetworkNode[]; puls
       onCreated={({ gl }) => gl.setClearColor(new THREE.Color(BG), 1)}
       style={style}
     >
-      <SwarmScene nodes={nodes} pulsingIds={pulsingIds} />
+      <SwarmScene nodes={nodes} pulsingIds={pulsingIds} humanPulseIds={humanPulseIds} />
     </Canvas>
   );
 }

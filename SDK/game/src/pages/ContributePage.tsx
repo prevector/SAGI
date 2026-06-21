@@ -18,6 +18,7 @@ const result = await sdk.getSignalResult(betId);     // settled vs. the network
 export default function ContributePage() {
   const s = useContribute();
   const [showCode, setShowCode] = useState(false);
+  const [showIntro, setShowIntro] = useState(true);
 
   // Per-card outcome: idle while choosing, gentle pulse while settling,
   // brighten the network's pick / dim the other on the result.
@@ -36,7 +37,9 @@ export default function ContributePage() {
       <header style={styles.header}>
         <div style={styles.brand}>
           <span style={{ color: TEAL }}>SAGI</span>
-          <span style={styles.poweredBy}>powered by the SAGI SDK</span>
+          <button style={styles.infoBtn} onClick={() => setShowIntro(true)}>
+            ⓘ what is this?
+          </button>
         </div>
         <div style={styles.readout}>
           <Stat label="signals" value={s.contributed} accent={TEAL} />
@@ -105,6 +108,37 @@ export default function ContributePage() {
         </button>
         {showCode && <pre style={styles.code}>{SNIPPET}</pre>}
       </footer>
+
+      {/* ── First-run explainer (reopen via "what is this?") ─────── */}
+      {showIntro && (
+        <div style={styles.introScrim} onClick={() => setShowIntro(false)}>
+          <div style={styles.introCard} onClick={(e) => e.stopPropagation()}>
+            <p style={styles.introEyebrow}>powered by the SAGI SDK</p>
+            <h2 style={styles.introTitle}>Add value to the search for AGI</h2>
+            <p style={styles.introLead}>
+              SAGI is a distributed network searching for better AI — together. Here&apos;s how you
+              help in three taps.
+            </p>
+            <ol style={styles.introList}>
+              <li>
+                <strong style={{ color: PAPER }}>Two models, one call.</strong> You&apos;ll see two candidate AIs. Tap the one
+                you think performs better.
+              </li>
+              <li>
+                <strong style={{ color: PAPER }}>Your tap is a signal.</strong> Human judgement the network can&apos;t cheaply
+                produce — it decides which candidates are worth expensive evaluation.
+              </li>
+              <li>
+                <strong style={{ color: PAPER }}>Earn tokens.</strong> The network settles your signal against ground truth; an
+                accurate call credits tokens to you.
+              </li>
+            </ol>
+            <button style={styles.startBtn} onClick={() => setShowIntro(false)}>
+              Start contributing →
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -134,8 +168,19 @@ const styles: Record<string, CSSProperties> = {
     alignItems: "center",
     padding: "calc(env(safe-area-inset-top) + 16px) 20px 0",
   },
-  brand: { display: "flex", flexDirection: "column", gap: 3 },
+  brand: { display: "flex", flexDirection: "column", gap: 3, alignItems: "flex-start" },
   poweredBy: { fontFamily: mono, fontSize: 10, letterSpacing: "0.16em", color: "#6e8585", textTransform: "uppercase" },
+  infoBtn: {
+    background: "transparent",
+    border: "none",
+    padding: 0,
+    fontFamily: mono,
+    fontSize: 10,
+    letterSpacing: "0.14em",
+    color: "#6e8585",
+    textTransform: "uppercase",
+    cursor: "pointer",
+  },
   readout: { display: "flex", gap: 22 },
   stat: { textAlign: "right" },
   statValue: { fontFamily: mono, fontSize: 20, fontWeight: 600, lineHeight: 1 },
@@ -208,5 +253,76 @@ const styles: Record<string, CSSProperties> = {
     color: "#cfe0e0",
     overflowX: "auto",
     whiteSpace: "pre",
+  },
+
+  // First-run explainer overlay.
+  introScrim: {
+    position: "fixed",
+    inset: 0,
+    zIndex: 20,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 24,
+    background: "rgba(4,20,20,0.82)",
+    backdropFilter: "blur(8px)",
+    WebkitBackdropFilter: "blur(8px)",
+  },
+  introCard: {
+    width: "100%",
+    maxWidth: 400,
+    background: "#06201f",
+    border: "1px solid rgba(23,196,196,0.22)",
+    borderRadius: 22,
+    padding: "28px 26px",
+    boxShadow: "0 30px 80px rgba(0,0,0,0.55)",
+  },
+  introEyebrow: {
+    fontFamily: mono,
+    fontSize: 10,
+    letterSpacing: "0.18em",
+    textTransform: "uppercase",
+    color: TEAL,
+    margin: "0 0 10px",
+  },
+  introTitle: {
+    fontFamily: sans,
+    fontSize: 23,
+    fontWeight: 700,
+    letterSpacing: "-0.01em",
+    margin: 0,
+    color: PAPER,
+  },
+  introLead: {
+    fontFamily: sans,
+    fontSize: 14,
+    lineHeight: 1.55,
+    color: "#9fb6b6",
+    margin: "12px 0 18px",
+  },
+  introList: {
+    margin: "0 0 22px",
+    padding: 0,
+    listStyle: "none",
+    display: "flex",
+    flexDirection: "column",
+    gap: 14,
+    fontFamily: sans,
+    fontSize: 13.5,
+    lineHeight: 1.5,
+    color: "#9fb6b6",
+  },
+  startBtn: {
+    width: "100%",
+    padding: "14px 0",
+    background: TEAL,
+    color: "#041414",
+    border: "none",
+    borderRadius: 14,
+    fontFamily: mono,
+    fontSize: 15,
+    fontWeight: 600,
+    letterSpacing: "0.04em",
+    cursor: "pointer",
   },
 };
