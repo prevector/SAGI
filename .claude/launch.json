@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "web",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["/Users/don/Documents/SAGI/node_modules/.bin/vite", "--port", "5173"],
+      "cwd": "/Users/don/Documents/SAGI/apps/web",
+      "port": 5173
+    }
+  ]
+}
