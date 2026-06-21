@@ -17,7 +17,8 @@
     "better-sqlite3": "^12.11.1",
     "cors": "^2.8.5",
     "drizzle-orm": "^0.45.2",
-    "express": "^5.1.0"
+    "express": "^5.1.0",
+    "mollie-api-typescript": "^1.12.5"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.13",

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { LogOut } from "lucide-react";
+import { UserRound } from "lucide-react";
 import {
   DockviewReact,
   Orientation,
@@ -12,6 +12,7 @@ import { useAuth } from "../../auth/AuthContext";
 import { formatInt } from "../../lib/format";
 import { shortId } from "./components";
 import { GeneTerminalProvider, useGeneTerminal } from "./state";
+import { AccountModal } from "./AccountModal";
 import { CreatureLibraryPanel } from "./panels/CreatureLibraryPanel";
 import { CreaturePanel } from "./panels/CreaturePanel";
 import { InferencePanel } from "./panels/InferencePanel";
@@ -231,6 +232,7 @@ function Workspace() {
   const dockApiRef = useRef<DockviewApi | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const [openMenu, setOpenMenu] = useState<"window" | null>(null);
+  const [accountOpen, setAccountOpen] = useState(false);
   const [layoutNonce, setLayoutNonce] = useState(0);
 
   function onReady(event: DockviewReadyEvent) {
@@ -306,11 +308,20 @@ function Workspace() {
           ))}
           {username ? <span>{username}</span> : null}
           <span>{shortId(terminal.selectedGene.id)}</span>
-          <button className={styles.menuButton} onClick={() => void logout()} title="Log out" aria-label="Log out">
-            <LogOut size={12} />
+          <button
+            className={styles.menuButton}
+            onClick={() => setAccountOpen(true)}
+            title="Account"
+            aria-label="Account"
+            aria-haspopup="dialog"
+          >
+            <UserRound size={12} />
           </button>
         </div>
       </div>
+      {accountOpen && username ? (
+        <AccountModal username={username} onClose={() => setAccountOpen(false)} onLogout={() => void logout()} />
+      ) : null}
       <div className={styles.dockShell}>
         <DockviewReact
           className="dockview-theme-abyss"

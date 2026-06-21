@@ -1,0 +1,253 @@
+/* Account overlay — matches the terminal's warm "paper" theme. */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 12vh 16px 16px;
+  background: rgba(42, 38, 34, 0.32);
+  backdrop-filter: blur(2px);
+  animation: overlayIn 160ms ease;
+}
+
+.modal {
+  width: 100%;
+  max-width: 380px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px;
+  border: 1px solid rgba(54, 47, 40, 0.22);
+  border-radius: 12px;
+  background: linear-gradient(180deg, #f6f2eb, #ece6dc);
+  box-shadow: 0 24px 60px rgba(42, 38, 34, 0.28);
+  color: #2a2622;
+  font-family: var(--font-sans);
+  animation: modalIn 180ms ease;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.identity {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.avatar {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  flex: none;
+  border-radius: 11px;
+  background: linear-gradient(135deg, #9a6841, #6e8ca6);
+  color: #f6f2eb;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.identityText {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.username {
+  font-size: 15px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.subline {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #746c63;
+}
+
+.iconButton {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  flex: none;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: #746c63;
+  cursor: pointer;
+}
+
+.iconButton:hover,
+.iconButton:focus-visible {
+  border-color: rgba(54, 47, 40, 0.16);
+  background: rgba(255, 255, 255, 0.4);
+  color: #2a2622;
+  outline: none;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.statCard {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px;
+  border: 1px solid rgba(54, 47, 40, 0.12);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.42);
+}
+
+.statIcon {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  background: rgba(154, 104, 65, 0.14);
+  color: #9a6841;
+}
+
+.statValue {
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.1;
+}
+
+.statLabel {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #746c63;
+}
+
+.details {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(54, 47, 40, 0.12);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.32);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+}
+
+.row + .row {
+  border-top: 1px solid rgba(54, 47, 40, 0.08);
+}
+
+.rowLabel {
+  font-size: 12.5px;
+  color: #746c63;
+}
+
+.rowValue {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  font-weight: 500;
+}
+
+.error {
+  margin: 0;
+  padding: 8px 12px;
+  font-size: 12px;
+  color: #b4502f;
+}
+
+.launchButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  border: 0;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #9a6841, #b4502f);
+  color: #f6f2eb;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: filter 160ms ease, transform 160ms ease;
+}
+
+.launchButton:hover,
+.launchButton:focus-visible {
+  filter: brightness(1.06);
+  transform: translateY(-1px);
+  outline: none;
+}
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  border-top: 1px solid rgba(54, 47, 40, 0.1);
+  padding-top: 12px;
+}
+
+.logoutButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 12px;
+  border: 1px solid rgba(54, 47, 40, 0.16);
+  border-radius: 8px;
+  background: transparent;
+  color: #746c63;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.logoutButton:hover,
+.logoutButton:focus-visible {
+  border-color: rgba(180, 80, 47, 0.5);
+  color: #b4502f;
+  outline: none;
+}
+
+@keyframes overlayIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modalIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}

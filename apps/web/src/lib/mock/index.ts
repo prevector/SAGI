@@ -25,6 +25,9 @@ export function setCurrentUser(username: string): void {
 // Network snapshot is a singleton so getNetwork and subscribeNetwork agree.
 let currentNetwork: NetworkSnapshot = buildNetworkBase();
 const bounties = buildBounties();
+let draftCounter = 1;
+// Remembers mock contribution drafts so the status poll can echo their amounts.
+const mockDrafts = new Map<string, { tokens: number; amountEur: number }>();
 
 export const mockApi: Api = {
   async getProfile(userId) {
@@ -58,6 +61,33 @@ export const mockApi: Api = {
     const bounty = bounties.find((b) => b.id === id);
     if (!bounty) throw new Error(`Bounty ${id} not found`);
     return bounty;
+  },
+  async createBountyDraft(input) {
+    await delay(220);
+    // The mock has no Mollie, so checkout "completes" instantly: the URL routes
+    // straight back to the return page, where getBountyContributionStatus
+    // reports `paid`. The real httpApi returns a Mollie hosted-checkout URL.
+    const draftId = `draft-${draftCounter++}`;
+    mockDrafts.set(draftId, { tokens: input.tokens, amountEur: input.amountEur });
+    return {
+      draftId,
+      provider: "mollie",
+      status: "open",
+      amountEur: input.amountEur,
+      tokens: input.tokens,
+      checkoutUrl: `/app/launch-bounty?status=return&contribution=${encodeURIComponent(draftId)}`
+    };
+  },
+  async getBountyContributionStatus(contributionId) {
+    await delay(200);
+    const draft = mockDrafts.get(contributionId);
+    return {
+      status: "paid",
+      settled: true,
+      tokens: draft?.tokens ?? 0,
+      amountEur: draft?.amountEur ?? 0,
+      bountyId: `b-${contributionId}`
+    };
   },
   async getProgress() {
     await delay(200);
