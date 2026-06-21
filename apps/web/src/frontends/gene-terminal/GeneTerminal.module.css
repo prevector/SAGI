@@ -852,6 +852,7 @@
 }
 
 .panelLeaderboard {
+  grid-template-rows: auto minmax(0, 1fr);
   background:
     linear-gradient(180deg, rgba(154, 104, 65, 0.05), transparent 18%),
     linear-gradient(180deg, #f0ebe1, #ebe5da);
@@ -887,7 +888,10 @@
 
 .leaderboardList {
   display: grid;
+  align-content: start;
   gap: 4px;
+  min-height: 0;
+  overflow: auto;
 }
 
 .leaderboardRow {
@@ -938,9 +942,13 @@
   grid-auto-flow: column;
   grid-auto-columns: minmax(160px, 1fr);
   gap: 12px;
-  overflow-x: auto;
-  padding-top: 8px;
-  border-top: 1px solid var(--terminal-line);
+  min-height: 100%;
+  overflow: auto;
+}
+
+.tournamentTree {
+  min-height: 0;
+  overflow: hidden;
 }
 
 .tournamentRound {

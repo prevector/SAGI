@@ -58,49 +58,52 @@ export function LeaderboardPanel(_: IDockviewPanelProps) {
     <section className={`${styles.panel} ${styles.panelLeaderboard}`}>
       <div className={styles.leaderboardMeta}>
         <span>{division.teamSize}v{division.teamSize}</span>
-        <span>{division.entrants} entries</span>
+        <span>{showTournament ? "tournament tree" : `${division.rows.length} leaders`}</span>
         <button
           className={styles.leaderboardGraphButton}
           type="button"
           onClick={() => setShowTournament((value) => !value)}
         >
-          {showTournament ? "hide tournament" : "show tournament"}
+          {showTournament ? "show leaderboard" : "show tournament"}
         </button>
       </div>
-      <div className={styles.leaderboardList}>
-        {division.rows.map((row) => (
-          <div key={`${row.username}:${row.creatureId}`} className={styles.leaderboardRow}>
-            <span className={styles.leaderboardRank}>{row.rank}</span>
-            <div className={styles.leaderboardIdentity}>
-              <strong>{row.username}</strong>
-              <span>{row.creatureName}</span>
-            </div>
-            <b>{row.verifiedScore.toFixed(1)}</b>
-          </div>
-        ))}
-      </div>
       {showTournament ? (
-        <div className={styles.tournamentGraph}>
-          {Array.from(new Set(division.tournament.matches.map((match) => match.round))).map((round) => (
-            <div key={round} className={styles.tournamentRound}>
-              <b>round {round + 1}</b>
-              {division.tournament.matches
-                .filter((match) => match.round === round)
-                .map((match) => (
-                  <div key={match.id} className={styles.tournamentMatch}>
-                    <span className={match.winnerIndex === match.leftIndex ? styles.tournamentWinner : ""}>
-                      {entrantLabel(division, match.leftIndex)}
-                    </span>
-                    <span className={match.winnerIndex === match.rightIndex ? styles.tournamentWinner : ""}>
-                      {entrantLabel(division, match.rightIndex)}
-                    </span>
-                    <em>{match.score ? `${match.score[0]}-${match.score[1]}` : "bye"}</em>
-                  </div>
-                ))}
+        <div className={styles.tournamentTree}>
+          <div className={styles.tournamentGraph}>
+            {Array.from(new Set(division.tournament.matches.map((match) => match.round))).map((round) => (
+              <div key={round} className={styles.tournamentRound}>
+                <b>round {round + 1}</b>
+                {division.tournament.matches
+                  .filter((match) => match.round === round)
+                  .map((match) => (
+                    <div key={match.id} className={styles.tournamentMatch}>
+                      <span className={match.winnerIndex === match.leftIndex ? styles.tournamentWinner : ""}>
+                        {entrantLabel(division, match.leftIndex)}
+                      </span>
+                      <span className={match.winnerIndex === match.rightIndex ? styles.tournamentWinner : ""}>
+                        {entrantLabel(division, match.rightIndex)}
+                      </span>
+                      <em>{match.score ? `${match.score[0]}-${match.score[1]}` : "bye"}</em>
+                    </div>
+                  ))}
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <div className={styles.leaderboardList}>
+          {division.rows.map((row) => (
+            <div key={`${row.username}:${row.creatureId}`} className={styles.leaderboardRow}>
+              <span className={styles.leaderboardRank}>{row.rank}</span>
+              <div className={styles.leaderboardIdentity}>
+                <strong>{row.username}</strong>
+                <span>{row.creatureName}</span>
+              </div>
+              <b>{row.verifiedScore.toFixed(1)}</b>
             </div>
           ))}
         </div>
-      ) : null}
+      )}
     </section>
   );
 }
