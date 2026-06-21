@@ -81,7 +81,11 @@ export function getAppEnv(): AppEnv {
     sessionSecret: process.env.SESSION_SECRET ?? "local-dev-secret",
     port: Number(process.env.PORT ?? 4000),
     cookieName: "sagi_session",
-    secureCookies: process.env.SECURE_COOKIES === "1" || nodeEnv === "production",
+    // Secure cookies require HTTPS, so they're force-disabled in dev (local
+    // http://localhost would otherwise silently drop the session cookie — even
+    // if SECURE_COOKIES=1 is left in .env). In production they're on by default;
+    // set SECURE_COOKIES=0 only behind a TLS-terminating proxy.
+    secureCookies: !devMode && process.env.SECURE_COOKIES !== "0",
     authUsers,
     ledgerMode,
     ledgerSeed: Number(process.env.LEDGER_SEED ?? 1337),
