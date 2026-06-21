@@ -73,13 +73,13 @@ jobs:
           cp deploy/sagi-known-hosts ~/.ssh/known_hosts
           chmod 600 ~/.ssh/sagi_deploy_key ~/.ssh/known_hosts
 
-          cat > ~/.ssh/config <<'EOF'
-Host 100.125.227.68
-  IdentityFile ~/.ssh/sagi_deploy_key
-  IdentitiesOnly yes
-  StrictHostKeyChecking yes
-  UserKnownHostsFile ~/.ssh/known_hosts
-EOF
+          {
+            printf '%s\n' 'Host 100.125.227.68'
+            printf '%s\n' '  IdentityFile ~/.ssh/sagi_deploy_key'
+            printf '%s\n' '  IdentitiesOnly yes'
+            printf '%s\n' '  StrictHostKeyChecking yes'
+            printf '%s\n' '  UserKnownHostsFile ~/.ssh/known_hosts'
+          } > ~/.ssh/config
           chmod 600 ~/.ssh/config
 
       - name: Deploy
