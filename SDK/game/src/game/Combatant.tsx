@@ -7,9 +7,14 @@ export type Outcome = "idle" | "fighting" | "win" | "lose";
 
 // PLACEHOLDER creature. A teammate is building the real <Creature>; when it lands,
 // swap this component out and feed it the same candidate params. The game loop and
-// the surrounding choreography (in ArenaScene) stay unchanged.
+// the surrounding choreography stay unchanged.
+//
+// Warm editorial restyle: flat brand-coloured shapes (meshBasicMaterial, no glow),
+// so they read cleanly on the light background. Outcome feedback comes from scale +
+// opacity instead of emissive bloom — win swells & solidifies, lose shrinks & fades.
 export function Combatant({ visual, outcome }: { visual: CombatantVisual; outcome: Outcome }) {
-  const coreMat = useRef<THREE.MeshStandardMaterial>(null);
+  const root = useRef<THREE.Group>(null);
+  const coreMat = useRef<THREE.MeshBasicMaterial>(null);
   const orbitGroup = useRef<THREE.Group>(null);
   const color = useMemo(() => new THREE.Color(visual.color), [visual.color]);
 
@@ -31,34 +36,32 @@ export function Combatant({ visual, outcome }: { visual: CombatantVisual; outcom
       orbitGroup.current.rotation.y = t * 0.4;
       orbitGroup.current.rotation.x = Math.sin(t * 0.3) * 0.2;
     }
+    // Outcome feedback without glow: ease scale + core opacity toward a target.
+    let scale = 1;
+    let opacity = 1;
+    if (outcome === "win") scale = 1.12;
+    else if (outcome === "lose") { scale = 0.9; opacity = 0.45; }
+    else if (outcome === "fighting") scale = 1 + Math.sin(t * 8) * 0.04;
+    if (root.current) {
+      const s = THREE.MathUtils.damp(root.current.scale.x, scale, 6, dt);
+      root.current.scale.setScalar(s);
+    }
     if (coreMat.current) {
-      let target = visual.glow;
-      if (outcome === "win") target = visual.glow * 2.2;
-      else if (outcome === "lose") target = visual.glow * 0.2;
-      else if (outcome === "fighting") target = visual.glow * (1.2 + Math.sin(t * 8) * 0.25);
-      coreMat.current.emissiveIntensity = THREE.MathUtils.damp(coreMat.current.emissiveIntensity, target, 4, dt);
+      coreMat.current.opacity = THREE.MathUtils.damp(coreMat.current.opacity, opacity, 6, dt);
     }
   });
 
   return (
-    <group>
+    <group ref={root}>
       <mesh>
         <icosahedronGeometry args={[visual.coreScale, 1]} />
-        <meshStandardMaterial
-          ref={coreMat}
-          color={color}
-          emissive={color}
-          emissiveIntensity={visual.glow}
-          roughness={0.35}
-          metalness={0.1}
-          flatShading
-        />
+        <meshBasicMaterial ref={coreMat} color={color} transparent toneMapped={false} />
       </mesh>
       <group ref={orbitGroup}>
         {orbiterPos.map((p, i) => (
           <mesh key={i} position={p}>
             <sphereGeometry args={[visual.orbiters[i].size, 12, 12]} />
-            <meshStandardMaterial color={color} emissive={color} emissiveIntensity={1.4} roughness={0.4} />
+            <meshBasicMaterial color={color} toneMapped={false} />
           </mesh>
         ))}
       </group>

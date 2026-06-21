@@ -1,18 +1,50 @@
-@import "@fontsource-variable/geist";
-@import "@fontsource-variable/geist-mono";
+/* SAGI Contribute — warm editorial brand (mirrors apps/web DESIGN.md).
+   Self-hosted fonts aren't bundled here, so we pull Cormorant + Gothic A1 from
+   Google Fonts (same families/fallbacks as the marketing site). */
+@import url("https://fonts.googleapis.com/css2?family=Cormorant:wght@400;500;600&family=Gothic+A1:wght@400;500;600;700;800&display=swap");
 
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 
-  --bg: #041414;
-  --text: #faf8f0;
-  --text-muted: #9fb6b6;
-  --text-faint: #6e8585;
-  --teal: #17c4c4;
-  --orange: #f0783d;
+  /* ---- Brand palette ---- */
+  --pink-50:  #FDF0F3;
+  --pink-100: #FAD9E2;
+  --pink-300: #F5C5CE;
+  --pink-500: #E07A97;
+  --pink-700: #C04B6E;
 
-  --font-sans: "Geist Variable", system-ui, sans-serif;
-  --font-mono: "Geist Mono Variable", ui-monospace, monospace;
+  --brown-50:  #F5F0EA;
+  --brown-100: #E4D8C8;
+  --brown-300: #A8886A;
+  --brown-500: #6B4F35;
+  --brown-700: #3E2A18;
+  --brown-900: #2E2118;
+
+  --blue-50:  #EDF4F9;
+  --blue-300: #6BADD4;
+  --blue-500: #3C7FA8;
+  --blue-700: #2A5F7D;
+
+  --gray-200: #D6D9DC;
+  --gray-500: #5C6B7A;
+  --white:    #FFFFFF;
+
+  /* ---- Semantic ---- */
+  --bg:          var(--brown-50);
+  --surface:     var(--white);
+  --text:        var(--brown-900);
+  --text-muted:  var(--gray-500);
+  --text-faint:  var(--brown-300);
+  --border:      var(--gray-200);
+  --accent:      var(--pink-300);
+  --accent-dark: var(--pink-700);
+  --accent-2:    var(--blue-500);
+
+  /* ---- Typography ---- */
+  --font-display: "Cormorant", Georgia, serif;
+  --font-sans:    "Gothic A1", system-ui, sans-serif;
+  --font-ui:      "Gothic A1", system-ui, sans-serif;
+  --font-mono:    ui-monospace, monospace;
 }
 
 *, *::before, *::after { box-sizing: border-box; }

@@ -3,11 +3,18 @@ import { ModelCard } from "../game/ModelCard";
 import { type Outcome } from "../game/Combatant";
 import { useContribute } from "../game/useContribute";
 
-const TEAL = "#17c4c4";
-const ORANGE = "#f0783d";
-const PAPER = "#faf8f0";
-const mono = '"Geist Mono Variable", ui-monospace, monospace';
-const sans = '"Geist Variable", ui-sans-serif, system-ui, sans-serif';
+// Warm editorial palette (mirrors tokens.css; inline styles need literals).
+const BLUE = "#3C7FA8"; // --blue-500, signals
+const PINK = "#C04B6E"; // --pink-700, tokens (the reward — loudest)
+const ACCENT = "#F5C5CE"; // --pink-300, primary button fill
+const INK = "#2E2118"; // --brown-900, text + button label
+const BODY = "#3E2A18"; // --brown-700
+const MUTED = "#5C6B7A"; // --gray-500
+const BORDER = "#D6D9DC"; // --gray-200
+const display = '"Cormorant", Georgia, serif';
+const sans = '"Gothic A1", system-ui, sans-serif';
+const ui = sans;
+const mono = "ui-monospace, monospace";
 
 const SNIPPET = `// the entire SDK integration — one file, four calls
 const task = await sdk.requestTask(userId);          // two candidate models
@@ -36,14 +43,14 @@ export default function ContributePage() {
       {/* ── Header: the SDK is the headline ─────────────────────── */}
       <header style={styles.header}>
         <div style={styles.brand}>
-          <span style={{ color: TEAL }}>SAGI</span>
+          <span style={styles.wordmark}>SAGI</span>
           <button style={styles.infoBtn} onClick={() => setShowIntro(true)}>
             ⓘ what is this?
           </button>
         </div>
         <div style={styles.readout}>
-          <Stat label="signals" value={s.contributed} accent={TEAL} />
-          <Stat label="tokens" value={s.wallet?.tokens ?? 0} accent={ORANGE} />
+          <Stat label="signals" value={s.contributed} accent={BLUE} />
+          <Stat label="tokens" value={s.wallet?.tokens ?? 0} accent={PINK} />
         </div>
       </header>
 
@@ -94,7 +101,7 @@ export default function ContributePage() {
       {/* ── Footer control ──────────────────────────────────────── */}
       <footer style={styles.footer}>
         {s.phase === "result" ? (
-          <button style={{ ...styles.primaryBtn, borderColor: TEAL, color: TEAL }} onClick={s.next}>
+          <button style={styles.primaryBtn} onClick={s.next}>
             NEXT PAIR →
           </button>
         ) : (
@@ -121,15 +128,15 @@ export default function ContributePage() {
             </p>
             <ol style={styles.introList}>
               <li>
-                <strong style={{ color: PAPER }}>Two models, one call.</strong> You&apos;ll see two candidate AIs. Tap the one
+                <strong style={styles.introStrong}>Two models, one call.</strong> You&apos;ll see two candidate AIs. Tap the one
                 you think performs better.
               </li>
               <li>
-                <strong style={{ color: PAPER }}>Your tap is a signal.</strong> Human judgement the network can&apos;t cheaply
+                <strong style={styles.introStrong}>Your tap is a signal.</strong> Human judgement the network can&apos;t cheaply
                 produce — it decides which candidates are worth expensive evaluation.
               </li>
               <li>
-                <strong style={{ color: PAPER }}>Earn tokens.</strong> The network settles your signal against ground truth; an
+                <strong style={styles.introStrong}>Earn tokens.</strong> The network settles your signal against ground truth; an
                 accurate call credits tokens to you.
               </li>
             </ol>
@@ -158,8 +165,8 @@ const styles: Record<string, CSSProperties> = {
     inset: 0,
     display: "flex",
     flexDirection: "column",
-    background: "#041414",
-    color: PAPER,
+    background: "#F5F0EA",
+    color: INK,
     overflow: "auto",
   },
   header: {
@@ -169,25 +176,25 @@ const styles: Record<string, CSSProperties> = {
     padding: "calc(env(safe-area-inset-top) + 16px) 20px 0",
   },
   brand: { display: "flex", flexDirection: "column", gap: 3, alignItems: "flex-start" },
-  poweredBy: { fontFamily: mono, fontSize: 10, letterSpacing: "0.16em", color: "#6e8585", textTransform: "uppercase" },
+  wordmark: { fontFamily: sans, fontSize: 18, fontWeight: 800, letterSpacing: "0.14em", color: INK },
   infoBtn: {
     background: "transparent",
     border: "none",
     padding: 0,
-    fontFamily: mono,
-    fontSize: 10,
-    letterSpacing: "0.14em",
-    color: "#6e8585",
-    textTransform: "uppercase",
+    fontFamily: ui,
+    fontSize: 11,
+    fontWeight: 500,
+    letterSpacing: "0.06em",
+    color: MUTED,
     cursor: "pointer",
   },
   readout: { display: "flex", gap: 22 },
   stat: { textAlign: "right" },
-  statValue: { fontFamily: mono, fontSize: 20, fontWeight: 600, lineHeight: 1 },
-  statLabel: { fontFamily: mono, fontSize: 9, letterSpacing: "0.14em", color: "#6e8585", textTransform: "uppercase", marginTop: 3 },
+  statValue: { fontFamily: sans, fontSize: 22, fontWeight: 800, lineHeight: 1 },
+  statLabel: { fontFamily: ui, fontSize: 9, fontWeight: 500, letterSpacing: "0.12em", color: MUTED, textTransform: "uppercase", marginTop: 3 },
   promptWrap: { textAlign: "center", padding: "22px 24px 10px" },
-  prompt: { fontFamily: sans, fontSize: 22, fontWeight: 600, letterSpacing: "-0.01em" },
-  sub: { fontFamily: mono, fontSize: 12, letterSpacing: "0.04em", color: "#9fb6b6", marginTop: 8, minHeight: 16 },
+  prompt: { fontFamily: sans, fontSize: 22, fontWeight: 600, letterSpacing: "-0.01em", color: INK },
+  sub: { fontFamily: display, fontSize: 16, color: MUTED, marginTop: 8, minHeight: 18, lineHeight: 1.4 },
   cards: {
     flex: 1,
     display: "flex",
@@ -200,7 +207,7 @@ const styles: Record<string, CSSProperties> = {
     margin: "0 auto",
     minHeight: 0,
   },
-  placeholder: { fontFamily: mono, fontSize: 13, color: "#6e8585" },
+  placeholder: { fontFamily: ui, fontSize: 13, color: MUTED },
   footer: {
     display: "flex",
     flexDirection: "column",
@@ -209,33 +216,36 @@ const styles: Record<string, CSSProperties> = {
     padding: "8px 20px calc(env(safe-area-inset-bottom) + 20px)",
   },
   primaryBtn: {
-    padding: "14px 44px",
-    background: "rgba(4,20,20,0.6)",
-    border: "2px solid",
-    borderRadius: 16,
-    fontFamily: mono,
-    fontSize: 16,
+    padding: "13px 40px",
+    background: ACCENT,
+    border: "none",
+    borderRadius: 999,
+    fontFamily: ui,
+    fontSize: 15,
     fontWeight: 600,
-    letterSpacing: "0.1em",
+    letterSpacing: "0.02em",
+    color: INK,
     cursor: "pointer",
   },
   footerHint: {
     height: 50,
     display: "flex",
     alignItems: "center",
-    fontFamily: mono,
+    fontFamily: ui,
     fontSize: 12,
-    letterSpacing: "0.06em",
-    color: "#6e8585",
+    fontWeight: 500,
+    letterSpacing: "0.04em",
+    color: MUTED,
     textTransform: "uppercase",
   },
   codeToggle: {
     background: "transparent",
     border: "none",
-    color: "#6e8585",
-    fontFamily: mono,
+    color: MUTED,
+    fontFamily: ui,
     fontSize: 11,
-    letterSpacing: "0.1em",
+    fontWeight: 500,
+    letterSpacing: "0.06em",
     cursor: "pointer",
     padding: 4,
   },
@@ -244,13 +254,13 @@ const styles: Record<string, CSSProperties> = {
     maxWidth: 620,
     margin: 0,
     padding: "14px 16px",
-    background: "rgba(0,0,0,0.35)",
-    border: "1px solid rgba(23,196,196,0.15)",
+    background: INK,
+    border: `1px solid ${BORDER}`,
     borderRadius: 12,
     fontFamily: mono,
     fontSize: 11.5,
     lineHeight: 1.6,
-    color: "#cfe0e0",
+    color: "#E4D8C8",
     overflowX: "auto",
     whiteSpace: "pre",
   },
@@ -264,40 +274,40 @@ const styles: Record<string, CSSProperties> = {
     alignItems: "center",
     justifyContent: "center",
     padding: 24,
-    background: "rgba(4,20,20,0.82)",
+    background: "rgba(46,33,24,0.55)",
     backdropFilter: "blur(8px)",
     WebkitBackdropFilter: "blur(8px)",
   },
   introCard: {
     width: "100%",
     maxWidth: 400,
-    background: "#06201f",
-    border: "1px solid rgba(23,196,196,0.22)",
+    background: "#FFFFFF",
+    border: `1px solid ${BORDER}`,
     borderRadius: 22,
     padding: "28px 26px",
-    boxShadow: "0 30px 80px rgba(0,0,0,0.55)",
   },
   introEyebrow: {
-    fontFamily: mono,
-    fontSize: 10,
-    letterSpacing: "0.18em",
-    textTransform: "uppercase",
-    color: TEAL,
+    fontFamily: display,
+    fontStyle: "normal",
+    fontSize: 17,
+    fontWeight: 500,
+    letterSpacing: "0.01em",
+    color: PINK,
     margin: "0 0 10px",
   },
   introTitle: {
     fontFamily: sans,
-    fontSize: 23,
+    fontSize: 24,
     fontWeight: 700,
     letterSpacing: "-0.01em",
     margin: 0,
-    color: PAPER,
+    color: INK,
   },
   introLead: {
-    fontFamily: sans,
-    fontSize: 14,
-    lineHeight: 1.55,
-    color: "#9fb6b6",
+    fontFamily: display,
+    fontSize: 16,
+    lineHeight: 1.5,
+    color: MUTED,
     margin: "12px 0 18px",
   },
   introList: {
@@ -307,22 +317,23 @@ const styles: Record<string, CSSProperties> = {
     display: "flex",
     flexDirection: "column",
     gap: 14,
-    fontFamily: sans,
-    fontSize: 13.5,
-    lineHeight: 1.5,
-    color: "#9fb6b6",
+    fontFamily: display,
+    fontSize: 16,
+    lineHeight: 1.45,
+    color: BODY,
   },
+  introStrong: { color: INK, fontWeight: 600 },
   startBtn: {
     width: "100%",
     padding: "14px 0",
-    background: TEAL,
-    color: "#041414",
+    background: ACCENT,
+    color: INK,
     border: "none",
-    borderRadius: 14,
-    fontFamily: mono,
+    borderRadius: 999,
+    fontFamily: ui,
     fontSize: 15,
     fontWeight: 600,
-    letterSpacing: "0.04em",
+    letterSpacing: "0.02em",
     cursor: "pointer",
   },
 };

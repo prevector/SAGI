@@ -16,8 +16,8 @@ export default defineConfig({
         scope: "/",
         display: "standalone",
         orientation: "portrait",
-        background_color: "#041414",
-        theme_color: "#041414",
+        background_color: "#F5F0EA",
+        theme_color: "#F5F0EA",
         // SVG-only for now (crisp at any size, no binary assets to track).
         // Drop PNG 192/512/maskable into public/icons and add them here for richer installs.
         icons: [

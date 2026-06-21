@@ -7,8 +7,10 @@
 
 import type { CandidateParams } from "../sdk";
 
-export const TEAL = "#17c4c4";
-export const ORANGE = "#f0783d";
+// Side colours, from the warm editorial palette (tokens.css). A = blue (compute),
+// B = pink (signal) — matching the marketing swarm's passive/active mapping.
+export const BLUE = "#3C7FA8"; // --blue-500
+export const PINK = "#E07A97"; // --pink-500
 
 export interface Orbiter {
   /** starting angle around the core (radians) */
@@ -71,7 +73,7 @@ export function combatantFromCandidate(params: CandidateParams, side: "a" | "b")
   }));
 
   return {
-    color: side === "a" ? TEAL : ORANGE,
+    color: side === "a" ? BLUE : PINK,
     // Params-per-neuron drives core size.
     coreScale: 0.42 + n(params.neuronParams) * 0.4,
     orbiters,

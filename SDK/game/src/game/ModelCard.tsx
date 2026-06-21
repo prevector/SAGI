@@ -1,14 +1,12 @@
 import { type CSSProperties } from "react";
 import { Canvas } from "@react-three/fiber";
-import { EffectComposer, Bloom, Vignette } from "@react-three/postprocessing";
 import * as THREE from "three";
 import { Combatant, type Outcome } from "./Combatant";
 import type { CombatantVisual } from "./combatantFromCandidate";
 import { ParamBars } from "./ParamBars";
 import type { CandidateParams } from "../sdk";
 
-const BG = "#041414";
-const mono = '"Geist Mono Variable", ui-monospace, monospace';
+const ui = '"Gothic A1", system-ui, sans-serif';
 
 interface ModelCardProps {
   visual: CombatantVisual;
@@ -26,7 +24,6 @@ interface ModelCardProps {
 
 export function ModelCard({ visual, params, label, outcome, selectable, picked, dimmed, onPick }: ModelCardProps) {
   const accent = visual.color;
-  const border = picked ? accent : "rgba(23,196,196,0.14)";
 
   return (
     <button
@@ -35,26 +32,28 @@ export function ModelCard({ visual, params, label, outcome, selectable, picked, 
       aria-label={`Model ${label}`}
       style={{
         ...styles.card,
-        borderColor: border,
-        boxShadow: picked ? `0 0 0 1px ${accent}, 0 0 32px -8px ${accent}` : "none",
-        opacity: dimmed ? 0.42 : 1,
+        borderColor: picked ? accent : "var(--border)",
+        // Ring on the picked card via outline (no drop shadow — DESIGN §4).
+        outline: picked ? `2px solid ${accent}` : "none",
+        outlineOffset: -2,
+        opacity: dimmed ? 0.45 : 1,
         cursor: selectable ? "pointer" : "default",
       }}
     >
-      <div style={styles.canvasWrap}>
+      <div
+        style={{
+          ...styles.canvasWrap,
+          // Soft per-side tint behind the flat creature (accent at ~10% alpha).
+          background: `radial-gradient(circle at 50% 45%, ${accent}1f, transparent 70%)`,
+        }}
+      >
         <Canvas
           dpr={[1, 1.5]}
           gl={{ antialias: true }}
           camera={{ position: [0, 0.2, 4.2], fov: 40 }}
-          onCreated={({ gl }) => gl.setClearColor(new THREE.Color(BG), 0)}
+          onCreated={({ gl }) => gl.setClearColor(new THREE.Color("#ffffff"), 0)}
         >
-          <ambientLight intensity={0.2} color={accent} />
-          <pointLight position={[2, 3, 4]} intensity={3} color="#faf8f0" distance={20} decay={2} />
           <Combatant visual={visual} outcome={outcome} />
-          <EffectComposer enableNormalPass={false}>
-            <Bloom intensity={1.1} luminanceThreshold={1.0} luminanceSmoothing={0.25} mipmapBlur />
-            <Vignette eskil={false} offset={0.35} darkness={0.7} />
-          </EffectComposer>
         </Canvas>
       </div>
 
@@ -75,12 +74,12 @@ const styles: Record<string, CSSProperties> = {
     minWidth: 0,
     display: "flex",
     flexDirection: "column",
-    background: "rgba(4, 20, 20, 0.5)",
-    border: "1px solid",
+    background: "var(--surface)",
+    border: "1px solid var(--border)",
     borderRadius: 18,
     padding: 0,
     overflow: "hidden",
-    transition: "opacity 0.4s ease, box-shadow 0.3s ease, border-color 0.3s ease",
+    transition: "opacity 0.4s ease, outline-color 0.3s ease, border-color 0.3s ease",
     WebkitTapHighlightColor: "transparent",
   },
   canvasWrap: { width: "100%", aspectRatio: "4 / 3", minHeight: 0 },
@@ -89,8 +88,8 @@ const styles: Record<string, CSSProperties> = {
     justifyContent: "space-between",
     alignItems: "center",
     padding: "12px 16px",
-    borderTop: "1px solid rgba(23,196,196,0.1)",
+    borderTop: "1px solid var(--border)",
   },
-  label: { fontFamily: mono, fontSize: 13, fontWeight: 600, letterSpacing: "0.1em" },
-  hint: { fontFamily: mono, fontSize: 10, letterSpacing: "0.14em", color: "#6e8585", textTransform: "uppercase" },
+  label: { fontFamily: ui, fontSize: 13, fontWeight: 600, letterSpacing: "0.06em" },
+  hint: { fontFamily: ui, fontSize: 10, fontWeight: 500, letterSpacing: "0.1em", color: "var(--text-muted)", textTransform: "uppercase" },
 };

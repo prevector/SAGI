@@ -1,7 +1,7 @@
 import { type CSSProperties } from "react";
 import type { CandidateParams } from "../sdk";
 
-const mono = '"Geist Mono Variable", ui-monospace, monospace';
+const ui = '"Gothic A1", system-ui, sans-serif';
 
 // The visible genome we're checking — explicitly NOT how well it performs.
 const ROWS: { key: "neuronParams" | "synapseStateParams" | "layers" | "neuronTypes" | "updateComplexity"; label: string }[] = [
@@ -33,11 +33,11 @@ export function ParamBars({ params, accent }: { params: CandidateParams; accent:
 }
 
 const styles: Record<string, CSSProperties> = {
-  wrap: { padding: "12px 16px 14px", display: "flex", flexDirection: "column", gap: 8, borderTop: "1px solid rgba(23,196,196,0.1)" },
-  head: { fontFamily: mono, fontSize: 9, letterSpacing: "0.16em", color: "#6e8585", textTransform: "uppercase", marginBottom: 2 },
+  wrap: { padding: "12px 16px 14px", display: "flex", flexDirection: "column", gap: 8, borderTop: "1px solid var(--border)" },
+  head: { fontFamily: ui, fontSize: 9, fontWeight: 500, letterSpacing: "0.12em", color: "var(--text-muted)", textTransform: "uppercase", marginBottom: 2 },
   row: { display: "flex", alignItems: "center", gap: 10 },
-  label: { fontFamily: mono, fontSize: 11, color: "#9fb6b6", flex: "0 0 116px", whiteSpace: "nowrap" },
-  track: { flex: 1, height: 6, borderRadius: 999, background: "rgba(23,196,196,0.12)", overflow: "hidden" },
+  label: { fontFamily: ui, fontSize: 11, fontWeight: 500, color: "var(--text-muted)", flex: "0 0 116px", whiteSpace: "nowrap" },
+  track: { flex: 1, height: 6, borderRadius: 999, background: "var(--brown-100)", overflow: "hidden" },
   fill: { display: "block", height: "100%", borderRadius: 999, transition: "width 0.4s ease" },
-  value: { fontFamily: mono, fontSize: 12, fontWeight: 600, flex: "0 0 22px", textAlign: "right" },
+  value: { fontFamily: ui, fontSize: 12, fontWeight: 700, flex: "0 0 22px", textAlign: "right" },
 };

@@ -10,9 +10,12 @@ import styles from "./SagiNetwork.module.css";
 // mounted once the section scrolls into view, so it never weighs on first paint.
 const Swarm = lazy(() => import("../network/Swarm").then((m) => ({ default: m.Swarm })));
 
-// Where "see an app built on the SDK" points. Unset in prod (no localhost leak) →
-// we fall back to the existing "join the network" CTA instead of a dead link.
-const CONTRIBUTE_URL = import.meta.env.VITE_CONTRIBUTE_URL ?? "";
+// Where "check out the demo app" points — the contribute game (SDK/game, :5174).
+// In dev we default to localhost so the demo CTA is always present; in prod it only
+// appears when VITE_CONTRIBUTE_URL is set, otherwise we fall back to the "join the
+// network" CTA rather than ship a dead localhost link.
+const CONTRIBUTE_URL =
+  import.meta.env.VITE_CONTRIBUTE_URL ?? (import.meta.env.DEV ? "http://localhost:5174" : "");
 
 function usePrefersReducedMotion(): boolean {
   const [reduced, setReduced] = useState(false);
