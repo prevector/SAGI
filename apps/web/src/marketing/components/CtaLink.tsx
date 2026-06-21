@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
-import btn from "../../components/ui/Button.module.css";
+import btn from "./CtaLink.module.css";
 
 type Variant = "primary" | "reward" | "ghost";
 type Size = "sm" | "md";
