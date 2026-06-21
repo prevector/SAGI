@@ -1,13 +1,13 @@
 import { NavLink } from "react-router-dom";
-import { config } from "../../lib/config";
 import { navItems } from "./navItems";
+import { SagiLogo } from "../ui/SagiLogo";
 import styles from "./SideNav.module.css";
 
 export function SideNav() {
   return (
     <nav className={styles.nav} aria-label="Primary">
       <div className={styles.brand}>
-        <span className={styles.mark}>{config.brand.name}</span>
+        <SagiLogo height={24} className={styles.mark} />
       </div>
       <ul className={styles.list}>
         {navItems.map(({ to, label, icon: Icon }) => (

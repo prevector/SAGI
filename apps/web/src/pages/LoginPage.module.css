@@ -14,12 +14,9 @@
 }
 
 .eyebrow {
-  font-family: var(--font-mono);
-  font-size: var(--fs-mono);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--accent);
-  margin-bottom: var(--s3);
+  color: var(--text);
+  display: block;
+  margin-bottom: var(--s4);
 }
 
 .title {

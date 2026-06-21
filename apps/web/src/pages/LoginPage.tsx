@@ -2,7 +2,7 @@ import { useState, type FormEvent } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { AlertCircle } from "lucide-react";
 import { useAuth } from "../auth/AuthContext";
-import { config } from "../lib/config";
+import { SagiLogo } from "../components/ui/SagiLogo";
 import styles from "./LoginPage.module.css";
 
 export default function LoginPage() {
@@ -39,7 +39,7 @@ export default function LoginPage() {
   return (
     <main className={styles.shell}>
       <section className={styles.card}>
-        <p className={styles.eyebrow}>{config.brand.name}</p>
+        <SagiLogo height={32} className={styles.eyebrow} />
         <h1 className={styles.title}>Enter the lab.</h1>
         <p className={styles.lede}>Choose a name and continue into the live search for general intelligence.</p>
 

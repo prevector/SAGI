@@ -13,11 +13,8 @@
 }
 
 .mark {
-  font-family: var(--font-mono);
-  font-size: var(--fs-h3);
-  font-weight: 600;
-  letter-spacing: 0.06em;
   color: var(--text);
+  display: block;
 }
 
 .list {
