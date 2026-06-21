@@ -1,9 +1,9 @@
 // Dual-mode live-network state for the "SAGI network" homepage section.
 //
 // - Live mode (VITE_SAGI_SWARM_URL set): polls /nodes + /stats from the SAGI mock
-//   backend. A `tokens_awarded` delta pulses a node teal (ambient bot activity); a
-//   `human_signals` delta fires a louder ORANGE burst + a `humanBurst` event — the
-//   tell that a real person contributed via the SDK app.
+//   backend. A `tokens_awarded` delta gives a node a quiet ambient pulse (bot
+//   activity); a `human_signals` delta fires a louder deep-pink burst + a
+//   `humanBurst` event — the tell that a real person contributed via the SDK app.
 // - Simulation mode (env unset, or a live poll throws): a self-contained, fetch-free
 //   animation so the prod homepage always looks alive without any backend.
 //
