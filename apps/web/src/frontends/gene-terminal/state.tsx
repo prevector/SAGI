@@ -1,5 +1,12 @@
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import {
+  FootballEsTrainingSession,
+  type FootballMatchResult,
+  GruModel,
+  type GruSequenceTrace,
+  type TokenTaskDataset,
+  GruEsTrainingSession,
+  buildFakeLanguageDataset,
   createRandomGene,
   iafGenomeLength,
   makeRng,
@@ -26,11 +33,17 @@ import {
 } from "./creatureLibrary";
 
 export type TrainingStatus = "idle" | "running" | "paused";
+export type TrainingMode = "language" | "football";
+export const FOOTBALL_TICKS_PER_SECOND = 24;
 
 export interface MockPoint {
   generation: number;
-  selectedLoss: number;
-  sampledLoss: number;
+  loss: number;
+  accuracy: number;
+  bestLoss: number;
+  bestAccuracy: number;
+  score: number;
+  bestScore: number;
 }
 
 export interface GeneTerminalState {
@@ -42,11 +55,24 @@ export interface GeneTerminalState {
   selectedId: string;
   runConfig: IafRunConfig;
   es: EsHyperparams;
+  hiddenSize: number;
+  trainingMode: TrainingMode;
   status: TrainingStatus;
   generation: number;
   bestLoss: number;
-  sampledLoss: number;
+  accuracy: number;
+  bestAccuracy: number;
+  score: number;
+  bestScore: number;
   history: MockPoint[];
+  tokenDataset: TokenTaskDataset;
+  trainingGenome: Float32Array | null;
+  footballTeamSize: number;
+  footballMatchTicks: number;
+  footballPreview: FootballMatchResult | null;
+  selectedSampleIndex: number;
+  inferenceStepIndex: number;
+  inferenceTrace: GruSequenceTrace | null;
   weightCount: number;
   selectGene: (id: string) => void;
   renameCreature: (name: string) => void;
@@ -57,7 +83,13 @@ export interface GeneTerminalState {
   duplicateGene: () => void;
   deleteAllCreatures: () => void;
   updateArchitecture: (key: keyof EvolutionGene["architecture"], value: number) => void;
+  updateHiddenSize: (value: number) => void;
+  setTrainingMode: (mode: TrainingMode) => void;
   updateEs: (key: keyof EsHyperparams, value: number) => void;
+  updateFootball: (key: "teamSize" | "matchTicks" | "matchSeconds", value: number) => void;
+  selectSample: (index: number) => void;
+  resetInference: () => void;
+  stepInference: () => void;
   start: () => void;
   pause: () => void;
   step: () => void;
@@ -72,11 +104,11 @@ const PAPER_IAF_RUN: IafRunConfig = {
 };
 
 const PAPER_IAF_ES: EsHyperparams = {
-  generations: 10000,
-  populationPairs: 256,
-  sigma: 0.01,
-  learningRate: 1,
-  momentum: 0.9
+  generations: 120,
+  populationPairs: 32,
+  sigma: 0.08,
+  learningRate: 0.06,
+  momentum: 0.8
 };
 
 const GeneTerminalContext = createContext<GeneTerminalState | null>(null);
@@ -90,12 +122,7 @@ function syncCreatureName(creature: StoredCreature, name: string): StoredCreatur
   return {
     ...creature,
     name: normalizedName,
-    updatedAt: new Date().toISOString(),
-    gene: {
-      ...creature.gene,
-      name: normalizedName,
-      updatedAt: new Date().toISOString()
-    }
+    updatedAt: new Date().toISOString()
   };
 }
 
@@ -112,13 +139,45 @@ function initialLoss(gene: EvolutionGene): number {
   return 88 + (gene.weights.length % 47) * 0.73;
 }
 
-function nextMockPoint(previous: MockPoint, gene: EvolutionGene): MockPoint {
-  const generation = previous.generation + 1;
-  const wobble = Math.abs(Math.sin(generation * 0.41 + gene.weights.length * 0.001));
-  const sampledLoss = previous.selectedLoss + wobble * 12 + (generation % 9 === 0 ? 28 : 0);
-  const improvement = generation % 5 === 0 ? 0.18 + wobble * 0.45 : 0;
-  const selectedLoss = Math.max(0.01, previous.selectedLoss - improvement);
-  return { generation, sampledLoss, selectedLoss };
+function createTrainingSession(creatureId: string, hiddenSize: number, es: EsHyperparams): GruEsTrainingSession {
+  return new GruEsTrainingSession(
+    buildFakeLanguageDataset({ seed: `token-task:${creatureId}`, sampleCount: 32 }),
+    {
+      hiddenSize,
+      es: {
+        seed: `gru-es:${creatureId}:${hiddenSize}:${es.populationPairs}:${es.sigma}:${es.learningRate}:${es.momentum}`,
+        sigma: es.sigma,
+        learningRate: es.learningRate,
+        populationPairs: es.populationPairs,
+        momentum: es.momentum
+      }
+    },
+    es.generations
+  );
+}
+
+function createFootballTrainingSession(
+  creatureId: string,
+  hiddenSize: number,
+  es: EsHyperparams,
+  football: { teamSize: number; matchTicks: number }
+): FootballEsTrainingSession {
+  return new FootballEsTrainingSession(
+    {
+      seed: `football-es:${creatureId}:${hiddenSize}:${es.populationPairs}:${es.sigma}:${es.learningRate}:${es.momentum}:${football.teamSize}:${football.matchTicks}`,
+      hiddenSize,
+      sigma: es.sigma,
+      learningRate: es.learningRate,
+      populationPairs: es.populationPairs,
+      momentum: es.momentum,
+      football: {
+        seed: `football-task:${creatureId}`,
+        teamSize: football.teamSize,
+        maxTicks: football.matchTicks
+      }
+    },
+    es.generations
+  );
 }
 
 function createPaperGene(index: number, existingNames: string[]): { gene: EvolutionGene; phenotype: CreaturePhenotype } {
@@ -210,11 +269,62 @@ export function GeneTerminalProvider({ children }: { children: ReactNode }) {
   const selectedGene = selectedCreature.gene ?? createSeedGene();
   const [runConfig] = useState<IafRunConfig>(PAPER_IAF_RUN);
   const [es, setEs] = useState<EsHyperparams>(PAPER_IAF_ES);
+  const [hiddenSize, setHiddenSize] = useState(8);
+  const [trainingMode, setTrainingMode] = useState<TrainingMode>("language");
   const [status, setStatus] = useState<TrainingStatus>("idle");
-  const [history, setHistory] = useState<MockPoint[]>(() => {
-    const loss = initialLoss(selectedGene);
-    return [{ generation: 0, selectedLoss: loss, sampledLoss: loss }];
-  });
+  const sessionRef = useRef<GruEsTrainingSession | FootballEsTrainingSession | null>(null);
+  const [history, setHistory] = useState<MockPoint[]>([]);
+  const [tokenDataset, setTokenDataset] = useState<TokenTaskDataset>(() =>
+    buildFakeLanguageDataset({ seed: `token-task:${selectedCreature.id}`, sampleCount: 32 })
+  );
+  const [trainingGenome, setTrainingGenome] = useState<Float32Array | null>(null);
+  const [footballTeamSize, setFootballTeamSize] = useState(4);
+  const [footballMatchTicks, setFootballMatchTicks] = useState(360);
+  const [footballPreview, setFootballPreview] = useState<FootballMatchResult | null>(null);
+  const [selectedSampleIndex, setSelectedSampleIndex] = useState(0);
+  const [inferenceStepIndex, setInferenceStepIndex] = useState(0);
+
+  function resetTrainingSession() {
+    if (trainingMode === "language") {
+      const dataset = buildFakeLanguageDataset({ seed: `token-task:${selectedCreature.id}`, sampleCount: 32 });
+      setTokenDataset(dataset);
+      setSelectedSampleIndex(0);
+      setInferenceStepIndex(0);
+      const session = createTrainingSession(selectedCreature.id, hiddenSize, es);
+      sessionRef.current = session;
+      const initial = session.initial();
+      setTrainingGenome(initial.genome);
+      setFootballPreview(null);
+      setHistory([{
+        generation: initial.iteration,
+        loss: initial.loss,
+        accuracy: initial.accuracy,
+        bestLoss: initial.bestLoss,
+        bestAccuracy: initial.bestAccuracy,
+        score: initial.accuracy,
+        bestScore: initial.bestAccuracy
+      }]);
+    } else {
+      const session = createFootballTrainingSession(selectedCreature.id, hiddenSize, es, {
+        teamSize: footballTeamSize,
+        matchTicks: footballMatchTicks
+      });
+      sessionRef.current = session;
+      const initial = session.initial();
+      setTrainingGenome(initial.genome);
+      setFootballPreview(initial.preview);
+      setHistory([{
+        generation: initial.iteration,
+        loss: 0,
+        accuracy: 0,
+        bestLoss: 0,
+        bestAccuracy: 0,
+        score: initial.score,
+        bestScore: initial.bestScore
+      }]);
+    }
+    setStatus("idle");
+  }
 
   useEffect(() => {
     try {
@@ -225,27 +335,60 @@ export function GeneTerminalProvider({ children }: { children: ReactNode }) {
   }, [creatures]);
 
   useEffect(() => {
-    const loss = initialLoss(selectedGene);
-    setHistory([{ generation: 0, selectedLoss: loss, sampledLoss: loss }]);
-    setStatus("idle");
-  }, [selectedGene.id]);
+    resetTrainingSession();
+  }, [selectedCreature.id, hiddenSize, trainingMode, es.learningRate, es.momentum, es.populationPairs, es.sigma, footballTeamSize, footballMatchTicks]);
 
   useEffect(() => {
     if (status !== "running") return;
     const timer = window.setInterval(() => {
-      setHistory((items) => {
-        const last = items[items.length - 1];
-        if (!last || last.generation >= es.generations) {
-          setStatus("paused");
-          return items;
-        }
-        return [...items, nextMockPoint(last, selectedGene)];
-      });
+      const session = sessionRef.current;
+      if (!session) return;
+      const next = session.step();
+      setTrainingGenome(next.genome);
+      if (trainingMode === "language") {
+        const languageStep = next as ReturnType<GruEsTrainingSession["step"]>;
+        setHistory((items) => [
+          ...items,
+          {
+            generation: languageStep.iteration,
+            loss: languageStep.loss,
+            accuracy: languageStep.accuracy,
+            bestLoss: languageStep.bestLoss,
+            bestAccuracy: languageStep.bestAccuracy,
+            score: languageStep.accuracy,
+            bestScore: languageStep.bestAccuracy
+          }
+        ]);
+      } else {
+        const footballStep = next as ReturnType<FootballEsTrainingSession["step"]>;
+        setFootballPreview(footballStep.preview);
+        setHistory((items) => [
+          ...items,
+          {
+            generation: footballStep.iteration,
+            loss: 0,
+            accuracy: 0,
+            bestLoss: 0,
+            bestAccuracy: 0,
+            score: footballStep.score,
+            bestScore: footballStep.bestScore
+          }
+        ]);
+      }
+      if (next.done) {
+        setStatus("paused");
+      }
     }, 220);
     return () => window.clearInterval(timer);
-  }, [es.generations, selectedGene, status]);
+  }, [status, trainingMode]);
 
   const latest = history[history.length - 1];
+  const selectedSample = tokenDataset.samples[Math.min(selectedSampleIndex, Math.max(0, tokenDataset.samples.length - 1))];
+  const inferenceTrace = useMemo(() => {
+    if (trainingMode !== "language" || !trainingGenome || !selectedSample) return null;
+    const model = new GruModel({ vocabSize: tokenDataset.vocab.length, hiddenSize });
+    return model.traceSequence(trainingGenome, selectedSample.tokens);
+  }, [hiddenSize, selectedSample, tokenDataset.vocab.length, trainingGenome, trainingMode]);
   const value = useMemo<GeneTerminalState>(() => ({
     creatures,
     selectedCreature,
@@ -255,11 +398,24 @@ export function GeneTerminalProvider({ children }: { children: ReactNode }) {
     selectedId,
     runConfig,
     es,
+    hiddenSize,
+    trainingMode,
     status,
     generation: latest?.generation ?? 0,
-    bestLoss: latest?.selectedLoss ?? 0,
-    sampledLoss: latest?.sampledLoss ?? 0,
+    bestLoss: latest?.bestLoss ?? 0,
+    accuracy: latest?.accuracy ?? 0,
+    bestAccuracy: latest?.bestAccuracy ?? 0,
+    score: latest?.score ?? 0,
+    bestScore: latest?.bestScore ?? 0,
     history,
+    tokenDataset,
+    trainingGenome,
+    footballTeamSize,
+    footballMatchTicks,
+    footballPreview,
+    selectedSampleIndex,
+    inferenceStepIndex,
+    inferenceTrace,
     weightCount: iafGenomeLength(selectedGene.architecture),
     selectGene: setSelectedId,
     renameCreature: (name) => {
@@ -269,12 +425,7 @@ export function GeneTerminalProvider({ children }: { children: ReactNode }) {
     saveCreature: () => {
       const saved = {
         ...selectedCreature,
-        updatedAt: new Date().toISOString(),
-        gene: {
-          ...selectedGene,
-          name: selectedCreature.name,
-          updatedAt: new Date().toISOString()
-        }
+        updatedAt: new Date().toISOString()
       };
       setCreatures((items) => upsertCreature(items, saved));
     },
@@ -338,22 +489,87 @@ export function GeneTerminalProvider({ children }: { children: ReactNode }) {
       };
       setCreatures((items) => upsertCreature(items, updated));
     },
-    updateEs: (key, value) => setEs((current) => ({ ...current, [key]: value })),
-    start: () => setStatus("running"),
+    updateHiddenSize: (value) => setHiddenSize(Math.max(2, Math.min(64, Math.round(value)))),
+    setTrainingMode: (mode) => setTrainingMode(mode),
+    updateEs: (key, value) => {
+      if (key === "generations") {
+        const nextValue = Math.max(1, Math.round(value));
+        setEs((current) => ({ ...current, generations: nextValue }));
+        sessionRef.current?.setMaxIterations(nextValue);
+        return;
+      }
+      setEs((current) => ({ ...current, [key]: value }));
+    },
+    updateFootball: (key, value) => {
+      if (key === "teamSize") {
+        setFootballTeamSize(Math.max(2, Math.min(11, Math.round(value))));
+        return;
+      }
+      if (key === "matchSeconds") {
+        const seconds = Math.max(2, Math.min(120, value));
+        setFootballMatchTicks(Math.max(24, Math.min(2400, Math.round(seconds * FOOTBALL_TICKS_PER_SECOND))));
+        return;
+      }
+      setFootballMatchTicks(Math.max(120, Math.min(2400, Math.round(value))));
+    },
+    selectSample: (index) => {
+      setSelectedSampleIndex(Math.max(0, Math.min(index, tokenDataset.samples.length - 1)));
+      setInferenceStepIndex(0);
+    },
+    resetInference: () => setInferenceStepIndex(0),
+    stepInference: () => {
+      if (!inferenceTrace) return;
+      setInferenceStepIndex((value) => Math.min(value + 1, Math.max(0, inferenceTrace.steps.length - 1)));
+    },
+    start: () => {
+      const latestGeneration = latest?.generation ?? 0;
+      if (latestGeneration >= es.generations) {
+        const extended = es.generations + Math.max(20, Math.round(es.generations * 0.5));
+        setEs((current) => ({ ...current, generations: extended }));
+        sessionRef.current?.setMaxIterations(extended);
+      }
+      setStatus("running");
+    },
     pause: () => setStatus("paused"),
     step: () => {
       setStatus("paused");
-      setHistory((items) => {
-        const last = items[items.length - 1];
-        return last ? [...items, nextMockPoint(last, selectedGene)] : items;
-      });
+      const session = sessionRef.current;
+      if (!session) return;
+      const next = session.step();
+      setTrainingGenome(next.genome);
+      if (trainingMode === "language") {
+        const languageStep = next as ReturnType<GruEsTrainingSession["step"]>;
+        setHistory((items) => [
+          ...items,
+          {
+            generation: languageStep.iteration,
+            loss: languageStep.loss,
+            accuracy: languageStep.accuracy,
+            bestLoss: languageStep.bestLoss,
+            bestAccuracy: languageStep.bestAccuracy,
+            score: languageStep.accuracy,
+            bestScore: languageStep.bestAccuracy
+          }
+        ]);
+      } else {
+        const footballStep = next as ReturnType<FootballEsTrainingSession["step"]>;
+        setFootballPreview(footballStep.preview);
+        setHistory((items) => [
+          ...items,
+          {
+            generation: footballStep.iteration,
+            loss: 0,
+            accuracy: 0,
+            bestLoss: 0,
+            bestAccuracy: 0,
+            score: footballStep.score,
+            bestScore: footballStep.bestScore
+          }
+        ]);
+      }
     },
-    reset: () => {
-      const loss = initialLoss(selectedGene);
-      setHistory([{ generation: 0, selectedLoss: loss, sampledLoss: loss }]);
-      setStatus("idle");
-    }
-  }), [creatures, es, history, latest, runConfig, selectedCreature, selectedGene, selectedId, status]);
+    reset: () => resetTrainingSession()
+  }), [creatures, es, footballMatchTicks, footballPreview, footballTeamSize, hiddenSize, history, inferenceStepIndex, inferenceTrace, latest, runConfig, selectedCreature, selectedGene, selectedId, selectedSampleIndex, status, tokenDataset, trainingGenome, trainingMode]);
 
   return <GeneTerminalContext.Provider value={value}>{children}</GeneTerminalContext.Provider>;
 }

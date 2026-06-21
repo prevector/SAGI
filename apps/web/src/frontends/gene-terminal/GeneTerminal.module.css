@@ -204,6 +204,12 @@
     linear-gradient(180deg, #f0ebe1, #ece6dc);
 }
 
+.panelInference {
+  background:
+    linear-gradient(180deg, rgba(110, 140, 166, 0.04), transparent 18%),
+    linear-gradient(180deg, #f1ece3, #ece7de);
+}
+
 .panelLibrary .geneList {
   flex: 1;
   min-height: 0;
@@ -213,6 +219,12 @@
   background:
     linear-gradient(180deg, rgba(154, 104, 65, 0.08), transparent 20%),
     linear-gradient(180deg, #f2ece2, #eee7dd);
+}
+
+.panelVisualizer {
+  background:
+    linear-gradient(180deg, rgba(23, 196, 196, 0.08), transparent 18%),
+    linear-gradient(180deg, #f1ece3, #e9e2d8);
 }
 
 .creaturePanel {
@@ -311,6 +323,80 @@
 .geneList button,
 .field input {
   font: inherit;
+}
+
+.selectField {
+  min-width: 0;
+  padding: 7px 8px;
+  border: 1px solid var(--terminal-line);
+  background: var(--terminal-bg-2);
+  color: var(--terminal-text);
+  font: inherit;
+}
+
+.tokenStrip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tokenChip {
+  padding: 5px 8px;
+  border: 1px solid var(--terminal-line);
+  background: rgba(255, 255, 255, 0.28);
+  color: var(--terminal-text-muted);
+}
+
+.tokenChipActive {
+  border-color: rgba(110, 140, 166, 0.28);
+  background: rgba(110, 140, 166, 0.12);
+  color: var(--terminal-text);
+}
+
+.tokenChipPredicted {
+  border-color: rgba(154, 104, 65, 0.26);
+  background: rgba(154, 104, 65, 0.08);
+  color: var(--terminal-text);
+}
+
+.probList,
+.hiddenGrid {
+  display: grid;
+  gap: 6px;
+}
+
+.probRow,
+.hiddenCell {
+  display: grid;
+  align-items: center;
+  gap: 8px;
+}
+
+.probRow {
+  grid-template-columns: 96px minmax(0, 1fr) 52px;
+}
+
+.probBar,
+.hiddenBar {
+  height: 10px;
+  border: 1px solid var(--terminal-line);
+  background: rgba(255, 255, 255, 0.3);
+  overflow: hidden;
+}
+
+.probBar i,
+.hiddenBar i {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--terminal-accent), var(--terminal-accent-3));
+}
+
+.hiddenGrid {
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+}
+
+.hiddenCell {
+  grid-template-columns: 28px minmax(0, 1fr) 38px;
 }
 
 .panelTools button {
@@ -544,6 +630,38 @@
     linear-gradient(180deg, rgba(110, 140, 166, 0.06), rgba(255, 255, 255, 0));
 }
 
+.visualizerStage {
+  position: relative;
+  min-height: 340px;
+  border: 1px solid var(--terminal-line);
+  background:
+    radial-gradient(circle at 20% 18%, rgba(23, 196, 196, 0.08), transparent 24%),
+    radial-gradient(circle at 82% 26%, rgba(240, 120, 61, 0.08), transparent 22%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.02));
+  overflow: hidden;
+}
+
+.visualizerCanvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.visualizerHud {
+  display: grid;
+  gap: 8px;
+}
+
+.visualizerMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  color: var(--terminal-text-muted);
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
 .creatureCanvas,
 .mockChart {
   width: 100%;
@@ -560,8 +678,20 @@
   stroke-dasharray: 3 9;
 }
 
+.chartAxisLine {
+  stroke: rgba(54, 47, 40, 0.16);
+}
+
+.chartAxisLabel {
+  fill: rgba(54, 47, 40, 0.56);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+}
+
 .selectedLine,
-.sampledLine {
+.sampledLine,
+.accuracyLine {
   fill: none;
   stroke-linecap: round;
   stroke-linejoin: round;
@@ -577,6 +707,13 @@
   stroke: var(--terminal-accent-2);
   stroke-width: 1.3;
   opacity: 0.7;
+}
+
+.accuracyLine {
+  stroke: var(--terminal-accent);
+  stroke-width: 1.4;
+  opacity: 0.9;
+  stroke-dasharray: 7 6;
 }
 
 .note {

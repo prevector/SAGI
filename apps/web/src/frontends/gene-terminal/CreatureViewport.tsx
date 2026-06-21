@@ -21,6 +21,9 @@ interface CreatureViewportProps {
   phenotype: CreaturePhenotype;
   generation: number;
   status: TrainingStatus;
+  worldPosition?: [number, number, number];
+  worldHeading?: number;
+  showFloor?: boolean;
 }
 
 interface VerletPoint {
@@ -709,27 +712,137 @@ function pairKey(a: number, b: number): string {
   return a < b ? `${a}:${b}` : `${b}:${a}`;
 }
 
+function createInitialMotionState() {
+  const orbitAngle = 0.24;
+  const orbitRadiusX = 2.6;
+  const orbitRadiusZ = 2.1;
+  const trackSpeed = 0.95;
+  const position = new Vector3(
+    Math.cos(orbitAngle) * orbitRadiusX,
+    -0.05,
+    Math.sin(orbitAngle) * orbitRadiusZ
+  );
+  const velocity = new Vector3(
+    -Math.sin(orbitAngle) * orbitRadiusX * trackSpeed,
+    0,
+    Math.cos(orbitAngle) * orbitRadiusZ * trackSpeed
+  );
+
+  return {
+    position,
+    velocity,
+    heading: Math.atan2(velocity.z, velocity.x),
+    orbitAngle,
+    orbitRadiusX,
+    orbitRadiusZ
+  };
+}
+
+function initializeSimulationPose(
+  spec: CreatureSpec,
+  simulation: ReturnType<typeof cloneSimulation>,
+  motionPosition: Vector3,
+  heading: number,
+  repulsionSkipPairs: Set<string>
+) {
+  const forward = TEMP_A.set(Math.cos(heading), 0, Math.sin(heading));
+  const lateral = TEMP_B.set(-forward.z, 0, forward.x);
+
+  for (let index = 0; index < spec.points.length; index += 1) {
+    const meta = spec.points[index];
+    const point = simulation.points[index];
+    point.position.copy(motionPosition)
+      .addScaledVector(forward, meta.rest.x)
+      .addScaledVector(WORLD_UP, meta.rest.y)
+      .addScaledVector(lateral, meta.rest.z);
+    point.previous.copy(point.position);
+    point.acceleration.set(0, 0, 0);
+  }
+
+  for (const leg of simulation.legs) {
+    const hip = simulation.points[leg.hip].position;
+    const footTarget = TEMP_C.copy(hip)
+      .addScaledVector(forward, leg.restOffset.x)
+      .addScaledVector(lateral, leg.restOffset.z);
+    footTarget.y = spec.floorY;
+    leg.desiredPosition.copy(footTarget);
+    leg.plantedPosition.copy(footTarget);
+    leg.stepStart.copy(footTarget);
+    leg.stepTarget.copy(footTarget);
+    leg.stepProgress = 1;
+    leg.planted = true;
+
+    const foot = simulation.points[leg.foot];
+    foot.position.copy(footTarget);
+    foot.previous.copy(footTarget);
+  }
+
+  for (let iteration = 0; iteration < 12; iteration += 1) {
+    for (const bone of spec.bones) {
+      solveDistanceConstraint(simulation.points[bone.a], simulation.points[bone.b], bone.length);
+    }
+
+    for (let left = 0; left < simulation.points.length; left += 1) {
+      for (let right = left + 1; right < simulation.points.length; right += 1) {
+        const leftMeta = spec.points[left];
+        const rightMeta = spec.points[right];
+        if (repulsionSkipPairs.has(pairKey(left, right))) continue;
+        if (
+          leftMeta.role === "head" ||
+          leftMeta.role === "neck" ||
+          rightMeta.role === "head" ||
+          rightMeta.role === "neck"
+        ) {
+          continue;
+        }
+        const minDistance = (leftMeta.radius + rightMeta.radius) * 0.72;
+        solveSeparationConstraint(simulation.points[left], simulation.points[right], minDistance);
+      }
+    }
+
+    for (const leg of simulation.legs) {
+      const foot = simulation.points[leg.foot];
+      foot.position.copy(leg.plantedPosition);
+      foot.previous.copy(foot.position);
+      foot.position.y = spec.floorY;
+      foot.previous.y = spec.floorY;
+    }
+  }
+
+  for (const point of simulation.points) {
+    point.previous.copy(point.position);
+    point.acceleration.set(0, 0, 0);
+  }
+}
+
 function CreatureWalker({
   gene,
   phenotype,
   generation,
-  status
+  status,
+  worldPosition,
+  worldHeading,
+  showFloor = true
 }: CreatureViewportProps) {
   const jointRefs = useRef<Array<Mesh | null>>([]);
   const boneRefs = useRef<Array<Mesh | null>>([]);
   const plateRefs = useRef<Array<Mesh | null>>([]);
   const eyeRefs = useRef<Array<Mesh | null>>([]);
   const pupilRefs = useRef<Array<Mesh | null>>([]);
-  const spec = useMemo(() => createCreatureSpec(gene, phenotype), [gene, phenotype]);
+  const spec = useMemo(
+    () => createCreatureSpec(gene, phenotype),
+    [
+      gene.weights,
+      gene.architecture.neuronStateSize,
+      gene.architecture.synapseStateSize,
+      gene.architecture.outputGain,
+      phenotype
+    ]
+  );
   const simulationRef = useRef(cloneSimulation(spec));
-  const motionRef = useRef({
-    position: new Vector3(0, -0.05, 0),
-    velocity: new Vector3(0.9, 0, 0.22),
-    heading: 0.24,
-    orbitAngle: 0.24,
-    orbitRadiusX: 2.6,
-    orbitRadiusZ: 2.1
-  });
+  const motionRef = useRef(createInitialMotionState());
+  const controlledPositionRef = useRef<Vector3 | null>(worldPosition ? new Vector3(...worldPosition) : null);
+  const controlledHeadingRef = useRef(worldHeading ?? 0);
   const boneGeometries = useMemo(
     () => spec.bones.map((bone) => createTaperedCapsuleGeometry(bone.length, bone.radiusA, bone.radiusB)),
     [spec.bones]
@@ -745,34 +858,17 @@ function CreatureWalker({
     return pairs;
   }, [spec.bones, spec.legs]);
   useEffect(() => {
-    motionRef.current = {
-      position: new Vector3(0, -0.05, 0),
-      velocity: new Vector3(0.9, 0, 0.22),
-      heading: 0.24,
-      orbitAngle: 0.24,
-      orbitRadiusX: 2.6,
-      orbitRadiusZ: 2.1
-    };
+    motionRef.current = createInitialMotionState();
 
     simulationRef.current = cloneSimulation(spec);
-    const simulation = simulationRef.current;
-    for (const point of simulation.points) {
-      point.position.x += motionRef.current.position.x;
-      point.position.y += motionRef.current.position.y;
-      point.position.z += motionRef.current.position.z;
-      point.previous.copy(point.position);
-    }
-    for (const leg of simulation.legs) {
-      leg.desiredPosition.x += motionRef.current.position.x;
-      leg.desiredPosition.y += motionRef.current.position.y;
-      leg.desiredPosition.z += motionRef.current.position.z;
-      leg.plantedPosition.x += motionRef.current.position.x;
-      leg.plantedPosition.y += motionRef.current.position.y;
-      leg.plantedPosition.z += motionRef.current.position.z;
-      leg.stepStart.copy(leg.plantedPosition);
-      leg.stepTarget.copy(leg.plantedPosition);
-    }
-  }, [spec]);
+    initializeSimulationPose(
+      spec,
+      simulationRef.current,
+      motionRef.current.position,
+      motionRef.current.heading,
+      repulsionSkipPairs
+    );
+  }, [spec, repulsionSkipPairs]);
 
   useEffect(() => {
     return () => {
@@ -789,15 +885,41 @@ function CreatureWalker({
     const locomotion = status === "running" ? 1 : 0.4;
     const cycle = time * (1.1 + locomotion * 0.95);
     const dt = Math.min(delta, 1 / 30);
-    const trackSpeed = status === "running" ? 0.95 : 0.28;
-    motion.orbitAngle += dt * trackSpeed;
-    const orbitX = Math.cos(motion.orbitAngle) * motion.orbitRadiusX;
-    const orbitZ = Math.sin(motion.orbitAngle) * motion.orbitRadiusZ;
-    const velocityX = -Math.sin(motion.orbitAngle) * motion.orbitRadiusX * trackSpeed;
-    const velocityZ = Math.cos(motion.orbitAngle) * motion.orbitRadiusZ * trackSpeed;
-    motion.position.set(orbitX, -0.05, orbitZ);
-    motion.velocity.set(velocityX, 0, velocityZ);
-    motion.heading = Math.atan2(motion.velocity.z, motion.velocity.x);
+    if (worldPosition) {
+      const current = controlledPositionRef.current ?? new Vector3(...worldPosition);
+      const target = TEMP_D.set(worldPosition[0], worldPosition[1], worldPosition[2]);
+      const previous = current.clone();
+      current.lerp(target, 1 - Math.exp(-dt * 10));
+      motion.position.copy(current);
+      motion.velocity.copy(TEMP_E.subVectors(current, previous)).multiplyScalar(1 / Math.max(dt, 1e-4));
+      if (motion.velocity.length() > 2.4) {
+        motion.velocity.setLength(2.4);
+      }
+      if (worldHeading !== undefined) {
+        const lastHeading = controlledHeadingRef.current;
+        const deltaHeading = Math.atan2(Math.sin(worldHeading - lastHeading), Math.cos(worldHeading - lastHeading));
+        controlledHeadingRef.current = lastHeading + deltaHeading * (1 - Math.exp(-dt * 9));
+        motion.heading = controlledHeadingRef.current;
+      } else if (motion.velocity.lengthSq() > 1e-4) {
+        motion.heading = Math.atan2(motion.velocity.z, motion.velocity.x);
+      }
+      controlledPositionRef.current = current;
+    } else if (worldHeading !== undefined) {
+      motion.position.set(0, -0.05, 0);
+      motion.heading = worldHeading;
+      const speed = status === "running" ? 0.32 : 0.14;
+      motion.velocity.set(Math.cos(worldHeading) * speed, 0, Math.sin(worldHeading) * speed);
+    } else {
+      const trackSpeed = status === "running" ? 0.95 : 0.28;
+      motion.orbitAngle += dt * trackSpeed;
+      const orbitX = Math.cos(motion.orbitAngle) * motion.orbitRadiusX;
+      const orbitZ = Math.sin(motion.orbitAngle) * motion.orbitRadiusZ;
+      const velocityX = -Math.sin(motion.orbitAngle) * motion.orbitRadiusX * trackSpeed;
+      const velocityZ = Math.cos(motion.orbitAngle) * motion.orbitRadiusZ * trackSpeed;
+      motion.position.set(orbitX, -0.05, orbitZ);
+      motion.velocity.set(velocityX, 0, velocityZ);
+      motion.heading = Math.atan2(motion.velocity.z, motion.velocity.x);
+    }
 
     const walkStrength = status === "running" ? 0.96 : 0.48;
     const forward = TEMP_B.set(motion.velocity.x, 0, motion.velocity.z);
@@ -1063,14 +1185,18 @@ function CreatureWalker({
 
   return (
     <group>
-      <mesh rotation-x={-Math.PI / 2} position={[0, spec.floorY - 0.02, 0]} receiveShadow>
-        <circleGeometry args={[5.2, 48]} />
-        <meshLambertMaterial color="#d9cfbf" />
-      </mesh>
-      <mesh rotation-x={-Math.PI / 2} position={[0, spec.floorY + 0.002, 0]}>
-        <ringGeometry args={[2.9, 3.7, 64]} />
-        <meshBasicMaterial color="#a47a58" transparent opacity={0.13} />
-      </mesh>
+      {showFloor ? (
+        <>
+          <mesh rotation-x={-Math.PI / 2} position={[0, spec.floorY - 0.02, 0]} receiveShadow>
+            <circleGeometry args={[5.2, 48]} />
+            <meshLambertMaterial color="#d9cfbf" />
+          </mesh>
+          <mesh rotation-x={-Math.PI / 2} position={[0, spec.floorY + 0.002, 0]}>
+            <ringGeometry args={[2.9, 3.7, 64]} />
+            <meshBasicMaterial color="#a47a58" transparent opacity={0.13} />
+          </mesh>
+        </>
+      ) : null}
 
       {spec.bones.map((bone, index) => (
         <mesh
@@ -1135,6 +1261,15 @@ function CreatureWalker({
           />
         </mesh>
       ))}
+    </group>
+  );
+}
+
+export function CreatureActor3D(props: CreatureViewportProps) {
+  const { worldPosition = [0, 0, 0], ...rest } = props;
+  return (
+    <group position={worldPosition}>
+      <CreatureWalker {...rest} showFloor={false} />
     </group>
   );
 }

@@ -11,16 +11,20 @@ import { GeneTerminalProvider, useGeneTerminal } from "./state";
 import { CreatureLibraryPanel } from "./panels/CreatureLibraryPanel";
 import { CreaturePanel } from "./panels/CreaturePanel";
 import { GenesPanel } from "./panels/GenesPanel";
+import { InferencePanel } from "./panels/InferencePanel";
 import { NetworkPanel } from "./panels/NetworkPanel";
 import { TrainingPanel } from "./panels/TrainingPanel";
+import { TrainingVisualizerPanel } from "./panels/TrainingVisualizerPanel";
 import styles from "./GeneTerminal.module.css";
 
 const dockComponents = {
   creature: CreaturePanel,
   genes: GenesPanel,
+  inference: InferencePanel,
   library: CreatureLibraryPanel,
   network: NetworkPanel,
-  training: TrainingPanel
+  training: TrainingPanel,
+  visualizer: TrainingVisualizerPanel
 };
 
 const panelSpecs = {
@@ -56,6 +60,19 @@ const panelSpecs = {
     title: "NETWORK",
     position: { referencePanel: "creature", direction: "right" as const },
     initialWidth: 520
+  },
+  visualizer: {
+    id: "visualizer",
+    component: "visualizer",
+    title: "VISUALIZER",
+    position: { referencePanel: "network", direction: "right" as const },
+    initialWidth: 520
+  },
+  inference: {
+    id: "inference",
+    component: "inference",
+    title: "INFERENCE",
+    position: { referencePanel: "network", direction: "below" as const }
   }
 } as const;
 

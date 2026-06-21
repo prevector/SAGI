@@ -12,7 +12,8 @@
     }
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json"
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run tests"
   },
   "dependencies": {
     "seedrandom": "^3.0.5"
