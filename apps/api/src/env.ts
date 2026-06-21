@@ -16,6 +16,12 @@ export interface AppEnv {
   ledgerMode: LedgerMode;
   ledgerSeed: number;
   dbPath: string;
+  // Mollie test-mode payments (bounty funding). `mollieApiKey` must be a
+  // `test_...` key — live keys are refused (see payments.ts). `appUrl` is the
+  // public origin used to build redirect/webhook URLs Mollie sends the browser
+  // back to (the web app, not the API).
+  mollieApiKey: string;
+  appUrl: string;
 }
 
 function resolveLedgerMode(nodeEnv: string): LedgerMode {
@@ -80,6 +86,8 @@ export function getAppEnv(): AppEnv {
     ledgerMode,
     ledgerSeed: Number(process.env.LEDGER_SEED ?? 1337),
     dbPath:
-      process.env.LEDGER_DB_PATH ?? (ledgerMode === "sandbox" ? ":memory:" : "runs/ledger.db")
+      process.env.LEDGER_DB_PATH ?? (ledgerMode === "sandbox" ? ":memory:" : "runs/ledger.db"),
+    mollieApiKey: (process.env.MOLLIE_API_KEY ?? "").trim(),
+    appUrl: (process.env.APP_URL ?? (devMode ? "http://localhost:5173" : "")).replace(/\/$/, "")
   };
 }

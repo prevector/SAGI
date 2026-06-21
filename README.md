@@ -130,10 +130,10 @@ In production the frontend and API are both served from port `4000`.
 
 The simplest deploy path is:
 
-1. Install Node 22+, Caddy, and systemd on the VPS.
+1. Install Node 22+, nginx, Certbot, and systemd on the VPS.
 2. Copy [deploy/sagi.service.example](/Users/tim/Code/SAGI/deploy/sagi.service.example:1) to `/etc/systemd/system/sagi.service` and adapt the user/path.
 3. Put your `.env` file on the server at `/var/www/sagi/.env`.
-4. Point Caddy at the app using [deploy/Caddyfile.example](/Users/tim/Code/SAGI/deploy/Caddyfile.example:1).
+4. Point nginx at the app using [deploy/sagi.nginx.example](/Users/tim/Code/SAGI/deploy/sagi.nginx.example:1), then issue TLS with Certbot.
 5. Deploy with:
 
 ```bash

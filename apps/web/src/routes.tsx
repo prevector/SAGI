@@ -9,6 +9,7 @@ import NotFoundPage from "./pages/NotFoundPage";
 const DocsPage = lazy(() => import("./marketing/DocsPage"));
 
 const GeneLabPage = lazy(() => import("./pages/GeneLabPage"));
+const LaunchBountyPage = lazy(() => import("./pages/LaunchBountyPage"));
 
 // The public marketing site lives at "/"; the authenticated terminal workspace
 // lives at "/app" (login at "/app/login").
@@ -20,6 +21,7 @@ export default function AppRoutes() {
       <Route path="/app/login" element={<LoginPage />} />
       <Route element={<ProtectedRoute />}>
         <Route path="/app" element={<GeneLabPage />} />
+        <Route path="/app/launch-bounty" element={<LaunchBountyPage />} />
         <Route path="/app/genes" element={<Navigate to="/app" replace />} />
         <Route path="/app/*" element={<Navigate to="/app" replace />} />
       </Route>

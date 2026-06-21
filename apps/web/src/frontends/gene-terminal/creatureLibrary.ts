@@ -113,6 +113,10 @@ const ADJECTIVES: Record<CreaturePaletteKey, readonly string[]> = {
 
 const NOUNS = ["Runner", "Mantis", "Drake", "Crawler", "Wisp", "Stag", "Heron", "Hopper"] as const;
 
+function positiveIndex(value: number, length: number): number {
+  return length > 0 ? value % length : 0;
+}
+
 function trimCreatures(creatures: StoredCreature[], limit = MAX_STORED_CREATURES): StoredCreature[] {
   if (creatures.length <= limit) return creatures;
   return [...creatures]
@@ -313,8 +317,15 @@ export function clonePhenotype(parent: CreaturePhenotype, seed: string): Creatur
 }
 
 export function sanitizeCreatureName(name: string, fallback = "Creature"): string {
-  const collapsed = name.replace(/\s+/g, " ").replace(/[^a-zA-Z0-9 ]/g, "").trim();
-  return (collapsed || fallback).slice(0, MAX_NAME_LENGTH);
+  const collapsed = name
+    .replace(/\s+/g, " ")
+    .replace(/[^a-zA-Z0-9 ]/g, "")
+    .split(" ")
+    .filter((part) => !/^(undefined|null|nan)$/i.test(part))
+    .join(" ")
+    .trim();
+  const fallbackName = fallback && fallback !== name ? sanitizeCreatureName(fallback, "Creature") : "Creature";
+  return (collapsed || fallbackName).slice(0, MAX_NAME_LENGTH);
 }
 
 export function makeCreatureName(
@@ -323,8 +334,11 @@ export function makeCreatureName(
   seed: string
 ): string {
   const hash = hashSeed(seed);
-  const adjectives = ADJECTIVES[phenotype.paletteKey];
-  const base = `${adjectives[hash % adjectives.length]} ${NOUNS[(hash >> 3) % NOUNS.length]}`;
+  const adjectives = ADJECTIVES[phenotype.paletteKey] ?? ADJECTIVES.verdant;
+  const base = sanitizeCreatureName(
+    `${adjectives[positiveIndex(hash, adjectives.length)]} ${NOUNS[positiveIndex(hash >>> 3, NOUNS.length)]}`,
+    "Creature"
+  );
   const taken = new Set(existingNames.map((item) => item.toLowerCase()));
   if (!taken.has(base.toLowerCase())) return base;
   const suffixes = ["II", "III", "IV", "V", "VI", "VII"];
@@ -333,7 +347,10 @@ export function makeCreatureName(
     if (!taken.has(candidate.toLowerCase())) return candidate;
   }
   for (let attempt = 0; attempt < 12; attempt += 1) {
-    const candidate = `${adjectives[(hash >> (6 + attempt)) % adjectives.length]} ${NOUNS[(hash >> (9 + attempt * 2)) % NOUNS.length]}`.slice(0, MAX_NAME_LENGTH);
+    const candidate = sanitizeCreatureName(
+      `${adjectives[positiveIndex(hash >>> (6 + attempt), adjectives.length)]} ${NOUNS[positiveIndex(hash >>> (9 + attempt * 2), NOUNS.length)]}`,
+      base
+    ).slice(0, MAX_NAME_LENGTH);
     if (!taken.has(candidate.toLowerCase())) return candidate;
   }
   return `${base} ${hash.toString(36).slice(0, 4)}`.slice(0, MAX_NAME_LENGTH);

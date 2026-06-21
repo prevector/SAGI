@@ -97,6 +97,28 @@ export const meta = sqliteTable("meta", {
   value: text("value").notNull()
 });
 
+// Sponsor bounty funding via Mollie (test mode). A contribution is created
+// `created` when the launch form is submitted; it advances through the Mollie
+// payment statuses. The bounty itself is only inserted into `bounties` (status
+// `open`) once this row reaches `paid`. `draft` holds the validated launch-form
+// JSON so the bounty can be materialised on payment. Amounts are integer cents.
+export const bountyContributions = sqliteTable("bounty_contributions", {
+  id: text("id").primaryKey(),
+  bountyId: text("bounty_id"), // the created bounty's id, set on paid
+  sponsor: text("sponsor").notNull(),
+  molliePaymentId: text("mollie_payment_id"), // tr_… set after create
+  amountCents: integer("amount_cents").notNull(),
+  tokens: integer("tokens").notNull(),
+  currency: text("currency").notNull().default("EUR"),
+  status: text("status").notNull().default("created"),
+  // created | open | pending | authorized | paid | canceled | expired | failed
+  mode: text("mode"), // "test" | "live"
+  reference: text("reference").notNull(),
+  draft: text("draft").notNull(), // JSON of the validated draft
+  createdAt: integer("created_at").notNull(),
+  paidAt: integer("paid_at")
+});
+
 /** DDL run on boot. Mirrors the Drizzle defs above. */
 export const SCHEMA_DDL = `
 CREATE TABLE IF NOT EXISTS wallets (
@@ -184,4 +206,20 @@ CREATE TABLE IF NOT EXISTS meta (
   key TEXT PRIMARY KEY,
   value TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS bounty_contributions (
+  id TEXT PRIMARY KEY,
+  bounty_id TEXT,
+  sponsor TEXT NOT NULL,
+  mollie_payment_id TEXT,
+  amount_cents INTEGER NOT NULL,
+  tokens INTEGER NOT NULL,
+  currency TEXT NOT NULL DEFAULT 'EUR',
+  status TEXT NOT NULL DEFAULT 'created',
+  mode TEXT,
+  reference TEXT NOT NULL,
+  draft TEXT NOT NULL,
+  created_at INTEGER NOT NULL,
+  paid_at INTEGER
+);
+CREATE INDEX IF NOT EXISTS idx_contrib_mollie ON bounty_contributions(mollie_payment_id);
 `;
