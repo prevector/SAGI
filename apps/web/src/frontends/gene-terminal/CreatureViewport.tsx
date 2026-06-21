@@ -1240,11 +1240,11 @@ function CreatureWalker({
         <>
           <mesh rotation-x={-Math.PI / 2} position={[0, spec.floorY - 0.02, 0]} receiveShadow>
             <circleGeometry args={[5.2, 48]} />
-            <meshLambertMaterial color="#d9cfbf" />
+            <meshLambertMaterial color="#edf4f9" />
           </mesh>
           <mesh rotation-x={-Math.PI / 2} position={[0, spec.floorY + 0.002, 0]}>
             <ringGeometry args={[2.9, 3.7, 64]} />
-            <meshBasicMaterial color="#a47a58" transparent opacity={0.13} />
+            <meshBasicMaterial color="#3c7fa8" transparent opacity={0.16} />
           </mesh>
         </>
       ) : null}
@@ -1338,14 +1338,14 @@ export function CreatureViewport(props: CreatureViewportProps) {
           maxDistance={12}
           target={[0, 0, 0]}
         />
-        <color attach="background" args={["#f5efe4"]} />
-        <fog attach="fog" args={["#f5efe4", 22, 48]} />
-        <ambientLight intensity={1.25} color="#f8f0e4" />
-        <hemisphereLight intensity={0.28} color="#fff2de" groundColor="#d9c7b1" />
+        <color attach="background" args={["#fbfdff"]} />
+        <fog attach="fog" args={["#fbfdff", 28, 64]} />
+        <ambientLight intensity={1.28} color="#f7fbff" />
+        <hemisphereLight intensity={0.28} color="#f7fbff" groundColor="#c8dff0" />
         <directionalLight
           position={[7, 9, 5]}
           intensity={1.9}
-          color="#fff1cf"
+          color="#eef7fd"
           castShadow
           shadow-mapSize-width={1024}
           shadow-mapSize-height={1024}

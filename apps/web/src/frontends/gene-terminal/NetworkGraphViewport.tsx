@@ -225,10 +225,10 @@ function NetworkScene({
 
   return (
     <>
-      <color attach="background" args={["#e9e2d6"]} />
-      <fog attach="fog" args={["#e9e2d6", 6, 14]} />
-      <ambientLight intensity={0.6} color="#f6eee2" />
-      <pointLight position={[0, 0, 4]} intensity={0.28} color="#c8d8e3" />
+      <color attach="background" args={["#fbfdff"]} />
+      <fog attach="fog" args={["#fbfdff", 8, 18]} />
+      <ambientLight intensity={0.72} color="#f7fbff" />
+      <pointLight position={[0, 0, 4]} intensity={0.24} color="#c8dff0" />
       {nodes.length > 0 ? <MeshCloud nodes={nodes} onHover={onHover} /> : null}
     </>
   );

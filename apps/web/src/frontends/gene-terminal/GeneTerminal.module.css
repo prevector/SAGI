@@ -1,27 +1,25 @@
 .terminal {
-  /* Warm-editorial brand palette (mirrors styles/tokens.css). Accent = brand pink,
-     accent-3 = brand blue. Keep these in sync with the brand tokens. */
-  --terminal-bg: var(--brown-50);          /* #F5F0EA */
-  --terminal-bg-2: #ede6dc;
-  --terminal-bg-3: var(--brown-100);       /* #E4D8C8 */
-  --terminal-line: rgba(46, 33, 24, 0.12);
-  --terminal-line-strong: rgba(46, 33, 24, 0.22);
+  --terminal-bg: #fbfdff;
+  --terminal-bg-2: #f4f9fd;
+  --terminal-bg-3: var(--blue-50);
+  --terminal-line: rgba(60, 127, 168, 0.34);
+  --terminal-line-strong: rgba(42, 95, 125, 0.58);
   --terminal-text: var(--brown-900);       /* #2E2118 */
   --terminal-text-muted: var(--brown-500); /* #6B4F35 */
-  --terminal-accent: var(--pink-700);      /* #C04B6E */
-  --terminal-accent-2: var(--brown-300);   /* #A8886A */
-  --terminal-accent-3: var(--blue-500);    /* #3C7FA8 */
-  --terminal-glow: rgba(192, 75, 110, 0.12);
+  --terminal-accent: var(--blue-500);
+  --terminal-accent-2: var(--blue-300);
+  --terminal-accent-3: var(--blue-700);
+  --terminal-accent-pink: var(--pink-500);
+  --terminal-accent-pink-soft: rgba(224, 122, 151, 0.14);
+  --terminal-glow: rgba(60, 127, 168, 0.14);
   height: 100vh;
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
   overflow: hidden;
   background:
-    radial-gradient(circle at 10% 8%, rgba(60, 127, 168, 0.09), transparent 22%),
-    radial-gradient(circle at 82% 12%, rgba(192, 75, 110, 0.1), transparent 18%),
-    linear-gradient(rgba(46, 33, 24, 0.028) 1px, transparent 1px),
-    linear-gradient(180deg, #f6f2eb, #ece6dc);
-  background-size: auto, auto, 100% 32px, auto;
+    linear-gradient(rgba(60, 127, 168, 0.075) 1px, transparent 1px),
+    var(--terminal-bg);
+  background-size: 100% 32px, auto;
 }
 
 .menuBar {
@@ -32,7 +30,7 @@
   gap: 16px;
   padding: 5px 10px;
   border-bottom: 1px solid var(--terminal-line-strong);
-  background: rgba(239, 234, 226, 0.98);
+  background: #fbfdff;
   color: var(--terminal-text);
   font-family: var(--font-mono);
   font-size: 11px;
@@ -81,12 +79,12 @@
 }
 
 .infoCluster span + span {
-  border-left: 1px solid rgba(46, 33, 24, 0.12);
+  border-left: 1px solid var(--terminal-line);
 }
 
 .workspaceMark {
   color: var(--terminal-text) !important;
-  background: linear-gradient(90deg, rgba(60, 127, 168, 0.12), rgba(192, 75, 110, 0.08));
+  background: linear-gradient(90deg, rgba(60, 127, 168, 0.1), rgba(224, 122, 151, 0.1));
 }
 
 .menuWrap {
@@ -109,7 +107,7 @@
 .menuButton:hover,
 .menuButton:focus-visible {
   border-color: var(--terminal-line);
-  background: rgba(255, 255, 255, 0.24);
+  background: rgba(60, 127, 168, 0.06);
   outline: none;
 }
 
@@ -121,8 +119,8 @@
   min-width: 180px;
   padding: 4px;
   border: 1px solid var(--terminal-line-strong);
-  background: rgba(242, 238, 230, 0.98);
-  box-shadow: 0 10px 24px rgba(46, 33, 24, 0.12);
+  background: #fbfdff;
+  box-shadow: 0 10px 24px rgba(42, 95, 125, 0.12);
 }
 
 .menuItem {
@@ -160,13 +158,13 @@
   --dv-tabs-and-actions-container-background-color: var(--terminal-bg-2);
   --dv-tabs-and-actions-container-height: 24px;
   --dv-tabs-and-actions-container-font-size: 11px;
-  --dv-activegroup-visiblepanel-tab-background-color: #e6dfd4;
+  --dv-activegroup-visiblepanel-tab-background-color: #eaf4fb;
   --dv-activegroup-hiddenpanel-tab-background-color: var(--terminal-bg-2);
   --dv-inactivegroup-visiblepanel-tab-background-color: var(--terminal-bg-2);
   --dv-inactivegroup-hiddenpanel-tab-background-color: var(--terminal-bg-2);
-  --dv-tab-divider-color: rgba(46, 33, 24, 0.08);
-  --dv-separator-border: rgba(46, 33, 24, 0.12);
-  --dv-active-sash-color: rgba(46, 33, 24, 0.18);
+  --dv-tab-divider-color: rgba(60, 127, 168, 0.14);
+  --dv-separator-border: var(--terminal-line);
+  --dv-active-sash-color: rgba(42, 95, 125, 0.28);
   --dv-activegroup-visiblepanel-tab-color: var(--terminal-text);
   --dv-activegroup-hiddenpanel-tab-color: var(--terminal-text-muted);
   --dv-inactivegroup-visiblepanel-tab-color: var(--terminal-text-muted);
@@ -183,10 +181,12 @@
 
 .dockShell :global(.dv-groupview) {
   border: 1px solid var(--terminal-line);
+  box-shadow: inset 0 0 0 1px rgba(60, 127, 168, 0.08);
 }
 
 .dockShell :global(.dv-groupview.dv-active-group) {
   border-color: var(--terminal-line-strong);
+  box-shadow: inset 0 0 0 1px rgba(42, 95, 125, 0.16);
 }
 
 .dockShell :global(.dv-tabs-and-actions-container) {
@@ -199,7 +199,7 @@
 }
 
 .dockShell :global(.dv-tab.dv-active-tab) {
-  box-shadow: inset 0 -1px 0 var(--terminal-accent);
+  box-shadow: inset 0 -1px 0 var(--terminal-accent-pink);
 }
 
 .panel {
@@ -215,15 +215,11 @@
 
 .panelLibrary {
   grid-template-rows: auto auto minmax(0, 1fr);
-  background:
-    linear-gradient(180deg, rgba(60, 127, 168, 0.05), transparent 16%),
-    linear-gradient(180deg, #f0ebe1, #ece6dc);
+  background: var(--terminal-bg);
 }
 
 .panelInference {
-  background:
-    linear-gradient(180deg, rgba(60, 127, 168, 0.04), transparent 18%),
-    linear-gradient(180deg, #f1ece3, #ece7de);
+  background: var(--terminal-bg);
 }
 
 .footballInferencePanel {
@@ -240,31 +236,22 @@
 }
 
 .panelTraining {
-  background:
-    linear-gradient(180deg, rgba(192, 75, 110, 0.08), transparent 20%),
-    linear-gradient(180deg, #f2ece2, #eee7dd);
+  background: var(--terminal-bg);
 }
 
 .panelGraph {
-  background:
-    linear-gradient(180deg, rgba(60, 127, 168, 0.08), transparent 20%),
-    linear-gradient(180deg, #f1ece3, #ede6db);
+  background: var(--terminal-bg);
 }
 
 .panelVisualizer {
-  background:
-    linear-gradient(180deg, rgba(60, 127, 168, 0.08), transparent 18%),
-    linear-gradient(180deg, #f1ece3, #e9e2d8);
+  background: var(--terminal-bg);
 }
 
 .creaturePanel {
   align-content: stretch;
   padding: 0;
   overflow: hidden;
-  background:
-    radial-gradient(circle at 28% 28%, rgba(60, 127, 168, 0.14), transparent 24%),
-    radial-gradient(circle at 68% 60%, rgba(192, 75, 110, 0.15), transparent 28%),
-    linear-gradient(180deg, #eee7db, #e2d8ca);
+  background: var(--terminal-bg);
 }
 
 .networkPanel {
@@ -272,10 +259,7 @@
   padding: 0;
   overflow: hidden;
   grid-template-rows: auto minmax(0, 1fr);
-  background:
-    radial-gradient(circle at 18% 18%, rgba(60, 127, 168, 0.16), transparent 24%),
-    radial-gradient(circle at 82% 72%, rgba(192, 75, 110, 0.12), transparent 28%),
-    linear-gradient(180deg, #eee7db, #e2d8ca);
+  background: var(--terminal-bg);
 }
 
 .networkHeader {
@@ -285,7 +269,7 @@
   min-height: 42px;
   padding: 10px 12px;
   border-bottom: 1px solid var(--terminal-line);
-  background: rgba(239, 234, 226, 0.9);
+  background: #fbfdff;
 }
 
 .networkHeader strong {
@@ -309,7 +293,7 @@
   gap: 4px;
   padding: 10px 12px;
   border: 1px dashed var(--terminal-line-strong);
-  background: rgba(239, 234, 226, 0.88);
+  background: rgba(251, 253, 255, 0.92);
   color: var(--terminal-text-muted);
   font-size: 12px;
 }
@@ -325,7 +309,7 @@
   padding: 0;
   border: 0;
   background: transparent;
-  color: rgba(46, 33, 24, 0.82);
+  color: rgba(42, 95, 125, 0.86);
   font-family: var(--font-mono);
   font-size: 8px;
   letter-spacing: 0.03em;
@@ -335,7 +319,7 @@
   transition:
     opacity 140ms ease,
     transform 140ms ease;
-  text-shadow: 0 1px 0 rgba(245, 239, 228, 0.7);
+  text-shadow: 0 1px 0 rgba(251, 253, 255, 0.9);
   pointer-events: none;
 }
 
@@ -391,12 +375,12 @@
 
 .trainingStageActive {
   color: var(--terminal-text);
-  background: linear-gradient(90deg, rgba(192, 75, 110, 0.12), transparent 55%);
+  background: linear-gradient(90deg, var(--terminal-accent-pink-soft), rgba(60, 127, 168, 0.05) 62%, transparent);
 }
 
 .trainingStage:focus,
 .trainingStageActive:focus {
-  outline: 1px solid var(--terminal-accent);
+  outline: 1px solid var(--terminal-accent-pink);
   outline-offset: 1px;
 }
 
@@ -418,7 +402,7 @@
   height: 40px;
   padding: 0 14px;
   border: 1px solid var(--terminal-line);
-  background: rgba(255, 255, 255, 0.34);
+  background: rgba(60, 127, 168, 0.05);
   color: var(--terminal-text);
   font: inherit;
   font-size: 17px;
@@ -443,7 +427,7 @@
   min-width: 0;
   padding: 7px 8px;
   border: 1px solid var(--terminal-line);
-  background: var(--terminal-bg-2);
+  background: var(--terminal-bg);
   color: var(--terminal-text);
   font: inherit;
 }
@@ -472,7 +456,7 @@
   border: 1px solid var(--terminal-line);
   background:
     radial-gradient(circle at 52% 38%, oklch(0.92 0.035 245 / 0.58), transparent 54%),
-    rgba(255, 255, 255, 0.28);
+    rgba(251, 253, 255, 0.72);
   color: var(--terminal-text-muted);
   font-size: 25px;
   line-height: 1;
@@ -493,10 +477,10 @@
 }
 
 .tokenChipPredicted {
-  border-color: rgba(192, 75, 110, 0.26);
+  border-color: rgba(224, 122, 151, 0.34);
   background:
-    radial-gradient(circle at 50% 50%, oklch(0.76 0.14 12 / 0.32), transparent 62%),
-    rgba(192, 75, 110, 0.1);
+    radial-gradient(circle at 50% 50%, oklch(0.76 0.12 5 / 0.24), transparent 62%),
+    rgba(224, 122, 151, 0.1);
   color: var(--terminal-text);
   transform: translateY(1px) scale(1.05);
 }
@@ -518,9 +502,8 @@
   border-bottom: 1px solid var(--terminal-line);
   background:
     radial-gradient(circle at 18% 34%, oklch(0.72 0.12 245 / 0.16), transparent 32%),
-    radial-gradient(circle at 74% 48%, oklch(0.72 0.13 12 / 0.14), transparent 30%),
-    linear-gradient(100deg, oklch(0.83 0.055 245 / 0.16), transparent 44%, oklch(0.82 0.065 12 / 0.16)),
-    rgba(255, 255, 255, 0.16);
+    linear-gradient(100deg, oklch(0.83 0.055 245 / 0.16), transparent 44%, oklch(0.78 0.07 245 / 0.12)),
+    rgba(251, 253, 255, 0.78);
   overflow: hidden;
 }
 
@@ -529,8 +512,8 @@
   position: absolute;
   inset: 10px 14px 56px;
   background:
-    linear-gradient(90deg, rgba(46, 33, 24, 0.08) 1px, transparent 1px),
-    linear-gradient(180deg, rgba(46, 33, 24, 0.08) 1px, transparent 1px);
+    linear-gradient(90deg, rgba(60, 127, 168, 0.14) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(60, 127, 168, 0.14) 1px, transparent 1px);
   background-size: 22px 100%, 100% 28px;
   opacity: 0.38;
   pointer-events: none;
@@ -540,7 +523,7 @@
   content: "";
   position: absolute;
   inset: 12px 20px 68px;
-  background: linear-gradient(90deg, transparent, oklch(0.75 0.13 245 / 0.22), transparent);
+  background: linear-gradient(90deg, transparent, oklch(0.76 0.12 5 / 0.2), transparent);
   transform: translateX(-42%);
   animation: probabilitySweep 1.15s cubic-bezier(0.22, 1, 0.36, 1) infinite;
   pointer-events: none;
@@ -582,7 +565,7 @@
 }
 
 .probKernelEchoB {
-  stroke: oklch(0.72 0.14 12 / 0.22);
+  stroke: oklch(0.68 0.12 245 / 0.2);
   stroke-width: 18;
   animation: probabilityEchoB 1260ms cubic-bezier(0.22, 1, 0.36, 1) infinite;
 }
@@ -617,7 +600,7 @@
   display: block;
   width: 5px;
   height: calc(14px + var(--probability, 0) * 84px);
-  background: rgba(46, 33, 24, 0.24);
+  background: rgba(60, 127, 168, 0.24);
   transform-origin: bottom;
 }
 
@@ -713,7 +696,7 @@
 .hiddenBar {
   height: 10px;
   border: 1px solid var(--terminal-line);
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(60, 127, 168, 0.04);
   overflow: hidden;
 }
 
@@ -735,7 +718,7 @@
 .panelTools button {
   padding: 5px 8px;
   border: 1px solid var(--terminal-line);
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(60, 127, 168, 0.04);
   color: var(--terminal-text);
   cursor: pointer;
   transition:
@@ -745,8 +728,8 @@
 }
 
 .panelTools button:hover {
-  border-color: rgba(192, 75, 110, 0.28);
-  background: rgba(192, 75, 110, 0.08);
+  border-color: rgba(60, 127, 168, 0.34);
+  background: rgba(60, 127, 168, 0.09);
 }
 
 .sectionLabel {
@@ -776,12 +759,12 @@
   align-items: center;
   padding: 8px;
   border: 1px solid var(--terminal-line);
-  background: rgba(255, 255, 255, 0.22);
+  background: rgba(60, 127, 168, 0.035);
 }
 
 .paletteSwatch {
   height: 42px;
-  border: 1px solid rgba(46, 33, 24, 0.08);
+  border: 1px solid var(--terminal-line);
 }
 
 .paletteMeta {
@@ -806,9 +789,9 @@
   gap: 0;
   text-align: left;
   padding: 6px 8px;
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(251, 253, 255, 0.72);
   color: var(--terminal-text);
-  border: 1px solid rgba(46, 33, 24, 0.04);
+  border: 1px solid rgba(60, 127, 168, 0.08);
   cursor: pointer;
   transition:
     border-color 180ms ease,
@@ -818,9 +801,9 @@
 
 .geneList button:hover,
 .selectedGene {
-  border-color: rgba(60, 127, 168, 0.26);
+  border-color: rgba(224, 122, 151, 0.36);
   background:
-    linear-gradient(90deg, rgba(60, 127, 168, 0.08), rgba(255, 255, 255, 0.46));
+    linear-gradient(90deg, rgba(224, 122, 151, 0.12), rgba(251, 253, 255, 0.52));
   transform: translateX(1px);
 }
 
@@ -862,7 +845,7 @@
   padding: 8px 10px 8px 0;
   border-top: 1px solid var(--terminal-line);
   background:
-    linear-gradient(90deg, rgba(255, 255, 255, 0.32), rgba(255, 255, 255, 0));
+    linear-gradient(90deg, rgba(60, 127, 168, 0.055), rgba(251, 253, 255, 0));
 }
 
 .readoutCell b {
@@ -876,11 +859,11 @@
 }
 
 .good {
-  color: var(--terminal-accent-3) !important;
+  color: var(--terminal-accent) !important;
 }
 
 .warn {
-  color: var(--terminal-accent) !important;
+  color: var(--terminal-accent-3) !important;
 }
 
 .field {
@@ -899,7 +882,7 @@
   min-width: 0;
   padding: 7px 8px;
   border: 1px solid var(--terminal-line);
-  background: var(--terminal-bg-2);
+  background: var(--terminal-bg);
   color: var(--terminal-text);
   transition:
     border-color 180ms ease,
@@ -938,7 +921,7 @@
   height: 4px;
   overflow: hidden;
   border: 1px solid var(--terminal-line);
-  background: var(--terminal-bg-2);
+  background: rgba(60, 127, 168, 0.04);
 }
 
 .progressRail span {
@@ -954,7 +937,7 @@
   padding: 8px 10px 0;
   border-top: 1px solid var(--terminal-line);
   background:
-    linear-gradient(180deg, rgba(60, 127, 168, 0.06), rgba(255, 255, 255, 0));
+    linear-gradient(180deg, rgba(60, 127, 168, 0.055), rgba(251, 253, 255, 0));
 }
 
 .chartOverlay {
@@ -975,7 +958,7 @@
   font-family: var(--font-mono);
   font-size: 11px;
   line-height: 1;
-  text-shadow: 0 1px 0 rgba(245, 239, 228, 0.75);
+  text-shadow: 0 1px 0 rgba(251, 253, 255, 0.9);
 }
 
 .chartProgress {
@@ -985,7 +968,7 @@
   width: 120px;
   height: 3px;
   border: 1px solid var(--terminal-line);
-  background: rgba(255, 255, 255, 0.34);
+  background: rgba(60, 127, 168, 0.04);
   overflow: hidden;
 }
 
@@ -1000,9 +983,10 @@
   min-height: 340px;
   border: 1px solid var(--terminal-line);
   background:
-    radial-gradient(circle at 20% 18%, rgba(60, 127, 168, 0.08), transparent 24%),
-    radial-gradient(circle at 82% 26%, rgba(224, 122, 151, 0.08), transparent 22%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.02));
+    linear-gradient(rgba(60, 127, 168, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(60, 127, 168, 0.05) 1px, transparent 1px),
+    var(--terminal-bg);
+  background-size: 100% 34px, 34px 100%, auto;
   overflow: hidden;
 }
 
@@ -1043,7 +1027,7 @@
   font-family: var(--font-mono);
   font-size: 12px;
   line-height: 1;
-  text-shadow: 0 1px 0 rgba(245, 239, 228, 0.82);
+  text-shadow: 0 1px 0 rgba(251, 253, 255, 0.9);
 }
 
 .footballOverlayButton {
@@ -1057,11 +1041,11 @@
   font-size: 15px;
   line-height: 1;
   cursor: pointer;
-  text-shadow: 0 1px 0 rgba(245, 239, 228, 0.82);
+  text-shadow: 0 1px 0 rgba(251, 253, 255, 0.9);
 }
 
 .footballOverlayButton:hover {
-  color: var(--terminal-accent);
+  color: var(--terminal-accent-pink);
 }
 
 .footballLeaderboardOverlay {
@@ -1073,13 +1057,13 @@
   gap: 4px;
   min-width: 180px;
   padding: 8px 10px;
-  border: 1px solid rgba(46, 33, 24, 0.18);
-  background: rgba(246, 240, 230, 0.84);
+  border: 1px solid var(--terminal-line-strong);
+  background: rgba(251, 253, 255, 0.9);
   color: var(--terminal-text);
   font-family: var(--font-mono);
   font-size: 11px;
   line-height: 1.2;
-  box-shadow: 0 6px 18px rgba(46, 33, 24, 0.08);
+  box-shadow: 0 6px 18px rgba(42, 95, 125, 0.09);
 }
 
 .footballLeaderboardOverlay b {
@@ -1093,9 +1077,7 @@
 
 .panelLeaderboard {
   grid-template-rows: auto minmax(0, 1fr);
-  background:
-    linear-gradient(180deg, rgba(192, 75, 110, 0.05), transparent 18%),
-    linear-gradient(180deg, #f0ebe1, #ebe5da);
+  background: var(--terminal-bg);
 }
 
 .leaderboardMeta {
@@ -1116,7 +1098,7 @@
   padding: 0;
   border: 0;
   background: transparent;
-  color: var(--terminal-accent);
+  color: var(--terminal-accent-3);
   font: inherit;
   text-transform: uppercase;
   cursor: pointer;
@@ -1140,7 +1122,7 @@
   gap: 8px;
   align-items: center;
   padding: 6px 0;
-  border-bottom: 1px solid rgba(46, 33, 24, 0.08);
+  border-bottom: 1px solid rgba(60, 127, 168, 0.12);
 }
 
 .leaderboardRank {
@@ -1209,7 +1191,7 @@
   display: grid;
   gap: 3px;
   padding: 6px 0;
-  border-top: 1px solid rgba(46, 33, 24, 0.12);
+  border-top: 1px solid rgba(60, 127, 168, 0.16);
   font-family: var(--font-mono);
   font-size: 10px;
 }
@@ -1222,7 +1204,7 @@
 }
 
 .tournamentMatch em {
-  color: var(--terminal-accent);
+  color: var(--terminal-accent-3);
   font-style: normal;
 }
 
@@ -1257,16 +1239,16 @@
 }
 
 .gridLine {
-  stroke: rgba(46, 33, 24, 0.1);
+  stroke: rgba(60, 127, 168, 0.18);
   stroke-dasharray: 3 9;
 }
 
 .chartAxisLine {
-  stroke: rgba(46, 33, 24, 0.16);
+  stroke: rgba(60, 127, 168, 0.26);
 }
 
 .chartAxisLabel {
-  fill: rgba(46, 33, 24, 0.56);
+  fill: rgba(42, 95, 125, 0.68);
   font-family: var(--font-mono);
   font-size: 10px;
   letter-spacing: 0.04em;
@@ -1282,7 +1264,7 @@
 }
 
 .selectedLine {
-  stroke: var(--terminal-accent-3);
+  stroke: var(--terminal-accent);
   stroke-width: 2.2;
 }
 
@@ -1293,7 +1275,7 @@
 }
 
 .accuracyLine {
-  stroke: var(--terminal-accent);
+  stroke: var(--terminal-accent-3);
   stroke-width: 1.4;
   opacity: 0.9;
   stroke-dasharray: 7 6;

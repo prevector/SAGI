@@ -9,7 +9,8 @@ import styles from "../GeneTerminal.module.css";
 
 const FIELD_SURFACE_Y = -0.3;
 const FIELD_LINE_Y = FIELD_SURFACE_Y + 0.022;
-const FIELD_LINE_THICKNESS = 0.05;
+const FIELD_LINE_THICKNESS = 0.035;
+const FIELD_MARK_WIDTH = 0.1;
 const FOOTBALL_GAIT_SCALE = 2.2;
 const GOAL_WIDTH = 18;
 const GOAL_HEIGHT = 4.6;
@@ -17,6 +18,11 @@ const GOAL_DEPTH = 4.4;
 // Brand A=blue / B=pink pairing (mirrors tokens.css --blue-500 / --pink-500).
 const TEAM_LEFT_COLOR = "#3C7FA8";
 const TEAM_RIGHT_COLOR = "#E07A97";
+const FIELD_OUTER_COLOR = "#fbfdff";
+const FIELD_GRASS_COLOR = "#cfe6d0";
+const FIELD_GRASS_STRIPE_COLOR = "#dcefd9";
+const FIELD_LINE_COLOR = "#2a5f7d";
+const FIELD_ACCENT_COLOR = "#d96f8d";
 const CAMERA_TARGET = new Vector3();
 const CAMERA_POSITION = new Vector3();
 const CAMERA_LOOK = new Vector3();
@@ -90,8 +96,8 @@ function FootballGoal({
   const baseY = FIELD_SURFACE_Y + postRadius * 0.5;
   const topY = FIELD_SURFACE_Y + GOAL_HEIGHT;
   const midY = FIELD_SURFACE_Y + GOAL_HEIGHT * 0.5;
-  const netColor = "#dcd8cc";
-  const frameColor = "#f4efe6";
+  const netColor = FIELD_ACCENT_COLOR;
+  const frameColor = FIELD_LINE_COLOR;
   const netOpacity = 0.68;
   const netColumns = [-0.72, -0.36, 0, 0.36, 0.72];
   const netRows = [0.24, 0.44, 0.64, 0.84];
@@ -254,14 +260,14 @@ export function FootballReplayPanelBody({
             target={[0, 0, 0]}
             maxPolarAngle={Math.PI / 2.02}
           />
-          <color attach="background" args={["#f5efe4"]} />
-          <fog attach="fog" args={["#f5efe4", 180, 320]} />
-          <ambientLight intensity={1.25} color="#f8f0e4" />
-          <hemisphereLight intensity={0.28} color="#fff2de" groundColor="#355847" />
+          <color attach="background" args={[FIELD_OUTER_COLOR]} />
+          <fog attach="fog" args={[FIELD_OUTER_COLOR, 210, 360]} />
+          <ambientLight intensity={1.25} color="#f7fbff" />
+          <hemisphereLight intensity={0.28} color="#f7fbff" groundColor="#c8dff0" />
           <directionalLight
             position={[26, 38, 20]}
             intensity={1.8}
-            color="#fff1cf"
+            color="#eef7fd"
             castShadow
             shadow-mapSize-width={2048}
             shadow-mapSize-height={2048}
@@ -275,35 +281,41 @@ export function FootballReplayPanelBody({
 
           <mesh rotation-x={-Math.PI / 2} position={[0, -0.32, 0]} receiveShadow>
             <planeGeometry args={[110, 70]} />
-            <meshLambertMaterial color="#d9cfbf" />
+            <meshLambertMaterial color={FIELD_OUTER_COLOR} />
           </mesh>
           <mesh rotation-x={-Math.PI / 2} position={[0, FIELD_SURFACE_Y, 0]} receiveShadow>
             <planeGeometry args={[104, 64]} />
-            <meshLambertMaterial color="#8fb091" />
+            <meshLambertMaterial color={FIELD_GRASS_COLOR} />
           </mesh>
+          {[-44, -22, 0, 22, 44].map((x) => (
+            <mesh key={`field-stripe-${x}`} rotation-x={-Math.PI / 2} position={[x, FIELD_SURFACE_Y + 0.004, 0]} receiveShadow>
+              <planeGeometry args={[10, 64]} />
+              <meshLambertMaterial color={FIELD_GRASS_STRIPE_COLOR} />
+            </mesh>
+          ))}
           <mesh position={[0, FIELD_LINE_Y, -32]}>
-            <boxGeometry args={[104, FIELD_LINE_THICKNESS, 0.18]} />
-            <meshBasicMaterial color="#f5f1e8" />
+            <boxGeometry args={[104, FIELD_LINE_THICKNESS, FIELD_MARK_WIDTH]} />
+            <meshBasicMaterial color={FIELD_LINE_COLOR} />
           </mesh>
           <mesh position={[0, FIELD_LINE_Y, 32]}>
-            <boxGeometry args={[104, FIELD_LINE_THICKNESS, 0.18]} />
-            <meshBasicMaterial color="#f5f1e8" />
+            <boxGeometry args={[104, FIELD_LINE_THICKNESS, FIELD_MARK_WIDTH]} />
+            <meshBasicMaterial color={FIELD_LINE_COLOR} />
           </mesh>
           <mesh position={[-52, FIELD_LINE_Y, 0]}>
-            <boxGeometry args={[0.18, FIELD_LINE_THICKNESS, 64]} />
-            <meshBasicMaterial color="#f5f1e8" />
+            <boxGeometry args={[FIELD_MARK_WIDTH, FIELD_LINE_THICKNESS, 64]} />
+            <meshBasicMaterial color={FIELD_LINE_COLOR} />
           </mesh>
           <mesh position={[52, FIELD_LINE_Y, 0]}>
-            <boxGeometry args={[0.18, FIELD_LINE_THICKNESS, 64]} />
-            <meshBasicMaterial color="#f5f1e8" />
+            <boxGeometry args={[FIELD_MARK_WIDTH, FIELD_LINE_THICKNESS, 64]} />
+            <meshBasicMaterial color={FIELD_LINE_COLOR} />
           </mesh>
           <mesh rotation-x={-Math.PI / 2} position={[0, FIELD_LINE_Y + 0.001, 0]}>
-            <ringGeometry args={[8.7, 9.1, 64]} />
-            <meshBasicMaterial color="#f5f1e8" />
+            <ringGeometry args={[8.96, 9.08, 64]} />
+            <meshBasicMaterial color={FIELD_ACCENT_COLOR} />
           </mesh>
           <mesh position={[0, FIELD_LINE_Y, 0]}>
-            <boxGeometry args={[0.18, FIELD_LINE_THICKNESS, 64]} />
-            <meshBasicMaterial color="#f5f1e8" />
+            <boxGeometry args={[FIELD_MARK_WIDTH, FIELD_LINE_THICKNESS, 64]} />
+            <meshBasicMaterial color={FIELD_ACCENT_COLOR} />
           </mesh>
           <FootballGoal x={-52} direction={-1} />
           <FootballGoal x={52} direction={1} />
@@ -342,7 +354,7 @@ export function FootballReplayPanelBody({
 
           <mesh position={[snapshot.ball.x - 55, 0.95, snapshot.ball.y - 35]} castShadow>
             <sphereGeometry args={[1.05, 18, 16]} />
-            <meshLambertMaterial color="#f7f0e6" />
+            <meshLambertMaterial color={FIELD_OUTER_COLOR} />
           </mesh>
         </Canvas>
       </div>
