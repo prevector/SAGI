@@ -16,6 +16,9 @@ const sans = '"Gothic A1", system-ui, sans-serif';
 const ui = sans;
 const mono = "ui-monospace, monospace";
 
+// Where "see what the network does with this" points — the SAGI website.
+const WEBSITE_URL = import.meta.env.VITE_WEBSITE_URL ?? "http://localhost:5173";
+
 const SNIPPET = `// the entire SDK integration — one file, four calls
 const task = await sdk.requestTask(userId);          // two candidate models
 await sdk.submitSignal(task.task_id, userId, "a");   // your judgment = a signal
@@ -65,6 +68,13 @@ export default function ContributePage() {
             (matched
               ? `Right call — Model ${winner?.toUpperCase()} performed better · +${s.result?.tokens} tokens`
               : `The network ranked Model ${winner?.toUpperCase()} higher this time · +0`)}
+        </div>
+        <div style={styles.context}>
+          Both models were trained on the SAGI network. Comparing them is hard for machines but easy
+          for people — your call is the human signal that ranks them.{" "}
+          <a style={styles.contextLink} href={WEBSITE_URL} target="_blank" rel="noreferrer">
+            See what the network does with it →
+          </a>
         </div>
       </div>
 
@@ -195,6 +205,21 @@ const styles: Record<string, CSSProperties> = {
   promptWrap: { textAlign: "center", padding: "22px 24px 10px" },
   prompt: { fontFamily: sans, fontSize: 22, fontWeight: 600, letterSpacing: "-0.01em", color: INK },
   sub: { fontFamily: display, fontSize: 16, color: MUTED, marginTop: 8, minHeight: 18, lineHeight: 1.4 },
+  context: {
+    fontFamily: ui,
+    fontSize: 12.5,
+    fontWeight: 400,
+    color: MUTED,
+    lineHeight: 1.5,
+    maxWidth: 440,
+    margin: "12px auto 0",
+  },
+  contextLink: {
+    color: BLUE,
+    fontWeight: 600,
+    textDecoration: "none",
+    whiteSpace: "nowrap",
+  },
   cards: {
     flex: 1,
     display: "flex",
