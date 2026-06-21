@@ -10,7 +10,6 @@ import { shortId } from "./components";
 import { GeneTerminalProvider, useGeneTerminal } from "./state";
 import { CreatureLibraryPanel } from "./panels/CreatureLibraryPanel";
 import { CreaturePanel } from "./panels/CreaturePanel";
-import { GenesPanel } from "./panels/GenesPanel";
 import { InferencePanel } from "./panels/InferencePanel";
 import { NetworkPanel } from "./panels/NetworkPanel";
 import { TrainingPanel } from "./panels/TrainingPanel";
@@ -18,7 +17,6 @@ import styles from "./GeneTerminal.module.css";
 
 const dockComponents = {
   creature: CreaturePanel,
-  genes: GenesPanel,
   inference: InferencePanel,
   library: CreatureLibraryPanel,
   network: NetworkPanel,
@@ -26,44 +24,41 @@ const dockComponents = {
 };
 
 const panelSpecs = {
-  genes: {
-    id: "genes",
-    component: "genes",
-    title: "GENES",
-    initialWidth: 420
+  network: {
+    id: "network",
+    component: "network",
+    title: "NETWORK",
+    initialWidth: 300,
+    initialHeight: 260
   },
   library: {
     id: "library",
     component: "library",
     title: "LIBRARY",
-    position: { referencePanel: "genes", direction: "below" as const },
-    initialHeight: 320
+    position: { referencePanel: "network", direction: "below" as const },
+    initialHeight: 420
   },
   training: {
     id: "training",
     component: "training",
     title: "TRAINING",
-    position: { direction: "right" as const },
-    initialWidth: 860
+    position: { referencePanel: "network", direction: "right" as const },
+    initialWidth: 860,
+    initialHeight: 340
   },
   creature: {
     id: "creature",
     component: "creature",
     title: "CREATURE",
-    position: { referencePanel: "training", direction: "below" as const }
-  },
-  network: {
-    id: "network",
-    component: "network",
-    title: "NETWORK",
-    position: { referencePanel: "creature", direction: "right" as const },
-    initialWidth: 520
+    position: { referencePanel: "training", direction: "right" as const },
+    initialWidth: 300
   },
   inference: {
     id: "inference",
     component: "inference",
     title: "INFERENCE",
-    position: { referencePanel: "network", direction: "below" as const }
+    position: { referencePanel: "training", direction: "below" as const },
+    initialHeight: 520
   }
 } as const;
 
@@ -73,12 +68,13 @@ function Workspace() {
   const terminal = useGeneTerminal();
   const dockApiRef = useRef<DockviewApi | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
-  const [openMenu, setOpenMenu] = useState<"file" | "window" | null>(null);
+  const [openMenu, setOpenMenu] = useState<"window" | null>(null);
   const [layoutNonce, setLayoutNonce] = useState(0);
 
   function onReady(event: DockviewReadyEvent) {
     dockApiRef.current = event.api;
     event.api.getPanel("visualizer")?.api.close();
+    event.api.getPanel("genes")?.api.close();
     (Object.keys(panelSpecs) as PanelId[]).forEach((panelId) => {
       event.api.addPanel(panelSpecs[panelId]);
     });
@@ -126,30 +122,11 @@ function Workspace() {
     ];
   }, [terminal.generation, terminal.selectedCreature.name, terminal.selectedCreature.phenotype.paletteName, terminal.selectedMorphology.legPairs, terminal.status]);
 
-  function runFileAction(action: "new" | "mutate" | "save") {
-    setOpenMenu(null);
-    if (action === "new") terminal.generateCreature();
-    if (action === "mutate") terminal.mutateGene();
-    if (action === "save") terminal.saveCreature();
-  }
-
   return (
     <div className={styles.terminal}>
       <div className={styles.menuBar} ref={menuRef}>
         <div className={styles.menuCluster}>
           <span className={styles.workspaceMark}>SAGI TERMINAL</span>
-          <div className={styles.menuWrap}>
-            <button className={styles.menuButton} onClick={() => setOpenMenu((value) => (value === "file" ? null : "file"))}>
-              File
-            </button>
-            {openMenu === "file" ? (
-              <div className={styles.menuPopover}>
-                <button className={styles.menuItem} onClick={() => runFileAction("new")}>New creature</button>
-                <button className={styles.menuItem} onClick={() => runFileAction("mutate")}>Mutate creature</button>
-                <button className={styles.menuItem} onClick={() => runFileAction("save")}>Save creature</button>
-              </div>
-            ) : null}
-          </div>
           <div className={styles.menuWrap}>
             <button className={styles.menuButton} onClick={() => setOpenMenu((value) => (value === "window" ? null : "window"))}>
               Window

@@ -15,25 +15,7 @@ export function TrainingPanel(_: IDockviewPanelProps) {
 
   return (
     <section className={`${styles.panel} ${styles.panelTraining}`}>
-      <div className={styles.trainingHeader}>
-        <div>
-          <h2>{terminal.selectedCreature.name}</h2>
-          <span className={styles.sectionLabel}>
-            {footballMode ? "GRU self-play · football tournament" : "GRU token prediction · fake language"}
-          </span>
-        </div>
-        <div className={styles.panelTools}>
-          {terminal.status === "running" ? (
-            <button onClick={terminal.pause}>PAUSE</button>
-          ) : (
-            <button onClick={terminal.start}>START</button>
-          )}
-          <button onClick={terminal.step}>STEP</button>
-          <button onClick={terminal.reset}>RESET</button>
-        </div>
-      </div>
-
-      <div className={styles.formGrid}>
+      <div className={styles.panelTools}>
         <label className={styles.field}>
           <span>mode</span>
           <select
@@ -45,6 +27,15 @@ export function TrainingPanel(_: IDockviewPanelProps) {
             <option value="football">football</option>
           </select>
         </label>
+        <div className={styles.panelTools}>
+          {terminal.status === "running" ? (
+            <button onClick={terminal.pause}>PAUSE</button>
+          ) : (
+            <button onClick={terminal.start}>START</button>
+          )}
+          <button onClick={terminal.step}>STEP</button>
+          <button onClick={terminal.reset}>RESET</button>
+        </div>
       </div>
 
       <div className={styles.marketGrid}>
