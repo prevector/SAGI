@@ -10,12 +10,13 @@ import styles from "./SagiNetwork.module.css";
 // mounted once the section scrolls into view, so it never weighs on first paint.
 const Swarm = lazy(() => import("../network/Swarm").then((m) => ({ default: m.Swarm })));
 
-// Where "check out the demo app" points — the contribute game (SDK/game, :5174).
-// In dev we default to localhost so the demo CTA is always present; in prod it only
-// appears when VITE_CONTRIBUTE_URL is set, otherwise we fall back to the "join the
-// network" CTA rather than ship a dead localhost link.
+// Where "see an app built on the SDK" points — the contribute game (SDK/game).
+// Deployed as a single container (game + mock) on Coolify; this is its live URL.
+// Overridable via VITE_CONTRIBUTE_URL (e.g. a custom subdomain later); in local
+// dev we point at the Vite server on :5174.
+const DEMO_URL = "http://atp11vptb2aypnzww94nbxrk.46.225.61.42.sslip.io";
 const CONTRIBUTE_URL =
-  import.meta.env.VITE_CONTRIBUTE_URL ?? (import.meta.env.DEV ? "http://localhost:5174" : "");
+  import.meta.env.VITE_CONTRIBUTE_URL ?? (import.meta.env.DEV ? "http://localhost:5174" : DEMO_URL);
 
 function usePrefersReducedMotion(): boolean {
   const [reduced, setReduced] = useState(false);
