@@ -20,6 +20,7 @@ rsync \
   --exclude ".git" \
   --exclude ".env" \
   --exclude "node_modules" \
+  --exclude "OEEToolbox-master" \
   --exclude "apps/*/dist" \
   --exclude "packages/*/dist" \
   --exclude "*.tsbuildinfo" \
