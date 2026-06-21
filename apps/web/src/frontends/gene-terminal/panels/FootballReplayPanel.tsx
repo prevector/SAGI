@@ -10,7 +10,7 @@ import styles from "../GeneTerminal.module.css";
 const FIELD_SURFACE_Y = -0.3;
 const FIELD_LINE_Y = FIELD_SURFACE_Y + 0.022;
 const FIELD_LINE_THICKNESS = 0.05;
-const FOOTBALL_GAIT_SCALE = 1.45;
+const FOOTBALL_GAIT_SCALE = 2.2;
 const GOAL_WIDTH = 18;
 const GOAL_HEIGHT = 4.6;
 const GOAL_DEPTH = 4.4;

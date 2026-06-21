@@ -1076,8 +1076,9 @@ function CreatureWalker({
       desiredFoot.y = activeFloorY;
       leg.desiredPosition.copy(desiredFoot);
       const footError = leg.plantedPosition.distanceToSquared(desiredFoot);
+      const stepTriggerDistance = leg.maximumDistance * (controlledActor ? Math.max(1, gaitScale * 1.35) : 1);
 
-      if (footError > leg.maximumDistance * leg.maximumDistance) {
+      if (footError > stepTriggerDistance * stepTriggerDistance) {
         leg.planted = false;
         leg.stepStart.copy(leg.plantedPosition);
         leg.plantedPosition.copy(desiredFoot);
@@ -1086,7 +1087,7 @@ function CreatureWalker({
       }
 
       if (!leg.planted) {
-        leg.stepProgress = Math.min(1, leg.stepProgress + dt * 6.5);
+        leg.stepProgress = Math.min(1, leg.stepProgress + dt * (controlledActor ? 5.2 : 6.5));
         const t = smoothstep(leg.stepProgress);
         foot.position.lerpVectors(leg.stepStart, leg.stepTarget, t);
         foot.position.y += Math.sin(t * Math.PI) * Math.max(0.05, leg.stepHeight * 0.7 * gaitScale);
