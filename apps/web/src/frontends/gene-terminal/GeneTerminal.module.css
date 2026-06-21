@@ -430,32 +430,251 @@
 .tokenStrip {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 10px;
+  align-items: center;
+}
+
+.inferenceTaskLabel {
+  color: var(--terminal-text-muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .tokenChip {
-  padding: 5px 8px;
+  min-width: 46px;
+  min-height: 46px;
+  display: inline-grid;
+  place-items: center;
+  padding: 8px 10px;
   border: 1px solid var(--terminal-line);
-  background: rgba(255, 255, 255, 0.28);
+  background:
+    radial-gradient(circle at 52% 38%, oklch(0.92 0.035 190 / 0.58), transparent 54%),
+    rgba(255, 255, 255, 0.28);
   color: var(--terminal-text-muted);
+  font-size: 25px;
+  line-height: 1;
+  transition:
+    border-color 180ms ease,
+    color 180ms ease,
+    transform 180ms ease,
+    background-color 180ms ease;
 }
 
 .tokenChipActive {
   border-color: rgba(110, 140, 166, 0.28);
-  background: rgba(110, 140, 166, 0.12);
+  background:
+    radial-gradient(circle at 50% 50%, oklch(0.76 0.13 198 / 0.36), transparent 62%),
+    rgba(110, 140, 166, 0.14);
   color: var(--terminal-text);
+  transform: translateY(-2px) scale(1.12);
 }
 
 .tokenChipPredicted {
   border-color: rgba(154, 104, 65, 0.26);
-  background: rgba(154, 104, 65, 0.08);
+  background:
+    radial-gradient(circle at 50% 50%, oklch(0.76 0.14 54 / 0.32), transparent 62%),
+    rgba(154, 104, 65, 0.1);
   color: var(--terminal-text);
+  transform: translateY(1px) scale(1.05);
 }
 
 .probList,
 .hiddenGrid {
   display: grid;
   gap: 6px;
+}
+
+.probKernel {
+  position: relative;
+  display: grid;
+  grid-template-rows: minmax(170px, 1fr) auto;
+  gap: 14px;
+  min-height: 246px;
+  padding: 16px 16px 14px;
+  border-top: 1px solid var(--terminal-line);
+  border-bottom: 1px solid var(--terminal-line);
+  background:
+    radial-gradient(circle at 18% 34%, oklch(0.72 0.12 198 / 0.16), transparent 32%),
+    radial-gradient(circle at 74% 48%, oklch(0.72 0.13 54 / 0.14), transparent 30%),
+    linear-gradient(100deg, oklch(0.83 0.055 198 / 0.16), transparent 44%, oklch(0.82 0.065 54 / 0.16)),
+    rgba(255, 255, 255, 0.16);
+  overflow: hidden;
+}
+
+.probKernel::before {
+  content: "";
+  position: absolute;
+  inset: 10px 14px 56px;
+  background:
+    linear-gradient(90deg, rgba(54, 47, 40, 0.08) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(54, 47, 40, 0.08) 1px, transparent 1px);
+  background-size: 22px 100%, 100% 28px;
+  opacity: 0.38;
+  pointer-events: none;
+}
+
+.probKernel::after {
+  content: "";
+  position: absolute;
+  inset: 12px 20px 68px;
+  background: linear-gradient(90deg, transparent, oklch(0.75 0.13 198 / 0.22), transparent);
+  transform: translateX(-42%);
+  animation: probabilitySweep 1.15s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+  pointer-events: none;
+}
+
+.probKernel svg {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  min-height: 170px;
+  overflow: visible;
+}
+
+.probKernelArea {
+  fill: oklch(0.75 0.13 198 / 0.26);
+}
+
+.probKernelLine {
+  fill: none;
+  stroke: oklch(0.62 0.15 198);
+  stroke-width: 3.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.probKernelEchoA,
+.probKernelEchoB {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+
+.probKernelEchoA {
+  stroke: oklch(0.72 0.14 198 / 0.3);
+  stroke-width: 10;
+  animation: probabilityEchoA 900ms cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+
+.probKernelEchoB {
+  stroke: oklch(0.72 0.14 54 / 0.22);
+  stroke-width: 18;
+  animation: probabilityEchoB 1260ms cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+
+.probKernelTokens {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(42px, 1fr));
+  gap: 10px;
+  align-items: end;
+}
+
+.probKernelToken {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  color: var(--terminal-text-muted);
+  font-family: var(--font-mono);
+  font-size: 32px;
+  line-height: 1;
+  transform: translateY(calc(var(--probability, 0) * -10px));
+  animation: tokenSignal 620ms cubic-bezier(0.22, 1, 0.36, 1) infinite;
+  animation-delay: calc(var(--token-index, 0) * -72ms);
+}
+
+.probKernelToken span {
+  line-height: 1;
+}
+
+.probKernelToken i {
+  display: block;
+  width: 5px;
+  height: calc(14px + var(--probability, 0) * 84px);
+  background: rgba(54, 47, 40, 0.24);
+  transform-origin: bottom;
+}
+
+.probKernelTokenPredicted {
+  color: var(--terminal-accent);
+}
+
+.probKernelTokenPredicted i {
+  width: 7px;
+  background: var(--terminal-accent);
+}
+
+.probKernelTokenExpected {
+  color: var(--terminal-accent-3);
+}
+
+.probKernelTokenExpected i {
+  background: var(--terminal-accent-3);
+}
+
+@keyframes probabilitySweep {
+  from {
+    transform: translateX(-48%) skewX(-8deg);
+    opacity: 0;
+  }
+
+  35% {
+    opacity: 0.7;
+  }
+
+  to {
+    transform: translateX(48%) skewX(-8deg);
+    opacity: 0;
+  }
+}
+
+@keyframes probabilityEchoA {
+  from {
+    stroke-width: 6;
+    opacity: 0.48;
+  }
+
+  to {
+    stroke-width: 16;
+    opacity: 0;
+  }
+}
+
+@keyframes probabilityEchoB {
+  from {
+    stroke-width: 12;
+    opacity: 0.34;
+  }
+
+  to {
+    stroke-width: 28;
+    opacity: 0;
+  }
+}
+
+@keyframes tokenSignal {
+  0%,
+  100% {
+    filter: saturate(1);
+  }
+
+  50% {
+    filter: saturate(1.45);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .probKernel::after,
+  .probKernelEchoA,
+  .probKernelEchoB,
+  .probKernelToken {
+    animation: none;
+  }
 }
 
 .probRow,
