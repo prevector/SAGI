@@ -1,4 +1,5 @@
 import type { IDockviewPanelProps } from "dockview";
+import { useEffect } from "react";
 import { FootballReplayPanelBody } from "./FootballReplayPanel";
 import { formatInt } from "../../../lib/format";
 import { Readout } from "../components";
@@ -7,35 +8,37 @@ import styles from "../GeneTerminal.module.css";
 
 export function InferencePanel(_: IDockviewPanelProps) {
   const terminal = useGeneTerminal();
-  if (terminal.trainingMode === "football") {
-    return (
-      <section className={`${styles.panel} ${styles.panelInference}`}>
-        <div className={styles.trainingHeader}>
-          <div>
-            <h2>Football inference</h2>
-            <span className={styles.sectionLabel}>current best brain playing on the field</span>
-          </div>
-        </div>
-        <FootballReplayPanelBody terminal={terminal} mode="inference" />
-      </section>
-    );
-  }
-
   const dataset = terminal.tokenDataset;
   const trace = terminal.inferenceTrace;
   const sample = dataset.samples[terminal.selectedSampleIndex];
   const step = trace?.steps[terminal.inferenceStepIndex] ?? null;
 
+  useEffect(() => {
+    if (terminal.trainingMode !== "language" || !trace) return;
+    const timer = window.setInterval(() => {
+      if (terminal.inferenceStepIndex >= trace.steps.length - 1) {
+        terminal.resetInference();
+        return;
+      }
+      terminal.stepInference();
+    }, 180);
+    return () => window.clearInterval(timer);
+  }, [terminal, trace]);
+
+  if (terminal.trainingMode === "football") {
+    return (
+      <section className={`${styles.panel} ${styles.panelInference} ${styles.footballInferencePanel}`}>
+        <FootballReplayPanelBody terminal={terminal} mode="inference" />
+      </section>
+    );
+  }
+
   return (
     <section className={`${styles.panel} ${styles.panelInference}`}>
       <div className={styles.trainingHeader}>
         <div>
-          <h2>Sequence inspector</h2>
-          <span className={styles.sectionLabel}>step through one fake-language sample</span>
-        </div>
-        <div className={styles.panelTools}>
-          <button onClick={terminal.resetInference}>RESET STEP</button>
-          <button onClick={terminal.stepInference}>NEXT TOKEN</button>
+          <h2>Token inference</h2>
+          <span className={styles.sectionLabel}>best predictor replay</span>
         </div>
       </div>
 

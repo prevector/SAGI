@@ -1,20 +1,18 @@
 import { OrbitControls } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
-import { FootballMatchRuntime, footballInputLabels } from "@sagi/evolution";
-import { useEffect, useRef, useState } from "react";
+import { FootballMatchRuntime } from "@sagi/evolution";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { PCFShadowMap } from "three";
-import { formatInt } from "../../../lib/format";
 import { CreatureActor3D } from "../CreatureViewport";
-import { Readout } from "../components";
 import { useGeneTerminal, type GeneTerminalState } from "../state";
 import styles from "../GeneTerminal.module.css";
 
-const FOOTBALL_INPUT_LIST = footballInputLabels().join(" · ");
-const FOOTBALL_TICKS_PER_SECOND = 24;
 const FIELD_SURFACE_Y = -0.3;
 const FIELD_LINE_Y = FIELD_SURFACE_Y + 0.022;
 const FIELD_LINE_THICKNESS = 0.05;
 const FOOTBALL_GAIT_SCALE = 1.45;
+const TEAM_LEFT_COLOR = "#5d8fbd";
+const TEAM_RIGHT_COLOR = "#b36a42";
 
 function makeOpponentPhenotype(terminal: GeneTerminalState) {
   const phenotype = terminal.selectedCreature.phenotype;
@@ -28,15 +26,16 @@ function makeOpponentPhenotype(terminal: GeneTerminalState) {
 }
 
 export function FootballReplayPanelBody({
-  terminal,
-  mode = "inference"
+  terminal
 }: {
   terminal: GeneTerminalState;
   mode?: "inference" | "training";
 }) {
-  const genome = terminal.trainingGenome;
+  const genome = useMemo(
+    () => terminal.footballBest ? Float32Array.from(terminal.footballBest.genome) : terminal.trainingGenome,
+    [terminal.footballBest, terminal.trainingGenome]
+  );
   const runtimeRef = useRef<FootballMatchRuntime | null>(null);
-  const [matchSerial, setMatchSerial] = useState(0);
   const [snapshot, setSnapshot] = useState<ReturnType<FootballMatchRuntime["snapshot"]> | null>(null);
   const [result, setResult] = useState<ReturnType<FootballMatchRuntime["result"]> | null>(terminal.footballPreview);
 
@@ -52,7 +51,7 @@ export function FootballReplayPanelBody({
       genome,
       terminal.hiddenSize,
       {
-        seed: `football-inference:${terminal.selectedCreature.id}:${terminal.generation}:${matchSerial}`,
+        seed: `football-inference:${terminal.selectedCreature.id}:${terminal.generation}`,
         teamSize: terminal.footballTeamSize,
         maxTicks: terminal.footballMatchTicks
       }
@@ -60,7 +59,7 @@ export function FootballReplayPanelBody({
     runtimeRef.current = runtime;
     setSnapshot(runtime.snapshot());
     setResult(runtime.result());
-  }, [genome, matchSerial, terminal.footballMatchTicks, terminal.footballTeamSize, terminal.generation, terminal.hiddenSize, terminal.selectedCreature.id, terminal.trainingMode, terminal.footballPreview]);
+  }, [genome, terminal.footballMatchTicks, terminal.footballTeamSize, terminal.generation, terminal.hiddenSize, terminal.selectedCreature.id, terminal.trainingMode, terminal.footballPreview]);
 
   useEffect(() => {
     if (terminal.trainingMode !== "football") return;
@@ -68,18 +67,20 @@ export function FootballReplayPanelBody({
       const runtime = runtimeRef.current;
       if (!runtime) return;
       runtime.tick();
+      const nextSnapshot = runtime.snapshot();
+      if (nextSnapshot.tick >= terminal.footballMatchTicks) {
+        runtime.restart(`football-loop:${terminal.selectedCreature.id}:${terminal.generation}:${Date.now()}`);
+      }
       setSnapshot(runtime.snapshot());
       setResult(runtime.result());
     }, 16);
     return () => window.clearInterval(timer);
-  }, [terminal.trainingMode, matchSerial, genome, terminal.footballMatchTicks, terminal.footballTeamSize, terminal.generation, terminal.hiddenSize, terminal.selectedCreature.id]);
+  }, [terminal.trainingMode, genome, terminal.footballMatchTicks, terminal.footballTeamSize, terminal.generation, terminal.hiddenSize, terminal.selectedCreature.id]);
 
   if (!genome || !snapshot || !result) {
     return (
       <div className={styles.note}>
-        {mode === "inference"
-          ? "Start football training first, then the current best brain can be inspected on the field here."
-          : "No football replay is available yet."}
+        Start football training first, then the current best brain can be inspected on the field here.
       </div>
     );
   }
@@ -87,15 +88,13 @@ export function FootballReplayPanelBody({
 
   return (
     <>
-      <div className={styles.marketGrid}>
-        <Readout label="score" value={`${result.score[0]} : ${result.score[1]}`} />
-        <Readout label="fitness" value={`${result.fitness[0].toFixed(1)} / ${result.fitness[1].toFixed(1)}`} />
-        <Readout label="possession" value={`${formatInt(result.possessionTicks[0])} / ${formatInt(result.possessionTicks[1])}`} />
-        <Readout label="winner" value={result.winner === -1 ? "draw" : `team ${result.winner + 1}`} />
-        {mode === "inference" ? <button onClick={() => setMatchSerial((value) => value + 1)}>NEW GAME</button> : null}
-      </div>
-
       <div className={styles.visualizerStage}>
+        <div className={styles.footballOverlay}>
+          <span>{result.score[0]}:{result.score[1]}</span>
+          <span>{result.fitness[0].toFixed(1)} / {result.fitness[1].toFixed(1)}</span>
+          <span>{snapshot.ball.x.toFixed(0)}, {snapshot.ball.y.toFixed(0)}</span>
+          <span>{result.winner === -1 ? "draw" : `team ${result.winner + 1}`}</span>
+        </div>
         <Canvas
           camera={{ position: [0, 44, 46], fov: 34 }}
           dpr={[1, 1.8]}
@@ -178,6 +177,7 @@ export function FootballReplayPanelBody({
               worldGroundY={FIELD_SURFACE_Y}
               showFloor={false}
               gaitScale={FOOTBALL_GAIT_SCALE}
+              teamColor={TEAM_LEFT_COLOR}
             />
           ))}
 
@@ -193,6 +193,7 @@ export function FootballReplayPanelBody({
               worldGroundY={FIELD_SURFACE_Y}
               showFloor={false}
               gaitScale={FOOTBALL_GAIT_SCALE}
+              teamColor={TEAM_RIGHT_COLOR}
             />
           ))}
 
@@ -201,17 +202,6 @@ export function FootballReplayPanelBody({
             <meshLambertMaterial color="#f7f0e6" />
           </mesh>
         </Canvas>
-      </div>
-
-      <div className={styles.visualizerMeta}>
-        <span>{formatInt(terminal.footballTeamSize)} players per side</span>
-        <span>{formatInt(terminal.footballMatchTicks)} ticks per match</span>
-        <span>{(terminal.footballMatchTicks / FOOTBALL_TICKS_PER_SECOND).toFixed(1)}s per match</span>
-        <span>tick {formatInt(snapshot.tick)}</span>
-        <span>{snapshot.tick >= terminal.footballMatchTicks ? "match finished" : mode === "inference" ? "best brain live sim" : "training replay"}</span>
-      </div>
-      <div className={styles.note}>
-        Inputs: {FOOTBALL_INPUT_LIST}
       </div>
     </>
   );

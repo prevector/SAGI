@@ -26,6 +26,7 @@ interface CreatureViewportProps {
   worldGroundY?: number;
   showFloor?: boolean;
   gaitScale?: number;
+  teamColor?: string;
 }
 
 interface VerletPoint {
@@ -836,13 +837,15 @@ function CreatureWalker({
   worldHeading,
   worldGroundY,
   showFloor = true,
-  gaitScale = 1
+  gaitScale = 1,
+  teamColor
 }: CreatureViewportProps) {
   const jointRefs = useRef<Array<Mesh | null>>([]);
   const boneRefs = useRef<Array<Mesh | null>>([]);
   const plateRefs = useRef<Array<Mesh | null>>([]);
   const eyeRefs = useRef<Array<Mesh | null>>([]);
   const pupilRefs = useRef<Array<Mesh | null>>([]);
+  const teamRingRef = useRef<Mesh | null>(null);
   const spec = useMemo(
     () => createCreatureSpec(gene, phenotype),
     [
@@ -1160,6 +1163,11 @@ function CreatureWalker({
       }
     }
 
+    if (teamRingRef.current) {
+      teamRingRef.current.position.set(motion.position.x, activeFloorY + 0.03, motion.position.z);
+      teamRingRef.current.rotation.x = -Math.PI / 2;
+    }
+
     for (let index = 0; index < points.length; index += 1) {
       const mesh = jointRefs.current[index];
       if (!mesh) continue;
@@ -1223,6 +1231,16 @@ function CreatureWalker({
 
   return (
     <group>
+      {teamColor ? (
+        <mesh
+          ref={teamRingRef}
+          rotation-x={-Math.PI / 2}
+        >
+          <ringGeometry args={[1.05, 1.25, 48]} />
+          <meshBasicMaterial color={teamColor} transparent opacity={0.72} />
+        </mesh>
+      ) : null}
+
       {showFloor ? (
         <>
           <mesh rotation-x={-Math.PI / 2} position={[0, spec.floorY - 0.02, 0]} receiveShadow>

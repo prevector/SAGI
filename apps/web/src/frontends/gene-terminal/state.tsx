@@ -2,7 +2,9 @@ import { createContext, useContext, useEffect, useMemo, useRef, useState, type R
 import {
   FootballEsTrainingSession,
   type FootballMatchResult,
+  footballGenomeLength,
   GruModel,
+  gruGenomeLength,
   type GruSequenceTrace,
   type TokenTaskDataset,
   GruEsTrainingSession,
@@ -28,6 +30,8 @@ import {
   summarizeCreatureGene,
   type CreatureMorphologySummary,
   type CreaturePhenotype,
+  type StoredFootballBrain,
+  type StoredTokenBrain,
   type StoredCreature,
   upsertCreature
 } from "./creatureLibrary";
@@ -67,6 +71,8 @@ export interface GeneTerminalState {
   history: MockPoint[];
   tokenDataset: TokenTaskDataset;
   trainingGenome: Float32Array | null;
+  tokenBest: StoredTokenBrain | null;
+  footballBest: StoredFootballBrain | null;
   footballTeamSize: number;
   footballMatchTicks: number;
   footballPreview: FootballMatchResult | null;
@@ -139,7 +145,7 @@ function initialLoss(gene: EvolutionGene): number {
   return 88 + (gene.weights.length % 47) * 0.73;
 }
 
-function createTrainingSession(creatureId: string, hiddenSize: number, es: EsHyperparams): GruEsTrainingSession {
+function createTrainingSession(creatureId: string, hiddenSize: number, es: EsHyperparams, initial?: Float32Array): GruEsTrainingSession {
   return new GruEsTrainingSession(
     buildFakeLanguageDataset({ seed: `token-task:${creatureId}`, sampleCount: 32 }),
     {
@@ -149,7 +155,8 @@ function createTrainingSession(creatureId: string, hiddenSize: number, es: EsHyp
         sigma: es.sigma,
         learningRate: es.learningRate,
         populationPairs: es.populationPairs,
-        momentum: es.momentum
+        momentum: es.momentum,
+        initial
       }
     },
     es.generations
@@ -160,7 +167,8 @@ function createFootballTrainingSession(
   creatureId: string,
   hiddenSize: number,
   es: EsHyperparams,
-  football: { teamSize: number; matchTicks: number }
+  football: { teamSize: number; matchTicks: number },
+  initial?: Float32Array
 ): FootballEsTrainingSession {
   return new FootballEsTrainingSession(
     {
@@ -170,6 +178,7 @@ function createFootballTrainingSession(
       learningRate: es.learningRate,
       populationPairs: es.populationPairs,
       momentum: es.momentum,
+      initial,
       football: {
         seed: `football-task:${creatureId}`,
         teamSize: football.teamSize,
@@ -178,6 +187,20 @@ function createFootballTrainingSession(
     },
     es.generations
   );
+}
+
+function compatibleFootballBrain(creature: StoredCreature, hiddenSize: number): StoredFootballBrain | null {
+  const stored = creature.bestFootball;
+  if (!stored || stored.hiddenSize !== hiddenSize) return null;
+  if (stored.genome.length !== footballGenomeLength(hiddenSize)) return null;
+  return stored;
+}
+
+function compatibleTokenBrain(creature: StoredCreature, hiddenSize: number, vocabSize: number): StoredTokenBrain | null {
+  const stored = creature.bestToken;
+  if (!stored || stored.hiddenSize !== hiddenSize) return null;
+  if (stored.genome.length !== gruGenomeLength({ vocabSize, hiddenSize })) return null;
+  return stored;
 }
 
 function createPaperGene(index: number, existingNames: string[]): { gene: EvolutionGene; phenotype: CreaturePhenotype } {
@@ -283,6 +306,54 @@ export function GeneTerminalProvider({ children }: { children: ReactNode }) {
   const [footballPreview, setFootballPreview] = useState<FootballMatchResult | null>(null);
   const [selectedSampleIndex, setSelectedSampleIndex] = useState(0);
   const [inferenceStepIndex, setInferenceStepIndex] = useState(0);
+  const tokenBest = compatibleTokenBrain(selectedCreature, hiddenSize, tokenDataset.vocab.length);
+  const footballBest = compatibleFootballBrain(selectedCreature, hiddenSize);
+
+  function persistTokenBest(step: ReturnType<GruEsTrainingSession["step"]>) {
+    setCreatures((items) => {
+      const creature = items.find((item) => item.id === selectedId);
+      if (!creature) return items;
+      const existing = compatibleTokenBrain(creature, hiddenSize, tokenDataset.vocab.length);
+      if (existing && existing.bestAccuracy > step.bestAccuracy && existing.bestLoss < step.bestLoss) return items;
+      const updated: StoredCreature = {
+        ...creature,
+        bestToken: {
+          hiddenSize,
+          loss: step.loss,
+          accuracy: step.accuracy,
+          bestLoss: step.bestLoss,
+          bestAccuracy: step.bestAccuracy,
+          genome: Array.from(step.genome),
+          updatedAt: new Date().toISOString()
+        },
+        updatedAt: new Date().toISOString()
+      };
+      return upsertCreature(items, updated);
+    });
+  }
+
+  function persistFootballBest(step: ReturnType<FootballEsTrainingSession["step"]>) {
+    setCreatures((items) => {
+      const creature = items.find((item) => item.id === selectedId);
+      if (!creature) return items;
+      const existing = compatibleFootballBrain(creature, hiddenSize);
+      if (existing && existing.bestScore > step.bestScore) return items;
+      const updated: StoredCreature = {
+        ...creature,
+        bestFootball: {
+          hiddenSize,
+          teamSize: footballTeamSize,
+          matchTicks: footballMatchTicks,
+          score: step.score,
+          bestScore: step.bestScore,
+          genome: Array.from(step.genome),
+          updatedAt: new Date().toISOString()
+        },
+        updatedAt: new Date().toISOString()
+      };
+      return upsertCreature(items, updated);
+    });
+  }
 
   function resetTrainingSession() {
     if (trainingMode === "language") {
@@ -290,10 +361,16 @@ export function GeneTerminalProvider({ children }: { children: ReactNode }) {
       setTokenDataset(dataset);
       setSelectedSampleIndex(0);
       setInferenceStepIndex(0);
-      const session = createTrainingSession(selectedCreature.id, hiddenSize, es);
+      const stored = compatibleTokenBrain(selectedCreature, hiddenSize, dataset.vocab.length);
+      const session = createTrainingSession(
+        selectedCreature.id,
+        hiddenSize,
+        es,
+        stored ? Float32Array.from(stored.genome) : undefined
+      );
       sessionRef.current = session;
       const initial = session.initial();
-      setTrainingGenome(initial.genome);
+      setTrainingGenome(stored ? Float32Array.from(stored.genome) : initial.genome);
       setFootballPreview(null);
       setHistory([{
         generation: initial.iteration,
@@ -304,14 +381,18 @@ export function GeneTerminalProvider({ children }: { children: ReactNode }) {
         score: initial.accuracy,
         bestScore: initial.bestAccuracy
       }]);
+      if (!stored) {
+        persistTokenBest(initial);
+      }
     } else {
+      const stored = compatibleFootballBrain(selectedCreature, hiddenSize);
       const session = createFootballTrainingSession(selectedCreature.id, hiddenSize, es, {
         teamSize: footballTeamSize,
         matchTicks: footballMatchTicks
-      });
+      }, stored ? Float32Array.from(stored.genome) : undefined);
       sessionRef.current = session;
       const initial = session.initial();
-      setTrainingGenome(initial.genome);
+      setTrainingGenome(stored ? Float32Array.from(stored.genome) : initial.genome);
       setFootballPreview(initial.preview);
       setHistory([{
         generation: initial.iteration,
@@ -322,6 +403,9 @@ export function GeneTerminalProvider({ children }: { children: ReactNode }) {
         score: initial.score,
         bestScore: initial.bestScore
       }]);
+      if (!stored) {
+        persistFootballBest(initial);
+      }
     }
     setStatus("idle");
   }
@@ -347,6 +431,7 @@ export function GeneTerminalProvider({ children }: { children: ReactNode }) {
       setTrainingGenome(next.genome);
       if (trainingMode === "language") {
         const languageStep = next as ReturnType<GruEsTrainingSession["step"]>;
+        persistTokenBest(languageStep);
         setHistory((items) => [
           ...items,
           {
@@ -362,6 +447,7 @@ export function GeneTerminalProvider({ children }: { children: ReactNode }) {
       } else {
         const footballStep = next as ReturnType<FootballEsTrainingSession["step"]>;
         setFootballPreview(footballStep.preview);
+        persistFootballBest(footballStep);
         setHistory((items) => [
           ...items,
           {
@@ -384,11 +470,15 @@ export function GeneTerminalProvider({ children }: { children: ReactNode }) {
 
   const latest = history[history.length - 1];
   const selectedSample = tokenDataset.samples[Math.min(selectedSampleIndex, Math.max(0, tokenDataset.samples.length - 1))];
+  const tokenInferenceGenome = useMemo(
+    () => tokenBest ? Float32Array.from(tokenBest.genome) : trainingGenome,
+    [tokenBest, trainingGenome]
+  );
   const inferenceTrace = useMemo(() => {
-    if (trainingMode !== "language" || !trainingGenome || !selectedSample) return null;
+    if (trainingMode !== "language" || !tokenInferenceGenome || !selectedSample) return null;
     const model = new GruModel({ vocabSize: tokenDataset.vocab.length, hiddenSize });
-    return model.traceSequence(trainingGenome, selectedSample.tokens);
-  }, [hiddenSize, selectedSample, tokenDataset.vocab.length, trainingGenome, trainingMode]);
+    return model.traceSequence(tokenInferenceGenome, selectedSample.tokens);
+  }, [hiddenSize, selectedSample, tokenDataset.vocab.length, tokenInferenceGenome, trainingMode]);
   const value = useMemo<GeneTerminalState>(() => ({
     creatures,
     selectedCreature,
@@ -410,6 +500,8 @@ export function GeneTerminalProvider({ children }: { children: ReactNode }) {
     history,
     tokenDataset,
     trainingGenome,
+    tokenBest,
+    footballBest,
     footballTeamSize,
     footballMatchTicks,
     footballPreview,
@@ -539,6 +631,7 @@ export function GeneTerminalProvider({ children }: { children: ReactNode }) {
       setTrainingGenome(next.genome);
       if (trainingMode === "language") {
         const languageStep = next as ReturnType<GruEsTrainingSession["step"]>;
+        persistTokenBest(languageStep);
         setHistory((items) => [
           ...items,
           {
@@ -554,6 +647,7 @@ export function GeneTerminalProvider({ children }: { children: ReactNode }) {
       } else {
         const footballStep = next as ReturnType<FootballEsTrainingSession["step"]>;
         setFootballPreview(footballStep.preview);
+        persistFootballBest(footballStep);
         setHistory((items) => [
           ...items,
           {
@@ -569,7 +663,7 @@ export function GeneTerminalProvider({ children }: { children: ReactNode }) {
       }
     },
     reset: () => resetTrainingSession()
-  }), [creatures, es, footballMatchTicks, footballPreview, footballTeamSize, hiddenSize, history, inferenceStepIndex, inferenceTrace, latest, runConfig, selectedCreature, selectedGene, selectedId, selectedSampleIndex, status, tokenDataset, trainingGenome, trainingMode]);
+  }), [creatures, es, footballBest, footballMatchTicks, footballPreview, footballTeamSize, hiddenSize, history, inferenceStepIndex, inferenceTrace, latest, runConfig, selectedCreature, selectedGene, selectedId, selectedSampleIndex, status, tokenBest, tokenDataset, trainingGenome, trainingMode]);
 
   return <GeneTerminalContext.Provider value={value}>{children}</GeneTerminalContext.Provider>;
 }

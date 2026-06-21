@@ -28,7 +28,29 @@ export interface StoredCreature {
   name: string;
   gene: EvolutionGene;
   phenotype: CreaturePhenotype;
+  bestToken?: StoredTokenBrain;
+  bestFootball?: StoredFootballBrain;
   createdAt: string;
+  updatedAt: string;
+}
+
+export interface StoredTokenBrain {
+  hiddenSize: number;
+  loss: number;
+  accuracy: number;
+  bestLoss: number;
+  bestAccuracy: number;
+  genome: number[];
+  updatedAt: string;
+}
+
+export interface StoredFootballBrain {
+  hiddenSize: number;
+  teamSize: number;
+  matchTicks: number;
+  score: number;
+  bestScore: number;
+  genome: number[];
   updatedAt: string;
 }
 

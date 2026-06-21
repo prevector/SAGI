@@ -109,7 +109,9 @@ export class GruEsTrainingSession {
       hiddenSize: config.hiddenSize
     };
     this.model = new GruModel(shape);
-    const initial = randomGruGenome(shape, config.es.seed);
+    const initial = config.es.initial
+      ? Float32Array.from(config.es.initial)
+      : randomGruGenome(shape, config.es.seed);
     this.optimizer = new OpenAiEsOptimizer({
       ...config.es,
       dimensions: initial.length,

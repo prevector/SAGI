@@ -14,7 +14,6 @@ import { GenesPanel } from "./panels/GenesPanel";
 import { InferencePanel } from "./panels/InferencePanel";
 import { NetworkPanel } from "./panels/NetworkPanel";
 import { TrainingPanel } from "./panels/TrainingPanel";
-import { TrainingVisualizerPanel } from "./panels/TrainingVisualizerPanel";
 import styles from "./GeneTerminal.module.css";
 
 const dockComponents = {
@@ -23,8 +22,7 @@ const dockComponents = {
   inference: InferencePanel,
   library: CreatureLibraryPanel,
   network: NetworkPanel,
-  training: TrainingPanel,
-  visualizer: TrainingVisualizerPanel
+  training: TrainingPanel
 };
 
 const panelSpecs = {
@@ -61,13 +59,6 @@ const panelSpecs = {
     position: { referencePanel: "creature", direction: "right" as const },
     initialWidth: 520
   },
-  visualizer: {
-    id: "visualizer",
-    component: "visualizer",
-    title: "VISUALIZER",
-    position: { referencePanel: "network", direction: "right" as const },
-    initialWidth: 520
-  },
   inference: {
     id: "inference",
     component: "inference",
@@ -87,6 +78,7 @@ function Workspace() {
 
   function onReady(event: DockviewReadyEvent) {
     dockApiRef.current = event.api;
+    event.api.getPanel("visualizer")?.api.close();
     (Object.keys(panelSpecs) as PanelId[]).forEach((panelId) => {
       event.api.addPanel(panelSpecs[panelId]);
     });
