@@ -11,6 +11,10 @@ import styles from "../GeneTerminal.module.css";
 
 const FOOTBALL_INPUT_LIST = footballInputLabels().join(" · ");
 const FOOTBALL_TICKS_PER_SECOND = 24;
+const FIELD_SURFACE_Y = -0.3;
+const FIELD_LINE_Y = FIELD_SURFACE_Y + 0.022;
+const FIELD_LINE_THICKNESS = 0.05;
+const FOOTBALL_GAIT_SCALE = 1.45;
 
 function makeOpponentPhenotype(terminal: GeneTerminalState) {
   const phenotype = terminal.selectedCreature.phenotype;
@@ -66,7 +70,7 @@ export function FootballReplayPanelBody({
       runtime.tick();
       setSnapshot(runtime.snapshot());
       setResult(runtime.result());
-    }, 32);
+    }, 16);
     return () => window.clearInterval(timer);
   }, [terminal.trainingMode, matchSerial, genome, terminal.footballMatchTicks, terminal.footballTeamSize, terminal.generation, terminal.hiddenSize, terminal.selectedCreature.id]);
 
@@ -125,20 +129,32 @@ export function FootballReplayPanelBody({
             <planeGeometry args={[110, 70]} />
             <meshLambertMaterial color="#d9cfbf" />
           </mesh>
-          <mesh rotation-x={-Math.PI / 2} position={[0, -0.3, 0]} receiveShadow>
+          <mesh rotation-x={-Math.PI / 2} position={[0, FIELD_SURFACE_Y, 0]} receiveShadow>
             <planeGeometry args={[104, 64]} />
             <meshLambertMaterial color="#8fb091" />
           </mesh>
-          <mesh position={[0, -0.285, 0]}>
-            <boxGeometry args={[104, 0.02, 64]} />
-            <meshBasicMaterial wireframe color="#f5f1e8" />
+          <mesh position={[0, FIELD_LINE_Y, -32]}>
+            <boxGeometry args={[104, FIELD_LINE_THICKNESS, 0.18]} />
+            <meshBasicMaterial color="#f5f1e8" />
           </mesh>
-          <mesh rotation-x={-Math.PI / 2} position={[0, -0.279, 0]}>
+          <mesh position={[0, FIELD_LINE_Y, 32]}>
+            <boxGeometry args={[104, FIELD_LINE_THICKNESS, 0.18]} />
+            <meshBasicMaterial color="#f5f1e8" />
+          </mesh>
+          <mesh position={[-52, FIELD_LINE_Y, 0]}>
+            <boxGeometry args={[0.18, FIELD_LINE_THICKNESS, 64]} />
+            <meshBasicMaterial color="#f5f1e8" />
+          </mesh>
+          <mesh position={[52, FIELD_LINE_Y, 0]}>
+            <boxGeometry args={[0.18, FIELD_LINE_THICKNESS, 64]} />
+            <meshBasicMaterial color="#f5f1e8" />
+          </mesh>
+          <mesh rotation-x={-Math.PI / 2} position={[0, FIELD_LINE_Y + 0.001, 0]}>
             <ringGeometry args={[8.7, 9.1, 64]} />
             <meshBasicMaterial color="#f5f1e8" />
           </mesh>
-          <mesh position={[0, -0.28, 0]}>
-            <boxGeometry args={[0.18, 0.04, 64]} />
+          <mesh position={[0, FIELD_LINE_Y, 0]}>
+            <boxGeometry args={[0.18, FIELD_LINE_THICKNESS, 64]} />
             <meshBasicMaterial color="#f5f1e8" />
           </mesh>
           <mesh position={[-52.8, 1.2, 0]}>
@@ -157,9 +173,11 @@ export function FootballReplayPanelBody({
               phenotype={terminal.selectedCreature.phenotype}
               generation={terminal.generation}
               status="running"
-              worldPosition={[player.x - 55, 0, player.y - 35]}
+              worldPosition={[player.x - 55, FIELD_SURFACE_Y, player.y - 35]}
               worldHeading={player.heading}
+              worldGroundY={FIELD_SURFACE_Y}
               showFloor={false}
+              gaitScale={FOOTBALL_GAIT_SCALE}
             />
           ))}
 
@@ -170,9 +188,11 @@ export function FootballReplayPanelBody({
               phenotype={opponentPhenotype}
               generation={terminal.generation}
               status="running"
-              worldPosition={[player.x - 55, 0, player.y - 35]}
+              worldPosition={[player.x - 55, FIELD_SURFACE_Y, player.y - 35]}
               worldHeading={player.heading}
+              worldGroundY={FIELD_SURFACE_Y}
               showFloor={false}
+              gaitScale={FOOTBALL_GAIT_SCALE}
             />
           ))}
 
