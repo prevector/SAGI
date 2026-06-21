@@ -8,7 +8,7 @@ interface BountyCardProps {
   helper: string;
 }
 
-/** S06 sample bounty: title, hairline, orange reward + teal status tag + helper. */
+/** S06 sample bounty: title, hairline, pink reward + success status tag + helper. */
 export function BountyCard({ title, reward, tag, helper }: BountyCardProps) {
   return (
     <article className={styles.card}>

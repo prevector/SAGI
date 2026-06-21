@@ -21,7 +21,7 @@ function scramble(len: number) {
 
 /**
  * TokenResolution — left column types neutral tokens one-by-one (sequential);
- * right column resolves teal tokens together from a brief scramble (parallel).
+ * right column resolves accent tokens together from a brief scramble (parallel).
  * Loops with a pause. Ported from the SAGI Framer project.
  */
 export default function TokenResolution({

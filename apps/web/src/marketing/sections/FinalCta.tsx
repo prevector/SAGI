@@ -4,7 +4,7 @@ import { APP_LOGIN, PLACEHOLDER } from "../lib/content";
 import shared from "../marketing.module.css";
 import styles from "./FinalCta.module.css";
 
-/** S09 — final CTA. Dark, teal-forward panel. */
+/** S09 — final CTA. Light panel on a soft pink→blue gradient card. */
 export function FinalCta() {
   return (
     <section className={`${shared.section} ${styles.section}`}>

@@ -86,7 +86,7 @@ export function useNetworkStats(active: boolean): NetworkState {
     return out;
   }
 
-  function pulseTeal(ids: string[], ms: number) {
+  function pulseAmbient(ids: string[], ms: number) {
     if (ids.length === 0) return;
     setPulsingIds((prev) => new Set([...prev, ...ids]));
     setTimeout(() => {
@@ -144,8 +144,8 @@ export function useNetworkStats(active: boolean): NetworkState {
         if (humanSignals > lastHumanSignals.current) {
           pulseHuman(Math.max(0, (s.human_tokens ?? 0) - lastHumanTokens.current));
         } else if (s.tokens_awarded > lastTokens.current) {
-          // Ambient (bot) reward — quiet single teal pulse.
-          pulseTeal(pickActives(1), 600);
+          // Ambient (bot) reward — quiet single ambient pulse.
+          pulseAmbient(pickActives(1), 600);
         }
 
         lastTokens.current = s.tokens_awarded;
@@ -174,7 +174,7 @@ export function useNetworkStats(active: boolean): NetworkState {
     if (nodesRef.current.length === 0) setNodes(makeSimNodes());
 
     const id = setInterval(() => {
-      // Believable ambient drift in the counters + a couple of teal pulses.
+      // Believable ambient drift in the counters + a couple of ambient pulses.
       setStats((s) => {
         const reward = Math.random() < 0.6 ? Math.max(5, Math.round(10 + Math.random() * 40)) : 0;
         return {
@@ -186,7 +186,7 @@ export function useNetworkStats(active: boolean): NetworkState {
           human_tokens: s.human_tokens,
         };
       });
-      pulseTeal(pickActives(Math.random() < 0.4 ? 2 : 1), 600);
+      pulseAmbient(pickActives(Math.random() < 0.4 ? 2 : 1), 600);
     }, 1600);
 
     return () => clearInterval(id);

@@ -7,7 +7,7 @@ import { counters, rewardRails, sampleBounty } from "../lib/content";
 import shared from "../marketing.module.css";
 import styles from "./TokenEconomy.module.css";
 
-/** S06 — token economy. Dark; orange accent lead. */
+/** S06 — token economy. Hero gradient bg; pink accent lead. */
 export function TokenEconomy() {
   return (
     <section id="tokens" className={`${shared.section} ${styles.section}`}>

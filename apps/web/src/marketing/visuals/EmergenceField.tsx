@@ -285,7 +285,7 @@ export default function EmergenceField({
         ctx.globalAlpha = cell.base * cell.fade;
         ctx.fillText(cell.ch, cell.x, cell.y);
       }
-      // soft teal glow blob behind the organism
+      // soft glow blob behind the organism (glowColor — white over the gradient)
       if (glow > 0.01) {
         const rad = R * 1.9;
         const g = ctx.createRadialGradient(cx, cy - R * 0.1, 0, cx, cy - R * 0.1, rad);
