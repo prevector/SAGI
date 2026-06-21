@@ -11,6 +11,9 @@ const FIELD_SURFACE_Y = -0.3;
 const FIELD_LINE_Y = FIELD_SURFACE_Y + 0.022;
 const FIELD_LINE_THICKNESS = 0.05;
 const FOOTBALL_GAIT_SCALE = 1.45;
+const GOAL_WIDTH = 18;
+const GOAL_HEIGHT = 4.6;
+const GOAL_DEPTH = 4.4;
 const TEAM_LEFT_COLOR = "#5d8fbd";
 const TEAM_RIGHT_COLOR = "#b36a42";
 const CAMERA_TARGET = new Vector3();
@@ -80,6 +83,87 @@ function makeOpponentPhenotype(terminal: GeneTerminalState) {
     crest: phenotype.accent,
     limb: phenotype.limb
   };
+}
+
+function FootballGoal({
+  x,
+  direction
+}: {
+  x: number;
+  direction: -1 | 1;
+}) {
+  const postRadius = 0.18;
+  const netLineThickness = 0.05;
+  const sideZ = GOAL_WIDTH / 2;
+  const backX = x + direction * GOAL_DEPTH;
+  const centerX = x + direction * (GOAL_DEPTH * 0.5);
+  const baseY = FIELD_SURFACE_Y + postRadius * 0.5;
+  const topY = FIELD_SURFACE_Y + GOAL_HEIGHT;
+  const midY = FIELD_SURFACE_Y + GOAL_HEIGHT * 0.5;
+  const netColor = "#dcd8cc";
+  const frameColor = "#f4efe6";
+  const netOpacity = 0.68;
+  const netColumns = [-0.72, -0.36, 0, 0.36, 0.72];
+  const netRows = [0.24, 0.44, 0.64, 0.84];
+
+  return (
+    <group>
+      <mesh position={[x, FIELD_SURFACE_Y + GOAL_HEIGHT * 0.5, -sideZ]} castShadow>
+        <boxGeometry args={[postRadius, GOAL_HEIGHT, postRadius]} />
+        <meshLambertMaterial color={frameColor} />
+      </mesh>
+      <mesh position={[x, FIELD_SURFACE_Y + GOAL_HEIGHT * 0.5, sideZ]} castShadow>
+        <boxGeometry args={[postRadius, GOAL_HEIGHT, postRadius]} />
+        <meshLambertMaterial color={frameColor} />
+      </mesh>
+      <mesh position={[x, topY, 0]} castShadow>
+        <boxGeometry args={[postRadius, postRadius, GOAL_WIDTH + postRadius]} />
+        <meshLambertMaterial color={frameColor} />
+      </mesh>
+
+      <mesh position={[backX, midY, -sideZ]} castShadow>
+        <boxGeometry args={[postRadius, GOAL_HEIGHT, postRadius]} />
+        <meshLambertMaterial color={frameColor} />
+      </mesh>
+      <mesh position={[backX, midY, sideZ]} castShadow>
+        <boxGeometry args={[postRadius, GOAL_HEIGHT, postRadius]} />
+        <meshLambertMaterial color={frameColor} />
+      </mesh>
+      <mesh position={[backX, topY, 0]} castShadow>
+        <boxGeometry args={[postRadius, postRadius, GOAL_WIDTH + postRadius]} />
+        <meshLambertMaterial color={frameColor} />
+      </mesh>
+      <mesh position={[centerX, topY, -sideZ]}>
+        <boxGeometry args={[GOAL_DEPTH, netLineThickness, netLineThickness]} />
+        <meshBasicMaterial color={netColor} transparent opacity={netOpacity} />
+      </mesh>
+      <mesh position={[centerX, topY, sideZ]}>
+        <boxGeometry args={[GOAL_DEPTH, netLineThickness, netLineThickness]} />
+        <meshBasicMaterial color={netColor} transparent opacity={netOpacity} />
+      </mesh>
+      <mesh position={[centerX, baseY, -sideZ]}>
+        <boxGeometry args={[GOAL_DEPTH, netLineThickness, netLineThickness]} />
+        <meshBasicMaterial color={netColor} transparent opacity={netOpacity * 0.75} />
+      </mesh>
+      <mesh position={[centerX, baseY, sideZ]}>
+        <boxGeometry args={[GOAL_DEPTH, netLineThickness, netLineThickness]} />
+        <meshBasicMaterial color={netColor} transparent opacity={netOpacity * 0.75} />
+      </mesh>
+
+      {netColumns.map((t) => (
+        <mesh key={`goal-net-back-v-${x}-${t}`} position={[backX, midY, t * sideZ]}>
+          <boxGeometry args={[netLineThickness, GOAL_HEIGHT, netLineThickness]} />
+          <meshBasicMaterial color={netColor} transparent opacity={netOpacity} />
+        </mesh>
+      ))}
+      {netRows.map((t) => (
+        <mesh key={`goal-net-back-h-${x}-${t}`} position={[backX, FIELD_SURFACE_Y + GOAL_HEIGHT * t, 0]}>
+          <boxGeometry args={[netLineThickness, netLineThickness, GOAL_WIDTH]} />
+          <meshBasicMaterial color={netColor} transparent opacity={netOpacity} />
+        </mesh>
+      ))}
+    </group>
+  );
 }
 
 export function FootballReplayPanelBody({
@@ -233,14 +317,8 @@ export function FootballReplayPanelBody({
             <boxGeometry args={[0.18, FIELD_LINE_THICKNESS, 64]} />
             <meshBasicMaterial color="#f5f1e8" />
           </mesh>
-          <mesh position={[-52.8, 1.2, 0]}>
-            <boxGeometry args={[0.5, 2.4, 18]} />
-            <meshLambertMaterial color="#f5efe4" />
-          </mesh>
-          <mesh position={[52.8, 1.2, 0]}>
-            <boxGeometry args={[0.5, 2.4, 18]} />
-            <meshLambertMaterial color="#f5efe4" />
-          </mesh>
+          <FootballGoal x={-52} direction={-1} />
+          <FootballGoal x={52} direction={1} />
 
           {snapshot.teams[0].map((player, index) => (
             <CreatureActor3D

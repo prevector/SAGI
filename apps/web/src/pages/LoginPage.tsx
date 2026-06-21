@@ -5,9 +5,12 @@ import { useAuth } from "../auth/AuthContext";
 import { config } from "../lib/config";
 import styles from "./LoginPage.module.css";
 
+type AuthView = "login" | "register";
+
 export default function LoginPage() {
-  const { username, login, mode, loading } = useAuth();
+  const { username, login, register, mode, loading } = useAuth();
   const navigate = useNavigate();
+  const [view, setView] = useState<AuthView>("login");
   const [value, setValue] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -20,21 +23,25 @@ export default function LoginPage() {
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
     if (!value.trim()) {
-      setError("Enter a username to continue.");
+      setError(view === "login" ? "Enter a username to sign in." : "Enter a username to create an account.");
       return;
     }
     if (!password.trim()) {
-      setError("Enter a password to continue.");
+      setError(view === "login" ? "Enter a password to sign in." : "Enter a password to create an account.");
       return;
     }
 
     setSubmitting(true);
     setError(null);
     try {
-      await login(value, password);
+      if (view === "login") {
+        await login(value, password);
+      } else {
+        await register(value, password);
+      }
       navigate("/app", { replace: true });
     } catch {
-      setError("Could not sign in. Check username and password.");
+      setError(view === "login" ? "Could not sign in. Check username and password." : "Could not create account. That username may already exist.");
     } finally {
       setSubmitting(false);
     }
@@ -44,8 +51,34 @@ export default function LoginPage() {
     <main className={styles.shell}>
       <section className={styles.card}>
         <p className={styles.eyebrow}>{config.brand.name}</p>
-        <h1 className={styles.title}>Enter the lab.</h1>
-        <p className={styles.lede}>Sign in with a username and password to continue into the live search for general intelligence.</p>
+        <div className={styles.switcher} role="tablist" aria-label="Authentication mode">
+          <button
+            className={view === "login" ? styles.switcherActive : styles.switcherButton}
+            type="button"
+            onClick={() => {
+              setView("login");
+              setError(null);
+            }}
+          >
+            Sign in
+          </button>
+          <button
+            className={view === "register" ? styles.switcherActive : styles.switcherButton}
+            type="button"
+            onClick={() => {
+              setView("register");
+              setError(null);
+            }}
+          >
+            Create account
+          </button>
+        </div>
+        <h1 className={styles.title}>{view === "login" ? "Enter the lab." : "Create an account."}</h1>
+        <p className={styles.lede}>
+          {view === "login"
+            ? "Sign in with a username and password to continue."
+            : "Create a simple local account with a username and password, then enter the lab."}
+        </p>
 
         <form className={styles.form} onSubmit={onSubmit} noValidate>
           <label className={styles.label}>
@@ -81,7 +114,7 @@ export default function LoginPage() {
           ) : null}
 
           <button className={styles.button} type="submit" disabled={submitting}>
-            {submitting ? "Entering…" : "Enter SAGI"}
+            {submitting ? (view === "login" ? "Signing in…" : "Creating…") : view === "login" ? "Sign in" : "Create account"}
           </button>
         </form>
 

@@ -9,12 +9,8 @@ import {
 } from "react";
 import type { SessionInfo } from "@sagi/shared";
 import { config } from "../lib/config";
-import { setCurrentUser } from "../lib/mock";
 import { fetchJson } from "../lib/request";
-
-// Username-only auth, backed by the engine's existing signed-cookie session
-// (/api/session, /api/auth/login, /api/auth/logout). In local dev the server
-// auto-authenticates, so login is not required there.
+import { setCurrentUser } from "../lib/mock";
 
 type Mode = "development" | "production";
 
@@ -23,6 +19,7 @@ interface AuthState {
   mode: Mode;
   loading: boolean;
   login: (username: string, password: string) => Promise<void>;
+  register: (username: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -78,14 +75,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [applySession]
   );
 
+  const register = useCallback(
+    async (raw: string, password: string) => {
+      const name = raw.trim();
+      const passwordHash = await hashPassword(password);
+      const session = await fetchJson<SessionInfo>("/api/auth/register", {
+        method: "POST",
+        body: JSON.stringify({ username: name, passwordHash })
+      });
+      applySession(session);
+    },
+    [applySession]
+  );
+
   const logout = useCallback(async () => {
     await fetchJson<void>("/api/auth/logout", { method: "POST" });
     setUsername(null);
+    if (config.useMock) {
+      setCurrentUser("guest");
+    }
   }, []);
 
   const value = useMemo<AuthState>(
-    () => ({ username, mode, loading, login, logout }),
-    [username, mode, loading, login, logout]
+    () => ({ username, mode, loading, login, register, logout }),
+    [username, mode, loading, login, register, logout]
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

@@ -7,6 +7,7 @@ import { clearSessionCookie, getSessionInfo, isAuthenticated, setSessionCookie, 
 import { getAppEnv } from "./env.js";
 import { getFootballLeaderboard, simulateSubmittedFootballMatch, submitFootballTeam } from "./football.js";
 import { loadRun, saveRun } from "./runs.js";
+import { isValidPasswordHash, isValidUsername, registerUser, verifyStoredPasswordHash } from "./users.js";
 import { buildLedgerConfig } from "./ledger/config.js";
 import { openDb } from "./ledger/db/client.js";
 import { LedgerService } from "./ledger/service.js";
@@ -122,7 +123,42 @@ app.get("/api/session", (request, response) => {
   response.json(getSessionInfo(request, env));
 });
 
-app.post("/api/auth/login", (request, response) => {
+app.post("/api/auth/register", async (request, response) => {
+  const submittedUsername =
+    typeof request.body?.username === "string" ? request.body.username.trim() : "";
+  const submittedPasswordHash =
+    typeof request.body?.passwordHash === "string" ? request.body.passwordHash.trim() : "";
+
+  if (!isValidUsername(submittedUsername)) {
+    response.status(400).json({ error: "Username must be 2-32 characters using letters, numbers, underscore, or hyphen." });
+    return;
+  }
+  if (!isValidPasswordHash(submittedPasswordHash)) {
+    response.status(400).json({ error: "Password is required." });
+    return;
+  }
+
+  try {
+    await registerUser(submittedUsername, submittedPasswordHash, env);
+  } catch (error) {
+    response.status(409).json({
+      error: error instanceof Error ? error.message : "Could not create account."
+    });
+    return;
+  }
+
+  ledger.ensureWallet(submittedUsername);
+  setSessionCookie(response, env, submittedUsername);
+  response.status(201).json({
+    authenticated: true,
+    mode: env.devMode ? "development" : "production",
+    user: {
+      name: submittedUsername
+    }
+  });
+});
+
+app.post("/api/auth/login", async (request, response) => {
   const submittedUsername =
     typeof request.body?.username === "string" ? request.body.username.trim() : "";
   const submittedPasswordHash =
@@ -136,20 +172,29 @@ app.post("/api/auth/login", (request, response) => {
     response.status(400).json({ error: "Password is required." });
     return;
   }
-  if (!verifyPasswordHash(submittedUsername, submittedPasswordHash, env)) {
-    response.status(401).json({ error: "Invalid username or password." });
-    return;
-  }
-
-  ledger.ensureWallet(submittedUsername);
-  setSessionCookie(response, env, submittedUsername);
-  response.json({
-    authenticated: true,
-    mode: "production",
-    user: {
-      name: submittedUsername
+  try {
+    const valid =
+      verifyPasswordHash(submittedUsername, submittedPasswordHash, env) ||
+      (await verifyStoredPasswordHash(submittedUsername, submittedPasswordHash));
+    if (!valid) {
+      response.status(401).json({ error: "Invalid username or password." });
+      return;
     }
-  });
+
+    ledger.ensureWallet(submittedUsername);
+    setSessionCookie(response, env, submittedUsername);
+    response.json({
+      authenticated: true,
+      mode: env.devMode ? "development" : "production",
+      user: {
+        name: submittedUsername
+      }
+    });
+  } catch (error) {
+    response.status(500).json({
+      error: error instanceof Error ? error.message : "Could not sign in."
+    });
+  }
 });
 
 app.post("/api/auth/logout", (_request, response) => {

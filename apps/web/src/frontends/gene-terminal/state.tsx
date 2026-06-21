@@ -62,6 +62,8 @@ export interface GeneTerminalState {
   es: EsHyperparams;
   hiddenSize: number;
   trainingMode: TrainingMode;
+  footballIterations: number;
+  languageIterations: number;
   status: TrainingStatus;
   generation: number;
   bestLoss: number;
@@ -93,6 +95,7 @@ export interface GeneTerminalState {
   updateHiddenSize: (value: number) => void;
   setTrainingMode: (mode: TrainingMode) => void;
   updateEs: (key: keyof EsHyperparams, value: number) => void;
+  updateStageIterations: (mode: TrainingMode, value: number) => void;
   updateFootball: (key: "teamSize" | "matchTicks" | "matchSeconds", value: number) => void;
   selectSample: (index: number) => void;
   resetInference: () => void;
@@ -119,6 +122,10 @@ const PAPER_IAF_ES: EsHyperparams = {
 };
 
 const GeneTerminalContext = createContext<GeneTerminalState | null>(null);
+
+function stageIterations(mode: TrainingMode, footballIterations: number, languageIterations: number): number {
+  return mode === "football" ? footballIterations : languageIterations;
+}
 
 function makeGeneId(prefix: string): string {
   return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
@@ -308,6 +315,8 @@ export function GeneTerminalProvider({ children }: { children: ReactNode }) {
   const [es, setEs] = useState<EsHyperparams>(PAPER_IAF_ES);
   const [hiddenSize, setHiddenSize] = useState(8);
   const [trainingMode, setTrainingMode] = useState<TrainingMode>("football");
+  const [footballIterations, setFootballIterations] = useState(30);
+  const [languageIterations, setLanguageIterations] = useState(60);
   const [status, setStatus] = useState<TrainingStatus>("idle");
   const sessionRef = useRef<GruEsTrainingSession | FootballEsTrainingSession | null>(null);
   const [history, setHistory] = useState<MockPoint[]>([]);
@@ -381,7 +390,7 @@ export function GeneTerminalProvider({ children }: { children: ReactNode }) {
       const session = createTrainingSession(
         selectedCreature.id,
         hiddenSize,
-        es,
+        { ...es, generations: languageIterations },
         stored ? Float32Array.from(stored.genome) : undefined
       );
       sessionRef.current = session;
@@ -402,7 +411,7 @@ export function GeneTerminalProvider({ children }: { children: ReactNode }) {
       }
     } else {
       const stored = compatibleFootballBrain(selectedCreature, hiddenSize);
-      const session = createFootballTrainingSession(selectedCreature.id, hiddenSize, es, {
+      const session = createFootballTrainingSession(selectedCreature.id, hiddenSize, { ...es, generations: footballIterations }, {
         teamSize: footballTeamSize,
         matchTicks: footballMatchTicks
       }, stored ? Float32Array.from(stored.genome) : undefined);
@@ -491,7 +500,7 @@ export function GeneTerminalProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     resetTrainingSession({ preserveStatus: status === "running" });
-  }, [selectedCreature.id, hiddenSize, trainingMode, es.learningRate, es.momentum, es.populationPairs, es.sigma, footballTeamSize, footballMatchTicks]);
+  }, [selectedCreature.id, hiddenSize, trainingMode, es.learningRate, es.momentum, es.populationPairs, es.sigma, footballTeamSize, footballMatchTicks, footballIterations, languageIterations]);
 
   useEffect(() => {
     if (status !== "running") return;
@@ -561,6 +570,8 @@ export function GeneTerminalProvider({ children }: { children: ReactNode }) {
     es,
     hiddenSize,
     trainingMode,
+    footballIterations,
+    languageIterations,
     status,
     generation: latest?.generation ?? 0,
     bestLoss: latest?.bestLoss ?? 0,
@@ -663,6 +674,20 @@ export function GeneTerminalProvider({ children }: { children: ReactNode }) {
       }
       setEs((current) => ({ ...current, [key]: value }));
     },
+    updateStageIterations: (mode, value) => {
+      const nextValue = Math.max(1, Math.min(10000, Math.round(value)));
+      if (mode === "football") {
+        setFootballIterations(nextValue);
+        if (trainingMode === "football") {
+          sessionRef.current?.setMaxIterations(nextValue);
+        }
+        return;
+      }
+      setLanguageIterations(nextValue);
+      if (trainingMode === "language") {
+        sessionRef.current?.setMaxIterations(nextValue);
+      }
+    },
     updateFootball: (key, value) => {
       if (key === "teamSize") {
         setFootballTeamSize(Math.max(2, Math.min(11, Math.round(value))));
@@ -686,7 +711,8 @@ export function GeneTerminalProvider({ children }: { children: ReactNode }) {
     },
     start: () => {
       const latestGeneration = latest?.generation ?? 0;
-      if (latestGeneration >= es.generations) {
+      const currentStageLimit = stageIterations(trainingMode, footballIterations, languageIterations);
+      if (latestGeneration >= currentStageLimit) {
         setTrainingMode((current) => current === "football" ? "language" : "football");
         setStatus("running");
         return;
@@ -734,7 +760,7 @@ export function GeneTerminalProvider({ children }: { children: ReactNode }) {
       }
     },
     reset: () => resetTrainingSession()
-  }), [creatures, es, footballBest, footballMatchTicks, footballPreview, footballTeamSize, hiddenSize, history, inferenceStepIndex, inferenceTrace, latest, runConfig, selectedCreature, selectedGene, selectedId, selectedSampleIndex, status, tokenBest, tokenDataset, trainingGenome, trainingMode]);
+  }), [creatures, es, footballBest, footballIterations, footballMatchTicks, footballPreview, footballTeamSize, hiddenSize, history, inferenceStepIndex, inferenceTrace, languageIterations, latest, runConfig, selectedCreature, selectedGene, selectedId, selectedSampleIndex, status, tokenBest, tokenDataset, trainingGenome, trainingMode]);
 
   return <GeneTerminalContext.Provider value={value}>{children}</GeneTerminalContext.Provider>;
 }

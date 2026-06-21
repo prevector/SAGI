@@ -336,6 +336,85 @@
   align-items: end;
 }
 
+.trainingScheduler {
+  display: grid;
+  gap: 10px;
+}
+
+.trainingTopbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--terminal-line);
+}
+
+.trainingStatusBlock {
+  display: grid;
+  gap: 2px;
+}
+
+.trainingStatusBlock strong {
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.trainingStatusBlock span {
+  color: var(--terminal-text-muted);
+  font-size: 11px;
+}
+
+.trainingStage,
+.trainingStageActive {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 120px;
+  gap: 12px;
+  align-items: end;
+  padding: 10px;
+  border: 1px solid var(--terminal-line);
+  background: rgba(255, 255, 255, 0.26);
+  cursor: pointer;
+}
+
+.trainingStageActive {
+  border-color: rgba(154, 104, 65, 0.34);
+  background:
+    linear-gradient(90deg, rgba(154, 104, 65, 0.12), rgba(110, 140, 166, 0.05)),
+    rgba(255, 255, 255, 0.36);
+}
+
+.trainingStage:focus,
+.trainingStageActive:focus {
+  outline: 1px solid var(--terminal-accent);
+  outline-offset: 1px;
+}
+
+.trainingStageMeta {
+  display: grid;
+  gap: 3px;
+  align-self: start;
+}
+
+.trainingStageMeta strong {
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.trainingStageMeta span {
+  color: var(--terminal-text-muted);
+  font-size: 11px;
+}
+
+.trainingSubgrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  padding-top: 2px;
+}
+
 .trainingActions {
   display: flex;
   justify-content: flex-end;
@@ -943,8 +1022,11 @@
 }
 
 @media (max-width: 900px) {
+  .trainingStage,
+  .trainingStageActive,
   .trainingToolbar,
   .trainingHeader,
+  .trainingSubgrid,
   .menuBar {
     display: grid;
   }

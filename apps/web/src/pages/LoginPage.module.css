@@ -13,6 +13,36 @@
   padding: var(--s7);
 }
 
+.switcher {
+  display: inline-grid;
+  grid-auto-flow: column;
+  gap: var(--s1);
+  padding: var(--s1);
+  margin-bottom: var(--s5);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+}
+
+.switcherButton,
+.switcherActive {
+  border: 0;
+  border-radius: var(--radius-pill);
+  padding: var(--s2) var(--s4);
+  font: inherit;
+  cursor: pointer;
+}
+
+.switcherButton {
+  background: transparent;
+  color: var(--text-muted);
+}
+
+.switcherActive {
+  background: var(--accent);
+  color: var(--ink-on-teal);
+}
+
 .eyebrow {
   font-family: var(--font-mono);
   font-size: var(--fs-mono);
