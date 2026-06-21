@@ -29,16 +29,12 @@
   font-size: var(--fs-sm);
 }
 
-.icon {
-  display: inline-flex;
-}
-
 .primary {
   background: var(--accent);
   color: var(--ink-on-teal);
 }
 
-.primary:hover:not(:disabled) {
+.primary:hover {
   background: var(--accent-hover);
 }
 
@@ -47,7 +43,7 @@
   color: var(--ink-on-orange);
 }
 
-.reward:hover:not(:disabled) {
+.reward:hover {
   background: var(--accent-2-hover);
 }
 
@@ -57,6 +53,6 @@
   border-color: var(--border-strong);
 }
 
-.ghost:hover:not(:disabled) {
+.ghost:hover {
   background: rgba(250, 248, 240, 0.08);
 }

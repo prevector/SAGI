@@ -25,6 +25,7 @@ import {
   loadCreatures,
   makeCreatureName,
   mutatePhenotype,
+  mutatePhenotypeSlight,
   sanitizeCreatureName,
   saveCreatures,
   summarizeCreatureGene,
@@ -335,6 +336,24 @@ export function GeneTerminalProvider({ children }: { children: ReactNode }) {
   const footballBest = compatibleFootballBrain(selectedCreature, hiddenSize);
   const bestFootballCreature = useMemo(() => pickBestFootballCreature(creatures), [creatures]);
 
+  function evolveSelectedPhenotype(mode: TrainingMode, generation: number) {
+    setCreatures((items) => {
+      const now = new Date().toISOString();
+      return items.map((creature) => (
+        creature.id === selectedId
+          ? {
+              ...creature,
+              phenotype: mutatePhenotypeSlight(
+                creature.phenotype,
+                `training-phenotype:${creature.id}:${mode}:${generation}`
+              ),
+              updatedAt: now
+            }
+          : creature
+      ));
+    });
+  }
+
   function persistTokenBest(step: ReturnType<GruEsTrainingSession["step"]>) {
     setCreatures((items) => {
       const creature = items.find((item) => item.id === selectedId);
@@ -513,6 +532,7 @@ export function GeneTerminalProvider({ children }: { children: ReactNode }) {
       setTrainingGenome(next.genome);
       if (trainingMode === "language") {
         const languageStep = next as ReturnType<GruEsTrainingSession["step"]>;
+        evolveSelectedPhenotype("language", languageStep.iteration);
         persistTokenBest(languageStep);
         setHistory((items) => [
           ...items,
@@ -528,6 +548,7 @@ export function GeneTerminalProvider({ children }: { children: ReactNode }) {
         ]);
       } else {
         const footballStep = next as ReturnType<FootballEsTrainingSession["step"]>;
+        evolveSelectedPhenotype("football", footballStep.iteration);
         setFootballPreview(footballStep.preview);
         persistFootballBest(footballStep);
         setHistory((items) => [
@@ -730,6 +751,7 @@ export function GeneTerminalProvider({ children }: { children: ReactNode }) {
       setTrainingGenome(next.genome);
       if (trainingMode === "language") {
         const languageStep = next as ReturnType<GruEsTrainingSession["step"]>;
+        evolveSelectedPhenotype("language", languageStep.iteration);
         persistTokenBest(languageStep);
         setHistory((items) => [
           ...items,
@@ -745,6 +767,7 @@ export function GeneTerminalProvider({ children }: { children: ReactNode }) {
         ]);
       } else {
         const footballStep = next as ReturnType<FootballEsTrainingSession["step"]>;
+        evolveSelectedPhenotype("football", footballStep.iteration);
         setFootballPreview(footballStep.preview);
         persistFootballBest(footballStep);
         setHistory((items) => [
