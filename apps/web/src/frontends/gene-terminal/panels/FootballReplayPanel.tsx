@@ -14,8 +14,9 @@ const FOOTBALL_GAIT_SCALE = 2.2;
 const GOAL_WIDTH = 18;
 const GOAL_HEIGHT = 4.6;
 const GOAL_DEPTH = 4.4;
-const TEAM_LEFT_COLOR = "#5d8fbd";
-const TEAM_RIGHT_COLOR = "#b36a42";
+// Brand A=blue / B=pink pairing (mirrors tokens.css --blue-500 / --pink-500).
+const TEAM_LEFT_COLOR = "#3C7FA8";
+const TEAM_RIGHT_COLOR = "#E07A97";
 const CAMERA_TARGET = new Vector3();
 const CAMERA_POSITION = new Vector3();
 const CAMERA_LOOK = new Vector3();
