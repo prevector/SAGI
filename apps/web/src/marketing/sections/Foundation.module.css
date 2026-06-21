@@ -1,0 +1,16 @@
+.section {
+  background: var(--bg-warm);
+}
+
+.head {
+  max-width: 760px;
+}
+
+.title {
+  color: var(--brown-900);
+  margin-bottom: var(--s5);
+}
+
+.body {
+  color: var(--brown-700);
+}

@@ -19,13 +19,12 @@ export function Hero() {
       </div>
       <div className={`${shared.container} ${styles.inner}`}>
         <div className={styles.content}>
-          <p className={styles.eyebrow}>a distributed search for general intelligence</p>
+          <p className={styles.eyebrow}>A distributed R&amp;D company, owned by its contributors</p>
           <h1 className={styles.title}>
-            We don't know what AGI looks like. So let's search and own it, together.
+            We don't know what AGI looks like. So let's search for it — together, and own what we find.
           </h1>
           <p className={`${shared.bodyL} ${styles.subhead}`}>
-            SAGI is a distributed worldwide frontier laboratory searching for the next generation of AI algorithms where everyone can contribute with idle compute. 
-            Candidate AI minds are grown as living organisms, evolved on your hardware, and selected for one thing: the ability to learn.
+            SAGI is a worldwide evolutionary laboratory where candidate minds are grown as living organisms and evolved on your hardware. Contribute compute, earn credits, and become a co-owner of every discovery the network makes.
           </p>
           <div className={styles.ctas}>
             <CtaLink to={APP_LOGIN} variant="primary">

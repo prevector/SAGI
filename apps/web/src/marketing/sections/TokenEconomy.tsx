@@ -14,7 +14,13 @@ export function TokenEconomy() {
       <div className={shared.container}>
         <Reveal className={styles.head}>
           <Eyebrow>Why contribute</Eyebrow>
-          <h2 className={`${shared.h2} ${styles.title}`}>Two ways to earn from the search.</h2>
+          <h2 className={`${shared.h2} ${styles.title}`}>You don't rent out your compute. You help build something you own a part of.</h2>
+        </Reveal>
+
+        <Reveal>
+          <p className={`${shared.bodyL} ${styles.utility}`}>
+            SAGI isn't a compute marketplace — it's a distributed R&amp;D company where the workforce and the owners are the same people. Contribute compute, earn credits, and share in a growing body of open AI research that belongs to the network that made it.
+          </p>
         </Reveal>
 
         <div className={styles.rails}>
@@ -26,9 +32,8 @@ export function TokenEconomy() {
         </div>
 
         <Reveal>
-          <p className={`${shared.bodyL} ${styles.utility}`}>
-            <span className={styles.tokens}>Tokens</span> fund more search capacity, govern the network, and reward the
-            work that moves it forward.
+          <p className={`${shared.bodyL} ${styles.closing}`}>
+            Credits reward the work that moves the search forward and give you a stake in the commons it builds.
           </p>
         </Reveal>
 

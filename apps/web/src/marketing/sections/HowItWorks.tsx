@@ -41,6 +41,12 @@ export function HowItWorks() {
           })}
         </ol>
 
+        <Reveal>
+          <p className={`${shared.bodyL} ${styles.closing}`}>
+            Every cycle your hardware runs earns you credits — and credits are your stake in what the network discovers.
+          </p>
+        </Reveal>
+
         <Reveal className={styles.module}>
           <div className={styles.moduleHeads}>
             <span className={styles.moduleHead}>One model, scaled</span>

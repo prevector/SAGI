@@ -109,3 +109,9 @@
     grid-template-columns: 1fr;
   }
 }
+
+.closing {
+  max-width: 640px;
+  margin-bottom: var(--s8);
+  color: var(--brown-700);
+}
