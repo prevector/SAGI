@@ -59,12 +59,12 @@ export default function ContributePage() {
         <div style={styles.prompt}>Which model performs better?</div>
         <div style={styles.sub}>
           {s.phase === "loading" && "loading a pair from the network…"}
-          {s.phase === "choosing" && "Your judgment becomes a signal the network can't cheaply produce."}
+          {s.phase === "choosing" && "Read the spec — a richer update rule usually performs better. You make the call."}
           {s.phase === "evaluating" && "settling your signal against the network…"}
           {s.phase === "result" &&
             (matched
-              ? `Your call matched the network · +${s.result?.tokens} tokens`
-              : "The network ranked the other model higher · +0")}
+              ? `Right call — Model ${winner?.toUpperCase()} performed better · +${s.result?.tokens} tokens`
+              : `The network ranked Model ${winner?.toUpperCase()} higher this time · +0`)}
         </div>
       </div>
 
@@ -128,15 +128,15 @@ export default function ContributePage() {
             </p>
             <ol style={styles.introList}>
               <li>
-                <strong style={styles.introStrong}>Two models, one call.</strong> You&apos;ll see two candidate AIs. Tap the one
-                you think performs better.
+                <strong style={styles.introStrong}>Read the spec.</strong> Each model shows its architecture. A richer
+                <strong style={styles.introStrong}> update rule</strong> — and more neuron types — tends to perform better.
               </li>
               <li>
-                <strong style={styles.introStrong}>Your tap is a signal.</strong> Human judgement the network can&apos;t cheaply
-                produce — it decides which candidates are worth expensive evaluation.
+                <strong style={styles.introStrong}>Make the call.</strong> Tap the model you think is stronger. It&apos;s a
+                judgement, not a lookup — the specs hint, they don&apos;t guarantee.
               </li>
               <li>
-                <strong style={styles.introStrong}>Earn tokens.</strong> The network settles your signal against ground truth; an
+                <strong style={styles.introStrong}>Earn tokens.</strong> The network evaluates both against ground truth; an
                 accurate call credits tokens to you.
               </li>
             </ol>

@@ -1,0 +1,11 @@
+# Keep the build context small — deps are reinstalled, dist is rebuilt.
+**/node_modules
+**/dist
+**/.vite
+# The other demo site isn't part of this container.
+web/
+# Docs / planning artefacts.
+*.md
+*.html
+.env
+.env.*

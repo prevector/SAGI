@@ -1,12 +1,51 @@
-import { type CSSProperties } from "react";
-import { Canvas } from "@react-three/fiber";
+import { useMemo, useRef, type CSSProperties } from "react";
+import { Canvas, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
-import { Combatant, type Outcome } from "./Combatant";
+import { type Outcome } from "./Combatant";
 import type { CombatantVisual } from "./combatantFromCandidate";
+import { CreatureActor3D } from "./creature/CreatureViewport";
+import { creatureFromCandidate } from "./creature/creatureFromCandidate";
 import { ParamBars } from "./ParamBars";
 import type { CandidateParams } from "../sdk";
 
 const ui = '"Gothic A1", system-ui, sans-serif';
+
+// The real creature is built for a world floor scene; worldGroundY pins its torso
+// near the origin the card camera points at, so it walks on the spot in the card.
+const GROUND_Y = -1.5;
+const HEADING = Math.PI * 0.15; // 3/4 view
+
+// Wrap the genome-driven walker so win/lose feedback (swell / shrink) is applied as
+// group scale without touching the copied renderer — material opacity can't be driven
+// from a parent group, and the losing card already dims via the `dimmed` prop.
+function OutcomeCreature({ params, outcome, teamColor }: { params: CandidateParams; outcome: Outcome; teamColor: string }) {
+  const { gene, phenotype } = useMemo(() => creatureFromCandidate(params), [params]);
+  const groupRef = useRef<THREE.Group>(null);
+  const status = outcome === "fighting" ? "running" : "idle";
+
+  useFrame((_, dt) => {
+    const group = groupRef.current;
+    if (!group) return;
+    const target = outcome === "win" ? 1.12 : outcome === "lose" ? 0.9 : 1;
+    group.scale.setScalar(THREE.MathUtils.damp(group.scale.x, target, 6, dt));
+  });
+
+  return (
+    <group ref={groupRef}>
+      <CreatureActor3D
+        gene={gene}
+        phenotype={phenotype}
+        generation={0}
+        status={status}
+        worldPosition={[0, 0, 0]}
+        worldGroundY={GROUND_Y}
+        worldHeading={HEADING}
+        gaitScale={1}
+        teamColor={teamColor}
+      />
+    </group>
+  );
+}
 
 interface ModelCardProps {
   visual: CombatantVisual;
@@ -50,10 +89,13 @@ export function ModelCard({ visual, params, label, outcome, selectable, picked, 
         <Canvas
           dpr={[1, 1.5]}
           gl={{ antialias: true }}
-          camera={{ position: [0, 0.2, 4.2], fov: 40 }}
+          camera={{ position: [0, 0.4, 5.4], fov: 40 }}
           onCreated={({ gl }) => gl.setClearColor(new THREE.Color("#ffffff"), 0)}
         >
-          <Combatant visual={visual} outcome={outcome} />
+          {/* The walker uses meshLambertMaterial — without lights it renders black. */}
+          <ambientLight intensity={1.1} />
+          <directionalLight position={[5, 8, 5]} intensity={1.6} />
+          <OutcomeCreature params={params} outcome={outcome} teamColor={accent} />
         </Canvas>
       </div>
 

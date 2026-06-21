@@ -36,7 +36,7 @@ export interface CombatantVisual {
 
 // Tiny deterministic RNG (mulberry32) seeded from the candidate seed string,
 // so the same candidate always renders the same placeholder. No extra deps.
-function hashSeed(seed: string): number {
+export function hashSeed(seed: string): number {
   let h = 1779033703 ^ seed.length;
   for (let i = 0; i < seed.length; i++) {
     h = Math.imul(h ^ seed.charCodeAt(i), 3432918353);
@@ -45,7 +45,7 @@ function hashSeed(seed: string): number {
   return h >>> 0;
 }
 
-function mulberry32(a: number): () => number {
+export function mulberry32(a: number): () => number {
   return () => {
     a |= 0;
     a = (a + 0x6d2b79f5) | 0;

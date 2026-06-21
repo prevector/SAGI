@@ -1,8 +1,11 @@
 // In-memory mock for the SAGI signal path.
-// All state lives in module-level Maps — no DB, no persistence.
-// Restarting the server resets everything (fine for a hackathon demo).
+// State lives in module-level Maps and is snapshotted to .data/state.json so a
+// server restart keeps wallets / counters (candidates + nodes are deterministic
+// and regenerated, so they're never persisted).
 
 import seedrandom from "seedrandom";
+import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
+import { join } from "node:path";
 
 // ─── Minimal seeded RNG helpers ───────────────────────────────────────────────
 
@@ -116,6 +119,24 @@ function spherePoint(rng: RNG, radius: number): [number, number, number] {
 }
 
 const candidateRng = makeRng("sagi-candidates-v2");
+
+// Normalise a 1..50 stat to 0..1.
+const norm = (v: number) => (v - 1) / 49;
+
+// Ground-truth performance is a READABLE function of the visible genome so a
+// contributor can learn a rule and judge correctly. The dominant, teachable cue is
+// the update rule (updateComplexity), with neuron types as a secondary contributor;
+// a small seeded noise term keeps it probabilistic (not a perfect lookup), so the
+// human judgment stays a signal rather than a deterministic read.
+function performanceScore(params: CandidateParams, rng: RNG): number {
+  const base =
+    0.65 * norm(params.updateComplexity) +
+    0.25 * norm(params.neuronTypes) +
+    0.1 * norm(params.neuronParams);
+  const noise = (rng() - 0.5) * 0.12; // ±0.06
+  return Math.max(0.02, Math.min(0.98, base + noise));
+}
+
 const candidates: Candidate[] = Array.from({ length: 50 }, (_, i) => {
   // Visible genome: each stat 1..50, independently drawn so candidates differ.
   const params: CandidateParams = {
@@ -126,9 +147,7 @@ const candidates: Candidate[] = Array.from({ length: 50 }, (_, i) => {
     updateComplexity: rangeInt(candidateRng, 1, 50),
     seed: `s${i}-${Math.floor(candidateRng() * 99999)}`,
   };
-  // Hidden true performance is deliberately INDEPENDENT of the visible genome —
-  // "how good it is" is exactly what we keep out of the parameters.
-  const trueScore = range(candidateRng, 0.02, 0.98);
+  const trueScore = performanceScore(params, candidateRng);
   return { id: `c-${i.toString().padStart(3, "0")}`, params, trueScore };
 });
 
@@ -200,6 +219,8 @@ function settleBet(betId: string): void {
     ev.push({ type: "reward", candidate_id: winnerSide === "a" ? bet.candidateAId : bet.candidateBId, tokens: reward, ts: Date.now() });
     eventsByUser.set(bet.userId, ev);
   }
+
+  schedulePersist();
 }
 
 // ─── Bot simulation — keeps dashboard live with 0 real players ────────────────
@@ -226,15 +247,25 @@ export function getOrCreateUser(deviceId: string): { userId: string } {
   users.set(deviceId, { userId, tokens: 0, scouts: 0, correct: 0 });
   deviceToUserId.set(deviceId, userId);
   eventsByUser.set(userId, []);
+  schedulePersist();
   return { userId };
 }
 
+// Pair candidates with a clear-but-not-trivial performance gap so the better model
+// is discernible from the spec on stage (rather than today's hardest adjacent pairs).
+const DUEL_GAP_MIN = 0.18;
+const DUEL_GAP_MAX = 0.45;
+
 export function createDuel(_userId: string): SignalTask {
-  const sorted = [...candidates].sort((a, b) => a.trueScore - b.trueScore);
-  const idx = Math.floor(Math.random() * (sorted.length - 1));
-  const [raw_a, raw_b] = Math.random() < 0.5
-    ? [sorted[idx], sorted[idx + 1]]
-    : [sorted[idx + 1], sorted[idx]];
+  const first = candidates[Math.floor(Math.random() * candidates.length)];
+  const inBand = candidates.filter((c) => {
+    if (c.id === first.id) return false;
+    const gap = Math.abs(c.trueScore - first.trueScore);
+    return gap >= DUEL_GAP_MIN && gap <= DUEL_GAP_MAX;
+  });
+  const pool = inBand.length > 0 ? inBand : candidates.filter((c) => c.id !== first.id);
+  const second = pool[Math.floor(Math.random() * pool.length)];
+  const [raw_a, raw_b] = Math.random() < 0.5 ? [first, second] : [second, first];
   return { task_id: `t-${shortId()}`, type: "DUEL", a: { id: raw_a.id, params: raw_a.params }, b: { id: raw_b.id, params: raw_b.params } };
 }
 
@@ -242,6 +273,7 @@ export function recordBet(taskId: string, userId: string, picked: "a" | "b", can
   const betId = `bet-${shortId()}`;
   bets.set(betId, { betId, userId, taskId, picked, candidateAId, candidateBId, settled: false, winnerSide: null, won: null, tokens: 0 });
   setTimeout(() => settleBet(betId), 3000 + Math.random() * 2000);
+  schedulePersist();
   return { betId };
 }
 
@@ -296,3 +328,83 @@ export function getStats(): Stats {
 export function getNodes(): SwarmNode[] {
   return swarmNodes;
 }
+
+// ─── Persistence ──────────────────────────────────────────────────────────────
+// Snapshot only the mutable runtime state. Candidates and swarm nodes are
+// deterministic (seeded) and regenerated on boot, so they're never serialized.
+
+interface Snapshot {
+  users: [string, UserRecord][];
+  deviceToUserId: [string, string][];
+  bets: [string, Bet][];
+  eventsByUser: [string, RewardEvent[]][];
+  totals: { totalVotes: number; totalTokensAwarded: number; humanSignals: number; humanTokens: number };
+}
+
+const DATA_DIR = join(process.cwd(), ".data");
+const STATE_FILE = join(DATA_DIR, "state.json");
+
+let persistTimer: ReturnType<typeof setTimeout> | null = null;
+
+// Debounce writes after human mutations so a burst coalesces into one flush.
+function schedulePersist(): void {
+  if (persistTimer) return;
+  persistTimer = setTimeout(() => {
+    persistTimer = null;
+    writeSnapshot();
+  }, 500);
+}
+
+function writeSnapshot(): void {
+  const snapshot: Snapshot = {
+    users: [...users.entries()],
+    deviceToUserId: [...deviceToUserId.entries()],
+    bets: [...bets.entries()],
+    eventsByUser: [...eventsByUser.entries()],
+    totals: { totalVotes, totalTokensAwarded, humanSignals, humanTokens },
+  };
+  try {
+    mkdirSync(DATA_DIR, { recursive: true });
+    writeFileSync(STATE_FILE, JSON.stringify(snapshot));
+  } catch (err) {
+    console.warn("[mock] failed to persist state:", err);
+  }
+}
+
+function hydrate(): void {
+  let raw: string;
+  try {
+    raw = readFileSync(STATE_FILE, "utf8");
+  } catch {
+    return; // no snapshot yet — fresh boot
+  }
+  try {
+    const snap = JSON.parse(raw) as Snapshot;
+    users.clear();
+    for (const [k, v] of snap.users) users.set(k, v);
+    deviceToUserId.clear();
+    for (const [k, v] of snap.deviceToUserId) deviceToUserId.set(k, v);
+    bets.clear();
+    for (const [k, v] of snap.bets) bets.set(k, v);
+    eventsByUser.clear();
+    for (const [k, v] of snap.eventsByUser) eventsByUser.set(k, v);
+    totalVotes = snap.totals.totalVotes;
+    totalTokensAwarded = snap.totals.totalTokensAwarded;
+    humanSignals = snap.totals.humanSignals;
+    humanTokens = snap.totals.humanTokens;
+
+    // Pending bets lost their settle timer on restart — finish them now so the
+    // game never sees a bet stuck "settling".
+    for (const bet of [...bets.values()]) {
+      if (!bet.settled) settleBet(bet.betId);
+    }
+    console.log(`[mock] restored ${users.size} users, ${bets.size} bets from snapshot`);
+  } catch (err) {
+    console.warn("[mock] failed to hydrate state, starting fresh:", err);
+  }
+}
+
+// Periodic flush captures ambient bot-counter drift without writing on every tick.
+setInterval(() => writeSnapshot(), 10000);
+
+hydrate();
