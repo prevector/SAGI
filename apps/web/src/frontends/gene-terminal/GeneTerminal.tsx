@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { UserRound } from "lucide-react";
+import { SagiLogo } from "../../lib/SagiLogo";
 import {
   DockviewReact,
   Orientation,
@@ -344,7 +345,7 @@ function Workspace() {
     <div className={`${styles.terminal} ${onboardingClass}`}>
       <div className={styles.menuBar} ref={menuRef}>
         <div className={styles.menuCluster}>
-          <span className={styles.workspaceMark}>SAGI TERMINAL</span>
+          <SagiLogo height={18} className={styles.workspaceMark} />
           <div className={styles.menuWrap}>
             <button className={styles.menuButton} onClick={() => setOpenMenu((value) => (value === "window" ? null : "window"))}>
               Window

@@ -2,7 +2,7 @@ import { useState, type FormEvent } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { AlertCircle } from "lucide-react";
 import { useAuth } from "../auth/AuthContext";
-import { config } from "../lib/config";
+import { SagiLogo } from "../lib/SagiLogo";
 import styles from "./LoginPage.module.css";
 
 type AuthView = "login" | "register";
@@ -50,7 +50,7 @@ export default function LoginPage() {
   return (
     <main className={styles.shell}>
       <section className={styles.card}>
-        <p className={styles.eyebrow}>{config.brand.name}</p>
+        <SagiLogo height={28} className={styles.eyebrow} />
         <div className={styles.switcher} role="tablist" aria-label="Authentication mode">
           <button
             className={view === "login" ? styles.switcherActive : styles.switcherButton}
