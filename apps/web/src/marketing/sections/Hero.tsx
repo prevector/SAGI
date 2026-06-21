@@ -19,9 +19,8 @@ export function Hero() {
             We don’t know what AGI looks like. So let’s search for it, together.
           </h1>
           <p className={`${shared.bodyL} ${styles.subhead}`}>
-            SAGI is a worldwide evolutionary laboratory. Candidate minds are grown as living organisms, evolved on your
-            hardware, and selected for one thing: the ability to learn. Contribute compute, earn tokens, and help find the
-            algorithms behind general intelligence.
+            SAGI is a distributed worldwide frontier laboratory searching for the next generation of AI algorithms where everyone can contribute with idle compute. 
+            Candidate AI minds are grown as living organisms, evolved on your hardware, and selected for one thing: the ability to learn.
           </p>
           <div className={styles.ctas}>
             <CtaLink to={APP_LOGIN} variant="primary">
