@@ -1,0 +1,254 @@
+/* S05.5 — "SAGI network": the live swarm embedded in the homepage scroll. Dark
+   band so the 3D canvas (bg #041414) reads as part of the page. */
+
+.section {
+  position: relative;
+  background: #041414;
+  color: #faf8f0;
+  padding: 0;
+  overflow: hidden;
+  border-top: 1px solid rgba(23, 196, 196, 0.12);
+  border-bottom: 1px solid rgba(23, 196, 196, 0.12);
+}
+
+/* The swarm band — canvas backdrop with the readout layered over it. */
+.band {
+  position: relative;
+  height: clamp(520px, 78vh, 760px);
+}
+.canvasWrap {
+  position: absolute;
+  inset: 0;
+}
+.canvasFallback {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 45%, rgba(23, 196, 196, 0.18), transparent 60%), #041414;
+}
+
+.topBar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  display: flex;
+  justify-content: center;
+  padding: 28px 24px 0;
+  pointer-events: none;
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono, "Geist Mono Variable", ui-monospace, monospace);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #9fb6b6;
+  border: 1px solid rgba(23, 196, 196, 0.25);
+  border-radius: 999px;
+  padding: 6px 12px;
+  background: rgba(4, 20, 20, 0.4);
+}
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #17c4c4;
+  box-shadow: 0 0 6px #17c4c4;
+  animation: sagiNetPulse 2s ease-out infinite;
+}
+.dotSim {
+  background: #6e8585;
+  box-shadow: none;
+  animation: none;
+}
+
+/* Center headline over the swarm. */
+.center {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  transform: translateY(-50%);
+  z-index: 2;
+  text-align: center;
+  padding: 0 24px;
+  pointer-events: none;
+}
+.eyebrow {
+  font-family: var(--font-mono, "Geist Mono Variable", ui-monospace, monospace);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #17c4c4;
+  margin: 0 0 14px;
+}
+.title {
+  font-size: clamp(28px, 5vw, 48px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0;
+  text-shadow: 0 2px 40px rgba(4, 20, 20, 0.9);
+}
+.sub {
+  font-size: clamp(14px, 2vw, 17px);
+  color: #9fb6b6;
+  max-width: 520px;
+  margin: 14px auto 0;
+  line-height: 1.5;
+  text-shadow: 0 1px 20px rgba(4, 20, 20, 0.9);
+}
+
+/* Counter strip along the bottom of the band. */
+.stats {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  gap: clamp(16px, 5vw, 52px);
+  justify-content: center;
+  align-items: flex-end;
+  padding: 30px 24px 36px;
+  background: linear-gradient(0deg, rgba(4, 20, 20, 0.94) 0%, transparent 100%);
+  pointer-events: none;
+}
+.stat {
+  text-align: center;
+}
+.statValue {
+  font-family: var(--font-mono, "Geist Mono Variable", ui-monospace, monospace);
+  font-size: clamp(22px, 4.5vw, 32px);
+  font-weight: 700;
+  line-height: 1;
+  color: #17c4c4;
+}
+.statTokens {
+  color: #f0783d;
+}
+.statLabel {
+  font-family: var(--font-mono, "Geist Mono Variable", ui-monospace, monospace);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #6e8585;
+  margin-top: 7px;
+}
+
+/* The HUMAN SIGNALS card — deliberately the loudest element. */
+.human {
+  position: relative;
+}
+.humanValue {
+  font-family: var(--font-mono, "Geist Mono Variable", ui-monospace, monospace);
+  font-size: clamp(30px, 6vw, 46px);
+  font-weight: 800;
+  line-height: 1;
+  color: #f0783d;
+  text-shadow: 0 0 24px rgba(240, 120, 61, 0.5);
+  transition: transform 160ms ease;
+}
+.humanPop {
+  transform: scale(1.28);
+}
+.humanLabel {
+  font-family: var(--font-mono, "Geist Mono Variable", ui-monospace, monospace);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #f0783d;
+  margin-top: 7px;
+  font-weight: 600;
+}
+
+/* Transient "a human just contributed" toast over the canvas. */
+.toast {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 20px;
+  border-radius: 999px;
+  background: rgba(240, 120, 61, 0.16);
+  border: 1px solid rgba(240, 120, 61, 0.6);
+  box-shadow: 0 0 40px rgba(240, 120, 61, 0.4);
+  font-family: var(--font-mono, "Geist Mono Variable", ui-monospace, monospace);
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  color: #faf8f0;
+  pointer-events: none;
+  animation: sagiNetToast 320ms ease-out;
+}
+.toast strong {
+  color: #f0783d;
+}
+
+/* Pitch + CTA below the band. */
+.pitch {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: clamp(48px, 8vw, 88px) 24px;
+  text-align: center;
+}
+.pitchTitle {
+  font-size: clamp(22px, 4vw, 32px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+.pitchBody {
+  font-size: clamp(15px, 2vw, 17px);
+  color: #9fb6b6;
+  line-height: 1.65;
+  margin: 18px 0 0;
+}
+.ctaRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  justify-content: center;
+  align-items: center;
+  margin-top: 32px;
+}
+.cta {
+  display: inline-block;
+  font-family: var(--font-mono, "Geist Mono Variable", ui-monospace, monospace);
+  font-size: 15px;
+  letter-spacing: 0.04em;
+  font-weight: 600;
+  color: #041414;
+  background: #17c4c4;
+  text-decoration: none;
+  padding: 13px 24px;
+  border-radius: 12px;
+}
+.note {
+  font-family: var(--font-mono, "Geist Mono Variable", ui-monospace, monospace);
+  font-size: 12px;
+  color: #6e8585;
+  letter-spacing: 0.04em;
+}
+
+@keyframes sagiNetPulse {
+  0% { box-shadow: 0 0 0 0 rgba(23, 196, 196, 0.6); }
+  70% { box-shadow: 0 0 0 7px rgba(23, 196, 196, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(23, 196, 196, 0); }
+}
+@keyframes sagiNetToast {
+  from { opacity: 0; transform: translate(-50%, -42%) scale(0.92); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dot { animation: none; }
+  .toast { animation: none; }
+  .humanValue { transition: none; }
+}

@@ -15,6 +15,7 @@ export interface NavLink {
 // S01 — in-page anchors to the section ids set on each <section>.
 export const navLinks: NavLink[] = [
   { label: "How it works", href: "#how-it-works" },
+  { label: "SAGI network", href: "#sagi-network" },
   { label: "Tokens", href: "#tokens" },
   { label: "Bounties", href: "#bounties" },
   { label: "Backers", href: "#backers" },

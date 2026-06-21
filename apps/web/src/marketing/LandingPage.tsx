@@ -5,6 +5,7 @@ import { Hero } from "./sections/Hero";
 import { Premise } from "./sections/Premise";
 import { Organisms } from "./sections/Organisms";
 import { HowItWorks } from "./sections/HowItWorks";
+import { SagiNetwork } from "./sections/SagiNetwork";
 import { TokenEconomy } from "./sections/TokenEconomy";
 import { Bounties } from "./sections/Bounties";
 import { Backers } from "./sections/Backers";
@@ -42,6 +43,7 @@ export default function LandingPage() {
         <Premise />
         <Organisms />
         <HowItWorks />
+        <SagiNetwork />
         <TokenEconomy />
         <Bounties />
         <Backers />

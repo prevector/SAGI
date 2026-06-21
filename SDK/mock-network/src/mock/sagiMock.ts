@@ -67,6 +67,10 @@ export interface Stats {
   players: number;
   votes: number;
   tokens_awarded: number;
+  // Human-only tallies — moved exclusively by settleBet (a real contribution),
+  // never by the bot loop, so the website can single out human activity.
+  human_signals: number;
+  human_tokens: number;
 }
 
 // ─── Private state ────────────────────────────────────────────────────────────
@@ -150,6 +154,10 @@ const eventsByUser = new Map<string, RewardEvent[]>();
 
 let totalVotes = 0;
 let totalTokensAwarded = 0;
+// Human-only counters — bumped solely inside settleBet (the human signal path),
+// deliberately untouched by the bot simulation below.
+let humanSignals = 0;
+let humanTokens = 0;
 
 const shortId = () => Math.random().toString(36).slice(2, 9);
 
@@ -179,6 +187,10 @@ function settleBet(betId: string): void {
 
   user.scouts += 1;
   totalVotes += 1;
+  // Human-only tally: this path is only ever reached for a real contribution
+  // (recordBet → settleBet); the bot loop bumps the totals directly instead.
+  humanSignals += 1;
+  humanTokens += reward;
 
   if (won) {
     user.tokens += reward;
@@ -272,7 +284,13 @@ export function getLeaderboard(limit: number): PublicCandidate[] {
 }
 
 export function getStats(): Stats {
-  return { players: users.size, votes: totalVotes, tokens_awarded: totalTokensAwarded };
+  return {
+    players: users.size,
+    votes: totalVotes,
+    tokens_awarded: totalTokensAwarded,
+    human_signals: humanSignals,
+    human_tokens: humanTokens,
+  };
 }
 
 export function getNodes(): SwarmNode[] {
