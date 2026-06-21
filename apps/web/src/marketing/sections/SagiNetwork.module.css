@@ -20,6 +20,10 @@
 .canvasWrap {
   position: absolute;
   inset: 0;
+  /* Drop the swarm below the centred heading so the dark --brown-900 "core"
+     sphere stops sitting behind "The swarm, alive." (same colour as the text).
+     The exposed top strip is the same --bg-warm as the canvas, so it's seamless. */
+  transform: translateY(56px);
 }
 .canvasFallback {
   position: absolute;

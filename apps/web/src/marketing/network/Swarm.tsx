@@ -126,10 +126,9 @@ function SwarmScene({
       ))}
       <OrbitControls
         enablePan={false}
+        enableZoom={false}
         enableDamping
         dampingFactor={0.05}
-        minDistance={8}
-        maxDistance={40}
         autoRotate={active}
         autoRotateSpeed={0.25}
       />
