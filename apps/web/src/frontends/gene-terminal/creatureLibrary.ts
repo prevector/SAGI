@@ -280,6 +280,24 @@ export function mutatePhenotype(parent: CreaturePhenotype, seed: string): Creatu
   );
 }
 
+export function mutatePhenotypeSlight(parent: CreaturePhenotype, seed: string): CreaturePhenotype {
+  const hash = hashSeed(seed);
+  const palette = PALETTES.find((item) => item.key === parent.paletteKey) ?? PALETTES[0];
+  const hueShift = ((hash & 1023) / 1023) * 1.2 - 0.6;
+  const accentShift = ((hash >> 10) & 255) / 255 * 0.7 - 0.35;
+  const detailShift = ((hash >> 18) & 255) / 255 * 0.5 - 0.25;
+  return buildPhenotype(
+    seed,
+    palette,
+    parent.hueFrom + hueShift,
+    parent.hueTo + hueShift * 0.72,
+    shiftHexHue(parent.accent, accentShift),
+    shiftHexHue(parent.limb, detailShift),
+    shiftHexHue(parent.crest, detailShift * 0.8),
+    shiftHexHue(parent.cool, accentShift * 0.6)
+  );
+}
+
 export function clonePhenotype(parent: CreaturePhenotype, seed: string): CreaturePhenotype {
   const palette = PALETTES.find((item) => item.key === parent.paletteKey) ?? PALETTES[0];
   return buildPhenotype(
