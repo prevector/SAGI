@@ -1,0 +1,388 @@
+/* Initial SAGI SDK documentation page. Light "paper" theme for long-form
+   reading, with marketing tokens (teal #17C4C4, orange #F0783D) and a dark
+   code block. Self-contained chrome so it doesn't inherit the homepage's
+   in-page #anchor nav. */
+
+.page {
+  background: #faf8f0;
+  color: #102020;
+  min-height: 100vh;
+  font-family: var(--font-sans, "Geist Variable", ui-sans-serif, system-ui, sans-serif);
+}
+
+/* Sticky minimal header. */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: rgba(250, 248, 240, 0.85);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(16, 32, 32, 0.08);
+}
+.headerInner {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.wordmark {
+  font-weight: 700;
+  font-size: 20px;
+  letter-spacing: 0.14em;
+  color: #102020;
+  text-decoration: none;
+}
+.headerNav {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+}
+.headerLink {
+  font-family: var(--font-mono, "Geist Mono Variable", ui-monospace, monospace);
+  font-size: 13px;
+  color: #4a6060;
+  text-decoration: none;
+}
+.headerLink:hover {
+  color: #102020;
+}
+
+.main {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: clamp(40px, 7vw, 80px) 24px 96px;
+}
+
+/* Hero. */
+.eyebrow {
+  font-family: var(--font-mono, "Geist Mono Variable", ui-monospace, monospace);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #0fa3a3;
+  margin: 0 0 14px;
+}
+.h1 {
+  font-size: clamp(32px, 6vw, 52px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  margin: 0;
+}
+.lead {
+  font-size: clamp(16px, 2.2vw, 19px);
+  color: #38504f;
+  line-height: 1.6;
+  max-width: 620px;
+  margin: 20px 0 0;
+}
+
+/* Sections. */
+.section {
+  margin-top: clamp(48px, 8vw, 80px);
+}
+.h2 {
+  font-size: clamp(22px, 4vw, 30px);
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  margin: 0 0 18px;
+}
+.p {
+  font-size: 16px;
+  color: #38504f;
+  line-height: 1.7;
+  margin: 0 0 16px;
+  max-width: 660px;
+}
+.p a {
+  color: #0c8a8a;
+  text-decoration: underline;
+}
+
+/* The four-call quickstart code block. */
+.codeBlock {
+  border: 1px solid rgba(16, 32, 32, 0.12);
+  border-radius: 14px;
+  overflow: hidden;
+  background: #041414;
+  margin-top: 8px;
+}
+.codeHeader {
+  font-family: var(--font-mono, "Geist Mono Variable", ui-monospace, monospace);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #6e8585;
+  padding: 12px 18px;
+  border-bottom: 1px solid rgba(23, 196, 196, 0.14);
+}
+.code {
+  margin: 0;
+  padding: 18px 20px;
+  font-family: var(--font-mono, "Geist Mono Variable", ui-monospace, monospace);
+  font-size: clamp(12px, 1.7vw, 13.5px);
+  line-height: 1.75;
+  color: #cfe0e0;
+  overflow-x: auto;
+  white-space: pre;
+}
+.install {
+  display: block;
+  font-family: var(--font-mono, "Geist Mono Variable", ui-monospace, monospace);
+  font-size: 14px;
+  color: #cfe0e0;
+  background: #041414;
+  border-radius: 12px;
+  padding: 14px 18px;
+  margin: 0 0 22px;
+}
+.install::before {
+  content: "$ ";
+  color: #17c4c4;
+}
+
+/* Concept / contribution cards. */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 18px;
+  margin-top: 8px;
+}
+.card {
+  border: 1px solid rgba(16, 32, 32, 0.1);
+  border-radius: 14px;
+  padding: 22px;
+  background: #fff;
+}
+.cardTitle {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0 0 8px;
+}
+.cardBody {
+  font-size: 14px;
+  color: #4a6060;
+  line-height: 1.55;
+  margin: 0;
+}
+
+/* Two-path comparison cards (compute vs signal). */
+.pathGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(264px, 1fr));
+  gap: 18px;
+  margin: 8px 0 22px;
+}
+.path {
+  border: 1px solid rgba(16, 32, 32, 0.1);
+  border-top-width: 3px;
+  border-radius: 14px;
+  padding: 22px 24px;
+  background: #fff;
+}
+.pathCompute {
+  border-top-color: #17c4c4;
+}
+.pathSignal {
+  border-top-color: #f0783d;
+}
+.pathTag {
+  font-family: var(--font-mono, "Geist Mono Variable", ui-monospace, monospace);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #6e8585;
+  margin: 0;
+}
+.pathName {
+  font-size: 19px;
+  font-weight: 700;
+  margin: 4px 0 14px;
+}
+.metaRow {
+  display: grid;
+  grid-template-columns: 96px 1fr;
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 1px solid rgba(16, 32, 32, 0.07);
+  font-size: 14px;
+}
+.metaKey {
+  font-family: var(--font-mono, "Geist Mono Variable", ui-monospace, monospace);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #6e8585;
+  padding-top: 3px;
+}
+.metaVal {
+  color: #38504f;
+  line-height: 1.5;
+}
+
+/* Callout box for the "why" notes. */
+.callout {
+  border-left: 3px solid #17c4c4;
+  background: rgba(23, 196, 196, 0.07);
+  border-radius: 0 12px 12px 0;
+  padding: 16px 20px;
+  margin: 8px 0 0;
+  font-size: 15px;
+  color: #2a4544;
+  line-height: 1.6;
+  max-width: 700px;
+}
+.calloutOrange {
+  border-left-color: #f0783d;
+  background: rgba(240, 120, 61, 0.08);
+}
+
+/* Guarantee / exclusion lists. */
+.guards {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px 24px;
+}
+.guards li {
+  position: relative;
+  padding-left: 24px;
+  font-size: 14px;
+  color: #38504f;
+  line-height: 1.5;
+}
+.guards li::before {
+  content: "✓";
+  position: absolute;
+  left: 0;
+  color: #0fa3a3;
+  font-weight: 700;
+}
+.guardsNo li::before {
+  content: "✕";
+  color: #b06a4a;
+}
+
+/* Inline code in prose. */
+.p code,
+.metaVal code,
+.callout code {
+  font-family: var(--font-mono, "Geist Mono Variable", ui-monospace, monospace);
+  font-size: 0.88em;
+  color: #0c6e6e;
+  background: rgba(23, 196, 196, 0.12);
+  padding: 1px 6px;
+  border-radius: 6px;
+}
+
+/* Two-column split (v1 scope, trust boundary). */
+.split {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 18px;
+  margin-top: 8px;
+}
+
+/* Numbered call walkthrough. */
+.steps {
+  display: grid;
+  gap: 18px;
+  margin-top: 8px;
+}
+.step {
+  display: grid;
+  grid-template-columns: 40px 1fr;
+  gap: 16px;
+  align-items: start;
+}
+.stepNum {
+  font-family: var(--font-mono, "Geist Mono Variable", ui-monospace, monospace);
+  font-size: 13px;
+  font-weight: 700;
+  color: #0fa3a3;
+  border: 1px solid rgba(15, 163, 163, 0.35);
+  border-radius: 10px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.stepTitle {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 6px 0 4px;
+}
+.stepTitle code {
+  font-family: var(--font-mono, "Geist Mono Variable", ui-monospace, monospace);
+  font-size: 14px;
+  color: #0c6e6e;
+  background: rgba(23, 196, 196, 0.12);
+  padding: 1px 6px;
+  border-radius: 6px;
+}
+.stepBody {
+  font-size: 14px;
+  color: #4a6060;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* CTA. */
+.ctaRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  margin-top: 12px;
+}
+.ctaPrimary {
+  display: inline-block;
+  font-family: var(--font-mono, "Geist Mono Variable", ui-monospace, monospace);
+  font-size: 15px;
+  letter-spacing: 0.04em;
+  font-weight: 600;
+  color: #041414;
+  background: #17c4c4;
+  text-decoration: none;
+  padding: 13px 24px;
+  border-radius: 12px;
+}
+.ctaSecondary {
+  display: inline-block;
+  font-family: var(--font-mono, "Geist Mono Variable", ui-monospace, monospace);
+  font-size: 15px;
+  letter-spacing: 0.04em;
+  font-weight: 600;
+  color: #0c6e6e;
+  text-decoration: none;
+  padding: 13px 24px;
+  border-radius: 12px;
+  border: 1px solid rgba(16, 32, 32, 0.18);
+}
+
+/* Footer. */
+.footer {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 32px 24px 56px;
+  border-top: 1px solid rgba(16, 32, 32, 0.08);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: space-between;
+  font-family: var(--font-mono, "Geist Mono Variable", ui-monospace, monospace);
+  font-size: 12px;
+  color: #6e8585;
+}
+.footer a {
+  color: #6e8585;
+  text-decoration: none;
+}
+.footer a:hover {
+  color: #102020;
+}

@@ -230,6 +230,26 @@
   padding: 13px 24px;
   border-radius: 12px;
 }
+/* Secondary "Check the documentation" button — sits to the left of the primary
+   CTA, reads as a quieter outline against the dark band. */
+.ctaSecondary {
+  display: inline-block;
+  font-family: var(--font-mono, "Geist Mono Variable", ui-monospace, monospace);
+  font-size: 15px;
+  letter-spacing: 0.04em;
+  font-weight: 600;
+  color: #17c4c4;
+  background: transparent;
+  text-decoration: none;
+  padding: 13px 24px;
+  border-radius: 12px;
+  border: 1px solid rgba(23, 196, 196, 0.4);
+  transition: border-color 160ms ease, background 160ms ease;
+}
+.ctaSecondary:hover {
+  border-color: rgba(23, 196, 196, 0.85);
+  background: rgba(23, 196, 196, 0.08);
+}
 .note {
   font-family: var(--font-mono, "Geist Mono Variable", ui-monospace, monospace);
   font-size: 12px;

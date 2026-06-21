@@ -1,4 +1,5 @@
 import { Suspense, lazy, useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import { useInView } from "../lib/useInView";
 import { useNetworkStats } from "../network/useNetworkStats";
 import { APP_LOGIN } from "../lib/content";
@@ -118,11 +119,13 @@ export function SagiNetwork() {
       <div className={styles.pitch}>
         <h3 className={styles.pitchTitle}>Any app can feed the swarm.</h3>
         <p className={styles.pitchBody}>
-          The SAGI SDK lets developers plug any app into the network — your users contribute the
-          human judgment the network can&apos;t cheaply produce, and earn tokens for it. Each
-          contribution ripples through the swarm above in real time.
+          The SAGI SDK lets developers plug any app into the network — contributing the human
+          judgment, spare compute, or proprietary signal the network can&apos;t cheaply produce on
+          its own. From a consumer app to a business&apos;s idle infrastructure, every contribution
+          earns tokens and ripples through the swarm above in real time.
         </p>
         <div className={styles.ctaRow}>
+          <Link className={styles.ctaSecondary} to="/docs">Check the documentation</Link>
           {CONTRIBUTE_URL ? (
             <>
               <a className={styles.cta} href={CONTRIBUTE_URL}>See an app built on the SDK →</a>
