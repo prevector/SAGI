@@ -4,7 +4,7 @@
 
 ## Purpose
 
-Allow games and applications to contribute compute to the SAGI network.
+Allows applications to contribute passive (compute) & active (labelling) activities to the SAGI network. The SDK will be public in the future. 
 
 The SDK:
 
